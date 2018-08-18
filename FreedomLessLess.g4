@@ -6,15 +6,15 @@ file : /*import_def**/ (class_def | function_def)+ /*mainFunction*/;
 
 class_def : CLASS ID OPEN_KEY classMembers CLOSE_KEY SEMICOLON;
 
-classMembers : public_def private_def | public_def | private_def;
+classMembers : public_def private_def? | private_def;
 
 public_def : PUBLIC class_scope_def;
 
 private_def : PRIVATE class_scope_def;
 
-class_scope_def : decl_def+ function_def* | decl_def* function_def+;
+class_scope_def : decl_def* function_def*;
 
-decl_def : type_def ID (ASSIGN exp_def)? SEMICOLON;
+decl_def : type_def ID (ASSIGN exp_def)?;
 
 function_def: type_def ID OPEN_PAR param_def? CLOSE_PAR block_def SEMICOLON;
 
