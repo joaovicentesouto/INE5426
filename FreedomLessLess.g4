@@ -26,7 +26,7 @@ struct_def : if_def | for_def | while_def | switch_def;
 
 if_def : IF OPEN_PAR exp_def CLOSE_PAR block_def (ELSE block_def)?;
 
-for_def : FOR OPEN_PAR (decl_def COMMA)* SEMICOLON exp_def SEMICOLON exp_def CLOSE_PAR block_def;
+for_def : FOR OPEN_PAR scoped_decl_def? SEMICOLON exp_def? SEMICOLON exp_def? CLOSE_PAR block_def;
 
 while_def : WHILE OPEN_PAR exp_def CLOSE_PAR block_def;
 
@@ -42,8 +42,8 @@ block_def : OPEN_KEY (exp_def SEMICOLON | struct_def)+ CLOSE_KEY ;
 exp_def //! Exp tudo o que gera um valor final
 	: funcCall_def
 	| scoped_decl_def
-	| exp_def (OPLOGICAL | SIGNAL | OPSIGNAL) exp_def
-	| ID (ASSIGN exp_def)?
+	| exp_def (OPLOGICAL | SIGNAL ) exp_def
+	| ID ( ((ASSIGN | OPSIGNAL) exp_def) | OPINC )?
 	| VALUE
 	| RETURN exp_def
 	| BREAK
@@ -101,6 +101,7 @@ DEFAULT	 : 'default';
 OPLOGICAL : LESS | BIGGER | LESS_EQ | BIGGER_EQ | EQUALS | NOT_EQUALS | AND | OR;
 SIGNAL : PLUS | MINUS | MULT | DIV;
 OPSIGNAL : AUTOPLUS | AUTOMINUS | AUTOMULT | AUTODIV;
+OPINC : INCREM | DECREM;
 
 //! Operations
 ASSIGN    : '=';
@@ -108,12 +109,15 @@ PLUS      : '+';
 MINUS     : '-';
 MULT      : '*';
 DIV	      : '/';
+
 INCREM    : '++';
 DECREM    : '--';
+
 AUTOPLUS  : '+=';
 AUTOMINUS : '-=';
 AUTOMULT  : '*=';
 AUTODIV   : '/=';
+
 LESS  	  : '<';
 BIGGER    : '>';
 LESS_EQ   : '<=';
