@@ -14,7 +14,7 @@ private_def : PRIVATE class_scope_def;
 
 class_scope_def : decl_def* function_def*;
 
-decl_def : type_def ID (ASSIGN exp_def)?;
+decl_def : type_def ID (ASSIGN exp_def)? (COMMA ID (ASSIGN exp_def)?)* SEMICOLON;
 
 function_def: type_def ID OPEN_PAR param_def? CLOSE_PAR block_def SEMICOLON;
 
@@ -32,24 +32,25 @@ while_def : WHILE OPEN_PAR exp_def CLOSE_PAR block_def;
 
 switch_def
 	: SWITCH OPEN_PAR exp_def CLOSE_PAR OPEN_KEY
-		(CASE VALUE ':' exp_def+)*
-		DEFAULT ':' exp_def* CLOSE_BRAK
+		(CASE VALUE ':' (exp_def SEMICOLON)+ )*
+		DEFAULT ':' (exp_def SEMICOLON)* CLOSE_BRAK
 	;
 
 block_def : OPEN_KEY (exp_def SEMICOLON | struct_def)+ CLOSE_KEY ;
 
 exp_def //! Exp tudo o que gera um valor final
 	: funcCall_def
-	| decl_def
+	| scoped_decl_def
 	| exp_def (OPLOGICAL | SIGNAL | OPSIGNAL) exp_def
-	| ID SEMICOLON
-	| VALUE SEMICOLON
+	| ID
+	| VALUE
 	| RETURN exp_def
-	| BREAK SEMICOLON
-	| CONTINUE SEMICOLON	
+	| BREAK
+	| CONTINUE
 	;
 
-funcCall_def : ID OPEN_PAR arg_def CLOSE_PAR SEMICOLON;
+funcCall_def : ID OPEN_PAR arg_def CLOSE_PAR ;// SEMICOLON;
+scoped_decl_def : type_def ID (ASSIGN exp_def)? (COMMA ID (ASSIGN exp_def)?)*;
 
 // mainFunction : INT MAIN OPEN_PAR INT ID COMMA CHAR MULT MULT ID CLOSE_PAR block_def;
 
