@@ -33,7 +33,8 @@ while_def : WHILE OPEN_PAR exp_def CLOSE_PAR block_def;
 switch_def
 	: SWITCH OPEN_PAR exp_def CLOSE_PAR OPEN_KEY
 		(CASE VALUE ':' (exp_def SEMICOLON)+ )*
-		DEFAULT ':' (exp_def SEMICOLON)* CLOSE_BRAK
+		DEFAULT ':' (exp_def SEMICOLON)*
+		CLOSE_KEY
 	;
 
 block_def : OPEN_KEY (exp_def SEMICOLON | struct_def)+ CLOSE_KEY ;
