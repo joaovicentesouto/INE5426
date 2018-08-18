@@ -137,7 +137,7 @@ FALSE : 'false';
 
 VALUE 	: DIGIT+ | TRUE | FALSE | LITERAL;
 ID 		: ID_LETTER (ID_LETTER | DIGIT)*;
-LITERAL : '\'' DIGIT* ID '\'';
+LITERAL : '\'' (DIGIT | ID_LETTER)+ '\'';
 
 fragment ID_LETTER : 'a' .. 'z' | 'A' .. 'Z' | '_';
 fragment DIGIT : '0' ..'9';
