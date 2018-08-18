@@ -42,7 +42,7 @@ exp_def //! Exp tudo o que gera um valor final
 	: funcCall_def
 	| scoped_decl_def
 	| exp_def (OPLOGICAL | SIGNAL | OPSIGNAL) exp_def
-	| ID
+	| ID (ASSIGN exp_def)?
 	| VALUE
 	| RETURN exp_def
 	| BREAK
