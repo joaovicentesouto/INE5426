@@ -230,18 +230,16 @@ COMMA	   : ',';
 SEMICOLON  : ';';
 TWOPOINTS  : ':';
 
-TRUE  : 'true';
-FALSE : 'false';
+BOOLEAN
+	: 'true'
+	| 'false'
+	;
+
 NULL  : 'null';
 
 STRING
 	: '"' ( ESC | ~ ["\\])* '"'
 	| '\'' ( ESC | ~ ["\\])* '\''
-	;
-
-BOOLEAN
-	: TRUE
-	| FALSE
 	;
 
 INTEGER
