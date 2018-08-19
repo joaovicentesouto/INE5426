@@ -37,7 +37,10 @@ function_def:
 	;
 
 param_def
-	: type_def ID (COMMA type_def ID)*
+	: type_def ID (COMMA param_def)?
+	| CLASS ID ID (COMMA param_def)?
+	| type_def ID OPEN_BRAK INTEGER CLOSE_BRAK
+	| CLASS ID ID OPEN_BRAK INTEGER CLOSE_BRAK
 	;
 
 arg_def
@@ -100,7 +103,7 @@ exp_def  //! Exp tudo o que gera um valor final
 	| CONTINUE
 	;
 
-funcCall_def: ID OPEN_PAR arg_def CLOSE_PAR;
+funcCall_def: (ID '.')? ID OPEN_PAR arg_def CLOSE_PAR;
 
 scoped_decl_def
 	: type_def ID (ASSIGN exp_def)? (COMMA ID (ASSIGN exp_def)?)*
