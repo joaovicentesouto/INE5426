@@ -25,8 +25,9 @@ class_scope_def
 	: decl_def* function_def*
 	;
 
-decl_def:
-	type_def ID (ASSIGN exp_def)? (COMMA ID (ASSIGN exp_def)?)* SEMICOLON
+decl_def
+	: scoped_decl_def SEMICOLON
+	| vector_def SEMICOLON
 	;
 
 function_def:
@@ -90,6 +91,7 @@ block_def
 exp_def  //! Exp tudo o que gera um valor final
 	: funcCall_def
 	| scoped_decl_def
+	| vector_def
 	| value_def
 	| exp_def (op_logical | op_arithmetic) exp_def
 	| ID ( ((ASSIGN | op_auto_assign) exp_def) | op_auto_increm )?
@@ -101,6 +103,10 @@ funcCall_def: ID OPEN_PAR arg_def CLOSE_PAR;
 
 scoped_decl_def
 	: type_def ID (ASSIGN exp_def)? (COMMA ID (ASSIGN exp_def)?)*
+	;
+
+vector_def
+	: type_def ID OPEN_BRAK INTEGER CLOSE_BRAK (ASSIGN exp_def)?
 	;
 
 mainFunction : INT_T MAIN OPEN_PAR INT_T ID COMMA CHAR_T MULT MULT ID CLOSE_PAR block_def;
@@ -118,7 +124,8 @@ type_def
 
 value_def
 	: STRING
-	| NUMBER
+	| INTEGER
+	| FLOATING
 	| BOOLEAN
 	| NULL
 	;
@@ -231,11 +238,14 @@ BOOLEAN
 	| FALSE
 	;
 
-NUMBER
+INTEGER
 	: '-'? INT
-	| '-'? INT '.' [0-9]+
 	;
-	
+
+FLOATING
+	: '-'? INT '.' [0-9]+
+	;
+
 fragment INT
 	: '0'
 	| [1-9] [0-9]*
