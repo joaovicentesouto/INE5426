@@ -1,180 +1,126 @@
 grammar FreedomLessLess;
 
 file:
-	import_def? (class_def | function_def)* mainFunction;
+	import_def? (class_def | function_def)* mainFunction ;
 
-import_def : (IMPORT STRING)+;
+import_def:
+	(IMPORT STRING)+ ;
 
-class_def
-	: CLASS ID OPEN_KEY classMembers CLOSE_KEY SEMICOLON
-	;
+class_def:
+	CLASS ID OPEN_KEY classMembers CLOSE_KEY ;
 
-classMembers
-	: public_def private_def? | private_def
-	;
+classMembers:
+	public_def private_def? |
+	private_def ;
 
-public_def
-	: PUBLIC class_scope_def
-	;
+public_def:
+	PUBLIC class_scope_def ;
 
-private_def
-	: PRIVATE class_scope_def
-	;
+private_def:
+	PRIVATE class_scope_def ;
 
-class_scope_def
-	: decl_def* function_def*
-	;
+class_scope_def:
+	attribute_def* function_def* ;
 
-decl_def
-	: scoped_decl_def SEMICOLON
-	| vector_def SEMICOLON
-	;
+attribute_def:
+	att_def SEMICOLON ;
+
+att_def:
+	type_def ID (OPEN_BRAK INTEGER CLOSE_BRAK)? (ASSIGN valued_exp_def)? (COMMA ID (OPEN_BRAK INTEGER CLOSE_BRAK)? (ASSIGN valued_exp_def)?)* |
+	CLASS ID ID (OPEN_BRAK INTEGER CLOSE_BRAK)? (ASSIGN valued_exp_def)? (COMMA ID (OPEN_BRAK INTEGER CLOSE_BRAK)? (ASSIGN valued_exp_def)?)* ;
+
+//! Exp is all that generates a final value
+valued_exp_def:
+	value_def |
+	funcCall_def |
+	valued_exp_def (logical_op | arithmetic_op) valued_exp_def |
+	ID (((ASSIGN | auto_assign_op) valued_exp_def) | auto_increm_op )? ;
+
+funcCall_def: (ID '.')? ID OPEN_PAR arg_def CLOSE_PAR ('.' ID OPEN_PAR arg_def CLOSE_PAR)* ;
+
+arg_def:
+	valued_exp_def (COMMA valued_exp_def)* ;
 
 function_def:
-	type_def ID OPEN_PAR param_def? CLOSE_PAR
-		block_def
-	SEMICOLON
-	;
+	type_def ID OPEN_PAR param_def? CLOSE_PAR block_def ;
 
-param_def
-	: type_def ID (COMMA param_def)?
-	| CLASS ID ID (COMMA param_def)?
-	| type_def ID OPEN_BRAK INTEGER CLOSE_BRAK
-	| CLASS ID ID OPEN_BRAK INTEGER CLOSE_BRAK
-	;
+param_def:
+	type_def ID (OPEN_BRAK CLOSE_BRAK)? (COMMA param_def)? |
+	CLASS ID ID (OPEN_BRAK CLOSE_BRAK)? (COMMA param_def)? ;
 
-arg_def
-	: exp_def (COMMA exp_def)*
-	;
+block_def:
+	OPEN_KEY (valueless_exp_def SEMICOLON | valued_exp_def SEMICOLON | struct_def)* CLOSE_KEY ;
 
-struct_def
-	: if_def
-	| for_def
-	| while_def
-	| switch_def
-	;
+valueless_exp_def:
+	funcCall_def |
+	att_def |
+	RETURN valued_exp_def |
+	BREAK |
+	CONTINUE ;
 
-if_def
-	: IF OPEN_PAR exp_def CLOSE_PAR
-		block_def
-	  (ELSE block_def)?
-	;
+struct_def:
+	if_def |
+	for_def |
+	while_def |
+	switch_def ;
 
-for_def
-	: FOR OPEN_PAR
-		scoped_decl_def? SEMICOLON
-		exp_def SEMICOLON
-		exp_def?
-	  CLOSE_PAR
-	  	block_def
-	;
+if_def:
+	IF OPEN_PAR valued_exp_def CLOSE_PAR block_def (ELSE block_def)? ;
 
-while_def
-	: WHILE OPEN_PAR exp_def CLOSE_PAR
-		block_def
-	;
+for_def:
+	FOR OPEN_PAR att_def? SEMICOLON valued_exp_def SEMICOLON valued_exp_def? CLOSE_PAR block_def ;
 
-switch_def
-	: SWITCH OPEN_PAR exp_def CLOSE_PAR
-	  OPEN_KEY
-		switch_case_def*
-		switch_default_def
-	  CLOSE_KEY
-	;
+while_def:
+	WHILE OPEN_PAR valued_exp_def CLOSE_PAR block_def ;
 
-switch_case_def
-	: CASE value_def TWOPOINTS (exp_def SEMICOLON)+
-	;
+switch_def:
+	SWITCH OPEN_PAR valued_exp_def CLOSE_PAR OPEN_KEY (CASE value_def TWOPOINTS (valueless_exp_def SEMICOLON | struct_def)+ BREAK SEMICOLON )+ (DEFAULT TWOPOINTS (valueless_exp_def SEMICOLON | struct_def)* BREAK SEMICOLON )? CLOSE_KEY ;
 
-switch_default_def
-	: DEFAULT TWOPOINTS (exp_def SEMICOLON)*
-	;
+mainFunction:
+	INT_T MAIN OPEN_PAR INT_T ID COMMA CHAR_T OPEN_BRAK CLOSE_BRAK OPEN_BRAK CLOSE_BRAK ID CLOSE_PAR block_def ;
 
-block_def
-	: OPEN_KEY
-		(exp_def SEMICOLON | struct_def)+
-	  CLOSE_KEY
-	;
+type_def:
+	INT_T |
+	UNSIGNED_T |
+	SHORT_T |
+	FLOAT_T |
+	DOUBLE_T |
+	CHAR_T |
+	BOOL_T |
+	VOID_T ;
 
-exp_def
-	: funcCall_def
-	| scoped_decl_def
-	| vector_def
-	| vector_use
-	| value_def
-	| exp_def (op_logical | op_arithmetic) exp_def
-	| ID ( ((ASSIGN | op_auto_assign) exp_def) | op_auto_increm )?
-	| RETURN exp_def
-	| BREAK
-	| CONTINUE
-	;
+value_def:
+	STRING |
+	INTEGER |
+	FLOATING |
+	BOOLEAN |
+	NULL ;
 
-funcCall_def: (ID '.')? ID OPEN_PAR arg_def CLOSE_PAR;
+logical_op:
+	LESS |
+	BIGGER |
+	LESS_EQ |
+	BIGGER_EQ |
+	EQUALS |
+	NOT_EQUALS |
+	AND |
+	OR ;
 
-scoped_decl_def
-	: type_def ID (ASSIGN exp_def)? (COMMA ID (ASSIGN exp_def)?)*
-	| CLASS ID ID (ASSIGN exp_def)? (COMMA ID (ASSIGN exp_def)?)*
-	;
+arithmetic_op:
+	PLUS |
+	MINUS |
+	MULT |
+	DIV ;
 
-vector_def
-	: type_def ID OPEN_BRAK INTEGER CLOSE_BRAK (ASSIGN exp_def)?
-	| CLASS ID ID OPEN_BRAK INTEGER CLOSE_BRAK (ASSIGN exp_def)?
-	;
+auto_assign_op:
+	AUTOPLUS |
+	AUTOMINUS |
+	AUTOMULT |
+	AUTODIV ;
 
-vector_use
-	: ID OPEN_BRAK INTEGER CLOSE_BRAK (ASSIGN exp_def)?
-	;
-
-mainFunction : INT_T MAIN OPEN_PAR INT_T ID COMMA CHAR_T MULT MULT ID CLOSE_PAR block_def;
-
-type_def
-	: INT_T
-	| UNSIGNED_T
-	| SHORT_T
-	| FLOAT_T
-	| DOUBLE_T
-	| CHAR_T
-	| BOOL_T
-	| VOID_T
-	;
-
-value_def
-	: STRING
-	| INTEGER
-	| FLOATING
-	| BOOLEAN
-	| NULL
-	;
-
-op_logical
-	: LESS
-	| BIGGER
-	| LESS_EQ
-	| BIGGER_EQ
-	| EQUALS
-	| NOT_EQUALS
-	| AND
-	| OR
-	;
-
-op_arithmetic
-	: PLUS
-	| MINUS
-	| MULT
-	| DIV
-	;
-
-op_auto_assign
-	: AUTOPLUS
-	| AUTOMINUS
-	| AUTOMULT
-	| AUTODIV
-	;
-
-op_auto_increm
-	: INCREM
-	| DECREM
-	;
+auto_increm_op:
+	INCREM |
+	DECREM ;
 
 //! TOKENS ONLY | ! V
 
