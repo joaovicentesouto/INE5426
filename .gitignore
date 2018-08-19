@@ -4,3 +4,4 @@ runtime-osx
 *.class
 *.interp
 *.tokens
+.DS_Store
