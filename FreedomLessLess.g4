@@ -63,7 +63,7 @@ if_def
 for_def
 	: FOR OPEN_PAR
 		scoped_decl_def? SEMICOLON
-		exp_def? SEMICOLON
+		exp_def SEMICOLON
 		exp_def?
 	  CLOSE_PAR
 	  	block_def
@@ -77,12 +77,17 @@ while_def
 switch_def
 	: SWITCH OPEN_PAR exp_def CLOSE_PAR
 	  OPEN_KEY
-		( CASE value_def TWOPOINTS
-			(exp_def SEMICOLON)+
-		)*
-		  DEFAULT TWOPOINTS
-		  	(exp_def SEMICOLON)*
+		switch_case_def*
+		switch_default_def
 	  CLOSE_KEY
+	;
+
+switch_case_def
+	: CASE value_def TWOPOINTS (exp_def SEMICOLON)+
+	;
+
+switch_default_def
+	: DEFAULT TWOPOINTS (exp_def SEMICOLON)*
 	;
 
 block_def
@@ -91,10 +96,11 @@ block_def
 	  CLOSE_KEY
 	;
 
-exp_def  //! Exp tudo o que gera um valor final
+exp_def
 	: funcCall_def
 	| scoped_decl_def
 	| vector_def
+	| vector_use
 	| value_def
 	| exp_def (op_logical | op_arithmetic) exp_def
 	| ID ( ((ASSIGN | op_auto_assign) exp_def) | op_auto_increm )?
@@ -113,6 +119,10 @@ scoped_decl_def
 vector_def
 	: type_def ID OPEN_BRAK INTEGER CLOSE_BRAK (ASSIGN exp_def)?
 	| CLASS ID ID OPEN_BRAK INTEGER CLOSE_BRAK (ASSIGN exp_def)?
+	;
+
+vector_use
+	: ID OPEN_BRAK INTEGER CLOSE_BRAK (ASSIGN exp_def)?
 	;
 
 mainFunction : INT_T MAIN OPEN_PAR INT_T ID COMMA CHAR_T MULT MULT ID CLOSE_PAR block_def;
