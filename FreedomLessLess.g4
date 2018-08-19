@@ -97,16 +97,19 @@ exp_def  //! Exp tudo o que gera um valor final
 	| ID ( ((ASSIGN | op_auto_assign) exp_def) | op_auto_increm )?
 	| RETURN exp_def
 	| BREAK
-	| CONTINUE;
+	| CONTINUE
+	;
 
 funcCall_def: ID OPEN_PAR arg_def CLOSE_PAR;
 
 scoped_decl_def
 	: type_def ID (ASSIGN exp_def)? (COMMA ID (ASSIGN exp_def)?)*
+	| CLASS ID ID (ASSIGN exp_def)? (COMMA ID (ASSIGN exp_def)?)*
 	;
 
 vector_def
 	: type_def ID OPEN_BRAK INTEGER CLOSE_BRAK (ASSIGN exp_def)?
+	| CLASS ID ID OPEN_BRAK INTEGER CLOSE_BRAK (ASSIGN exp_def)?
 	;
 
 mainFunction : INT_T MAIN OPEN_PAR INT_T ID COMMA CHAR_T MULT MULT ID CLOSE_PAR block_def;
