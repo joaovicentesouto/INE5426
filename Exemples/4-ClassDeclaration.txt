@@ -1,0 +1,8 @@
+
+class MyClass {
+	public:
+		int MyFunction () { return myInteger; }
+	private:
+		int MyInteger = 3;
+}
+void main (int argc, char[][] argv) {}

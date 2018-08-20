@@ -1,0 +1,5 @@
+
+int MyFunction () {
+	while (true) { return false; }
+}
+void main (int argc, char[][] argv) {}

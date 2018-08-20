@@ -4,6 +4,5 @@ runtime-osx
 *.class
 *.interp
 *.tokens
-*.bash
 *.jar
 .DS_Store

@@ -29,14 +29,14 @@ att_def:
 	type_def ID (OPEN_BRAK INTEGER CLOSE_BRAK)* (ASSIGN valued_exp_def)? (COMMA ID (OPEN_BRAK INTEGER CLOSE_BRAK)* (ASSIGN valued_exp_def)?)* |
 	CLASS ID ID (OPEN_BRAK INTEGER CLOSE_BRAK)* (ASSIGN valued_exp_def)? (COMMA ID (OPEN_BRAK INTEGER CLOSE_BRAK)* (ASSIGN valued_exp_def)?)* ;
 
-//! Exp is all that generates a final value
 valued_exp_def:
 	value_def |
 	funcCall_def |
 	valued_exp_def (logical_op | arithmetic_op) valued_exp_def |
-	ID (((ASSIGN | auto_assign_op) valued_exp_def) | auto_increm_op )? ;
+	ID (((ASSIGN | auto_assign_op) valued_exp_def) | auto_increm_op | OPEN_BRAK INTEGER CLOSE_BRAK )? ;
 
-funcCall_def: (ID '.')? ID OPEN_PAR arg_def CLOSE_PAR ('.' ID OPEN_PAR arg_def CLOSE_PAR)* ;
+funcCall_def:
+	(ID '.')? ID OPEN_PAR arg_def CLOSE_PAR ('.' ID OPEN_PAR arg_def CLOSE_PAR)* ;
 
 arg_def:
 	valued_exp_def (COMMA valued_exp_def)* ;
@@ -52,7 +52,8 @@ block_def:
 	OPEN_KEY (valueless_exp_def SEMICOLON | struct_def)* CLOSE_KEY ;
 
 valueless_exp_def:
-	valued_exp_def |
+	ID (((ASSIGN | auto_assign_op) valued_exp_def) | auto_increm_op ) |
+	funcCall_def |
 	att_def |
 	RETURN valued_exp_def |
 	BREAK |
@@ -84,7 +85,7 @@ switch_case_def:
 	CASE value_def TWOPOINTS (valueless_exp_def SEMICOLON | struct_def)+  BREAK SEMICOLON;
 
 switch_default_def:
-	DEFAULT TWOPOINTS (valueless_exp_def SEMICOLON | struct_def)+ BREAK SEMICOLON;
+	DEFAULT TWOPOINTS (valueless_exp_def SEMICOLON | struct_def)* BREAK SEMICOLON;
 
 mainFunction:
 	VOID_T MAIN OPEN_PAR INT_T ID COMMA CHAR_T OPEN_BRAK CLOSE_BRAK OPEN_BRAK CLOSE_BRAK ID CLOSE_PAR block_def ;
