@@ -26,8 +26,8 @@ attribute_def:
 	att_def SEMICOLON ;
 
 att_def:
-	type_def ID (OPEN_BRAK INTEGER CLOSE_BRAK)? (ASSIGN valued_exp_def)? (COMMA ID (OPEN_BRAK INTEGER CLOSE_BRAK)? (ASSIGN valued_exp_def)?)* |
-	CLASS ID ID (OPEN_BRAK INTEGER CLOSE_BRAK)? (ASSIGN valued_exp_def)? (COMMA ID (OPEN_BRAK INTEGER CLOSE_BRAK)? (ASSIGN valued_exp_def)?)* ;
+	type_def ID (OPEN_BRAK INTEGER CLOSE_BRAK)* (ASSIGN valued_exp_def)? (COMMA ID (OPEN_BRAK INTEGER CLOSE_BRAK)* (ASSIGN valued_exp_def)?)* |
+	CLASS ID ID (OPEN_BRAK INTEGER CLOSE_BRAK)* (ASSIGN valued_exp_def)? (COMMA ID (OPEN_BRAK INTEGER CLOSE_BRAK)* (ASSIGN valued_exp_def)?)* ;
 
 //! Exp is all that generates a final value
 valued_exp_def:
@@ -45,14 +45,14 @@ function_def:
 	type_def ID OPEN_PAR param_def? CLOSE_PAR block_def ;
 
 param_def:
-	type_def ID (OPEN_BRAK CLOSE_BRAK)? (COMMA param_def)? |
-	CLASS ID ID (OPEN_BRAK CLOSE_BRAK)? (COMMA param_def)? ;
+	type_def ID (OPEN_BRAK CLOSE_BRAK)* (COMMA param_def)? |
+	CLASS ID ID (OPEN_BRAK CLOSE_BRAK)* (COMMA param_def)? ;
 
 block_def:
-	OPEN_KEY (valueless_exp_def SEMICOLON | valued_exp_def SEMICOLON | struct_def)* CLOSE_KEY ;
+	OPEN_KEY (valueless_exp_def SEMICOLON | struct_def)* CLOSE_KEY ;
 
 valueless_exp_def:
-	funcCall_def |
+	valued_exp_def |
 	att_def |
 	RETURN valued_exp_def |
 	BREAK |
@@ -68,16 +68,26 @@ if_def:
 	IF OPEN_PAR valued_exp_def CLOSE_PAR block_def (ELSE block_def)? ;
 
 for_def:
-	FOR OPEN_PAR att_def? SEMICOLON valued_exp_def SEMICOLON valued_exp_def? CLOSE_PAR block_def ;
+	FOR OPEN_PAR att_valued_def (COMMA att_valued_def)* SEMICOLON valued_exp_def SEMICOLON valued_exp_def* CLOSE_PAR block_def ;
+
+att_valued_def:
+	type_def ID (OPEN_BRAK INTEGER CLOSE_BRAK)* ASSIGN valued_exp_def |
+	CLASS ID ID (OPEN_BRAK INTEGER CLOSE_BRAK)* ASSIGN valued_exp_def ;
 
 while_def:
 	WHILE OPEN_PAR valued_exp_def CLOSE_PAR block_def ;
 
 switch_def:
-	SWITCH OPEN_PAR valued_exp_def CLOSE_PAR OPEN_KEY (CASE value_def TWOPOINTS (valueless_exp_def SEMICOLON | struct_def)+ BREAK SEMICOLON )+ (DEFAULT TWOPOINTS (valueless_exp_def SEMICOLON | struct_def)* BREAK SEMICOLON )? CLOSE_KEY ;
+	SWITCH OPEN_PAR valued_exp_def CLOSE_PAR OPEN_KEY switch_case_def* switch_default_def CLOSE_KEY ;
+
+switch_case_def:
+	CASE value_def TWOPOINTS (valueless_exp_def SEMICOLON | struct_def)+  BREAK SEMICOLON;
+
+switch_default_def:
+	DEFAULT TWOPOINTS (valueless_exp_def SEMICOLON | struct_def)+ BREAK SEMICOLON;
 
 mainFunction:
-	INT_T MAIN OPEN_PAR INT_T ID COMMA CHAR_T OPEN_BRAK CLOSE_BRAK OPEN_BRAK CLOSE_BRAK ID CLOSE_PAR block_def ;
+	VOID_T MAIN OPEN_PAR INT_T ID COMMA CHAR_T OPEN_BRAK CLOSE_BRAK OPEN_BRAK CLOSE_BRAK ID CLOSE_PAR block_def ;
 
 type_def:
 	INT_T |
