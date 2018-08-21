@@ -6,7 +6,7 @@ rm -rf *.java
 
 # antlr4 FreedomLessLess.g4
 # javac Fr*.java
-# grun FreedomLessLess file -token -gui
+# grun FreedomLessLess file -tokens -gui
 
 # export CLASSPATH=".:./antlr-4.7.1-complete.jar:$CLASSPATH"
 # alias antlr4='java -jar ./antlr-4.7.1-complete.jar'
