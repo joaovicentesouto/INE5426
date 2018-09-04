@@ -1,7 +1,7 @@
-grammar FreedomLessLess;
+grammar FreedomLessLess_works;
 
 file:
-	import_def? (class_def | function_def)* mainFunction ;
+	import_def? (class_def | function_def)* mainFunction? ;
 
 import_def:
 	(IMPORT STRING)+ ;
@@ -26,14 +26,16 @@ attribute_def:
 	att_def SEMICOLON ;
 
 att_def:
-	type_def ID (OPEN_BRAK INTEGER CLOSE_BRAK)* (ASSIGN valued_exp_def)? (COMMA ID (OPEN_BRAK INTEGER CLOSE_BRAK)* (ASSIGN valued_exp_def)?)* |
-	CLASS ID ID (OPEN_BRAK INTEGER CLOSE_BRAK)* (ASSIGN valued_exp_def)? (COMMA ID (OPEN_BRAK INTEGER CLOSE_BRAK)* (ASSIGN valued_exp_def)?)* ;
+	type_def ID (OPEN_BRAK INT CLOSE_BRAK)* (ASSIGN valued_exp_def)? (COMMA ID (OPEN_BRAK INT CLOSE_BRAK)* (ASSIGN valued_exp_def)?)* |
+	CLASS ID ID (OPEN_BRAK INT CLOSE_BRAK)* (ASSIGN valued_exp_def)? (COMMA ID (OPEN_BRAK INT CLOSE_BRAK)* (ASSIGN valued_exp_def)?)* ;
 
 valued_exp_def:
-	value_def |
-	funcCall_def |
-	valued_exp_def (logical_op | arithmetic_op) valued_exp_def |
-	ID (((ASSIGN | auto_assign_op) valued_exp_def) | auto_increm_op | OPEN_BRAK INTEGER CLOSE_BRAK )? ;
+	value_def valued_exp_recursive_def |
+	funcCall_def valued_exp_recursive_def |
+	ID (((ASSIGN | auto_assign_op) valued_exp_def) | auto_increm_op | OPEN_BRAK INT CLOSE_BRAK )? valued_exp_recursive_def;
+
+valued_exp_recursive_def
+	:	 ((logical_op | arithmetic_op) valued_exp_def)*;
 
 funcCall_def:
 	(ID '.')? ID OPEN_PAR arg_def CLOSE_PAR ('.' ID OPEN_PAR arg_def CLOSE_PAR)* ;
@@ -45,8 +47,8 @@ function_def:
 	type_def ID OPEN_PAR param_def? CLOSE_PAR block_def ;
 
 param_def:
-	type_def ID (OPEN_BRAK CLOSE_BRAK)* (COMMA param_def)? |
-	CLASS ID ID (OPEN_BRAK CLOSE_BRAK)* (COMMA param_def)? ;
+	type_def ID (OPEN_BRAK INT CLOSE_BRAK)* (COMMA param_def)? |
+	CLASS ID ID (OPEN_BRAK INT CLOSE_BRAK)* (COMMA param_def)? ;
 
 block_def:
 	OPEN_KEY (valueless_exp_def SEMICOLON | struct_def)* CLOSE_KEY ;
@@ -72,8 +74,8 @@ for_def:
 	FOR OPEN_PAR att_valued_def (COMMA att_valued_def)* SEMICOLON valued_exp_def SEMICOLON valued_exp_def* CLOSE_PAR block_def ;
 
 att_valued_def:
-	type_def ID (OPEN_BRAK INTEGER CLOSE_BRAK)* ASSIGN valued_exp_def |
-	CLASS ID ID (OPEN_BRAK INTEGER CLOSE_BRAK)* ASSIGN valued_exp_def ;
+	type_def ID (OPEN_BRAK INT CLOSE_BRAK)* ASSIGN valued_exp_def |
+	CLASS ID ID (OPEN_BRAK INT CLOSE_BRAK)* ASSIGN valued_exp_def ;
 
 while_def:
 	WHILE OPEN_PAR valued_exp_def CLOSE_PAR block_def ;
@@ -88,7 +90,8 @@ switch_default_def:
 	DEFAULT TWOPOINTS (valueless_exp_def SEMICOLON | struct_def)* BREAK SEMICOLON;
 
 mainFunction:
-	VOID_T MAIN OPEN_PAR INT_T ID COMMA CHAR_T OPEN_BRAK CLOSE_BRAK OPEN_BRAK CLOSE_BRAK ID CLOSE_PAR block_def ;
+	VOID_T MAIN OPEN_PAR INT_T ID COMMA CHAR_T ID OPEN_BRAK CLOSE_BRAK OPEN_BRAK CLOSE_BRAK CLOSE_PAR block_def ;
+
 
 type_def:
 	INT_T |
@@ -133,9 +136,6 @@ auto_increm_op:
 	INCREM |
 	DECREM ;
 
-//! TOKENS ONLY | ! V
-
-//! Primitive types
 INT_T	   : 'int';
 UNSIGNED_T : 'unsigned';
 FLOAT_T	   : 'float';
@@ -197,38 +197,40 @@ COMMA	   : ',';
 SEMICOLON  : ';';
 TWOPOINTS  : ':';
 
-BOOLEAN
-	: 'true'
-	| 'false'
-	;
+BOOLEAN : 'true' | 'false' ;
 
 NULL  : 'null';
 
+CHAR:  '\'' ~('\'') '\'' ;
+
 STRING
-	: '"' ( ESC | ~ ["\\])* '"'
-	| '\'' ( ESC | ~ ["\\])* '\''
-	;
-z
-INTEGER
-	: '-'? INT
-	;
+    :  '"' ~('"')* '"'
+    |  '\'' ~('\'')* '\''
+    ;
 
-FLOATING
-	: '-'? INT '.' [0-9]+
-	;
+INTEGER : '-'? INT+ ;
 
-fragment INT
-	: '0'
-	| [1-9] [0-9]*
-	;
+FLOATING : INTEGER ? '.' INT + ;
 
-fragment ESC
-	: '\\' (["\\/bfnrt])
-	;
+fragment
+INT 	:	 '0'..'9';
 
-ID	: [_A-Za-z] [_0-9A-Za-z]*
-	;
+ID  : ('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*
+     ;
 
-WS: [ \t\n\r]+ -> channel(HIDDEN);
-LINE_COMMENT: '//' ~('\r' | '\n')* -> channel(HIDDEN);
-COMMENT: '/*' .*? '*/' -> channel(HIDDEN);
+COMMENT
+    :   '//' ~('\n'|'\r')* '\r'? '\n' {$channel=HIDDEN;}
+    |   '/*' ( options {greedy=false;} : . )* '*/' {$channel=HIDDEN;}
+    ;
+
+WS  :   ( ' '
+        | '\t'
+        | '\r'
+        | '\n'
+        ) {$channel=HIDDEN;}
+    ;
+
+fragment
+ESC
+    :   '\\' ('b'|'t'|'n'|'f'|'r')
+    ;
