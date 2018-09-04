@@ -1,0 +1,10 @@
+
+int MyFunction () {
+	switch (var[1]) {
+		case 'a': x -= 2;
+			break;
+		default:
+			break;
+	}
+}
+void main (int argc, char[][] argv) {}

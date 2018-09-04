@@ -1,7 +1,0 @@
-runtime-osx
-.antlr
-*.java
-*.class
-*.interp
-*.tokens
-.DS_Store
