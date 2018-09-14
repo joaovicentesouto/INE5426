@@ -1,5 +1,3 @@
 
-int MyFunction () {
-	for (int i = 0; i < 100; i++) { continue; }
-}
-void main (int argc, char **argv) {}
+for (int i = 0; i < 100; i++) { continue; }
+

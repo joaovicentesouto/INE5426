@@ -5,4 +5,4 @@ class MyClass {
 	private:
 		int MyInteger = 3;
 }
-void main (int argc, char **argv) {}
+
