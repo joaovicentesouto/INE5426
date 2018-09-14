@@ -1,0 +1,8 @@
+
+int * MyFunction (int a[2]) {
+    int * x = malloc(1 * sizeof(int));
+    *(x) = a[0] + a[1];
+    return x;
+}
+
+void main (int argc, char **argv) {}

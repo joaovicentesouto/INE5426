@@ -1,5 +1,4 @@
 
-
 import "FileName" 
 
 class ClassName {
@@ -18,4 +17,4 @@ class ClassName {
 
 int FunctionName2 () {}
 
-void main (int argc, char[][] argv) {}
+void main (int argc, char **argv) {}
