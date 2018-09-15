@@ -1,15 +1,15 @@
 grammar FreedomLessLess;
 
-file:
-	import_def? class_def* function_def* mainFunction? ;
+program_def:
+	import_def? class_def* function_def* main_def? ;
 
 import_def:
 	(IMPORT STRING)+ ;
 
 class_def:
-	CLASS ID OPEN_KEY classMembers CLOSE_KEY ;
+	CLASS ID OPEN_KEY class_members_def CLOSE_KEY ;
 
-classMembers:
+class_members_def:
 	private_def |
 	public_def private_def? ;
 
@@ -41,6 +41,7 @@ function_call_def:
 	FREE OPEN_PAR ID CLOSE_PAR |
 	NEW ID OPEN_PAR argument_def? CLOSE_PAR |
 	MALLOC OPEN_PAR valued_expression_def CLOSE_PAR |
+	SIZEOF OPEN_PAR type_def (MULT+ | (OPEN_BRAK INT CLOSE_BRAK)+)? CLOSE_PAR |
 	(ID ('.' | ARROW))? ID OPEN_PAR argument_def? CLOSE_PAR (('.' | ARROW) ID OPEN_PAR argument_def? CLOSE_PAR)* ;
 
 argument_def:
@@ -51,9 +52,7 @@ function_def:
 
 param_def:
 	type_def MULT+ ID (COMMA param_def)* |
-	CLASS ID MULT+ ID (COMMA param_def)* |
-	(type_def ID) (OPEN_BRAK INT CLOSE_BRAK)* (COMMA param_def)* |
-	(CLASS ID ID) (OPEN_BRAK INT CLOSE_BRAK)* (COMMA param_def)* ;
+	type_def ID (OPEN_BRAK INT CLOSE_BRAK)* (COMMA param_def)*;
 
 block_def:
 	OPEN_KEY (valueless_expression_def SEMICOLON | struct_def)* CLOSE_KEY ;
@@ -64,7 +63,7 @@ valueless_expression_def:
 	attribute_def |
 	function_call_def |
 	RETURN valued_expression_def |
-	ID ((ASSIGN | auto_assign_op) valued_expression_def | auto_increm_op) ;
+	(MULT OPEN_PAR ID CLOSE_PAR | ID) ((ASSIGN | auto_assign_op) valued_expression_def | auto_increm_op);
 
 struct_def:
 	if_def |
@@ -93,8 +92,8 @@ switch_case_def:
 switch_default_def:
 	DEFAULT TWOPOINTS (valueless_expression_def SEMICOLON | struct_def)* BREAK SEMICOLON;
 
-mainFunction:
-	VOID_T MAIN OPEN_PAR INT_T ID COMMA CHAR_T ID OPEN_BRAK CLOSE_BRAK OPEN_BRAK CLOSE_BRAK CLOSE_PAR block_def ;
+main_def:
+	VOID_T MAIN OPEN_PAR INT_T ID COMMA CHAR_T MULT MULT ID CLOSE_PAR block_def ;
 
 
 type_def:
@@ -184,6 +183,7 @@ NEW : 'new' ;
 FREE : 'free' ;
 MALLOC : 'malloc' ;
 DELETE : 'delete' ;
+SIZEOF : 'sizeof' ;
 
 INCREM : '++';
 DECREM : '--';

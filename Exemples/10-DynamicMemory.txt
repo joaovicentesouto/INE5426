@@ -1,10 +1,9 @@
-
 double MyFunction () {
     int * x = malloc(1 * sizeof(int));
     
     class MyClass * a = new A();
     
-    a->func(&x);
+    a->func(&(x));
     
     delete a;
 
