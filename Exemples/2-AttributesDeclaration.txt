@@ -1,18 +1,9 @@
 
-class ClassName {
-	
-	public:
-		int a;
-		unsigned b = 1;
-		float c = 1.0, d = 0.444;
-		char g[10] = "test";
-		double e = -1.1;
-
-		void MyFunction ()
-		{
-			char f = 'd';
-		}
-
+{
+	int a;
+	float c, d = -0.444;
+	char g[10] = "test";
+	short * pointer = &(VAR);
+	double mult_dim[1][2][3];
+	int ** mult_pointer;
 }
-
-void main (int argc, char[][] argv) {}

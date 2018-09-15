@@ -1,0 +1,1 @@
+int (int ParameterName) { return ReturnName; }

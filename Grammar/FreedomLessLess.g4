@@ -1,17 +1,17 @@
 grammar FreedomLessLess;
 
-file:
-	import_def? (class_def | function_def)* mainFunction ;
+program_def:
+	import_def? class_def* function_def* main_def? ;
 
 import_def:
 	(IMPORT STRING)+ ;
 
 class_def:
-	CLASS ID OPEN_KEY classMembers CLOSE_KEY ;
+	CLASS ID OPEN_KEY class_members_def CLOSE_KEY ;
 
-classMembers:
-	public_def private_def? |
-	private_def ;
+class_members_def:
+	private_def |
+	public_def private_def? ;
 
 public_def:
 	PUBLIC class_scope_def ;
@@ -20,44 +20,50 @@ private_def:
 	PRIVATE class_scope_def ;
 
 class_scope_def:
-	attribute_def* function_def* ;
+	(attribute_def SEMICOLON)* function_def* ;
 
 attribute_def:
-	att_def SEMICOLON ;
+	type_def ID (ASSIGN valued_expression_def)? (COMMA ID (ASSIGN valued_expression_def)?)* |
+	type_def ID (OPEN_BRAK INT CLOSE_BRAK)+ (ASSIGN valued_expression_def)? (COMMA ID (OPEN_BRAK INT CLOSE_BRAK)+ (ASSIGN valued_expression_def)?)* |
+	type_def MULT+ ID (ASSIGN valued_expression_def)? (COMMA MULT+ ID (ASSIGN valued_expression_def)?)* ;
 
-att_def:
-	type_def ID (OPEN_BRAK INTEGER CLOSE_BRAK)* (ASSIGN valued_exp_def)? (COMMA ID (OPEN_BRAK INTEGER CLOSE_BRAK)* (ASSIGN valued_exp_def)?)* |
-	CLASS ID ID (OPEN_BRAK INTEGER CLOSE_BRAK)* (ASSIGN valued_exp_def)? (COMMA ID (OPEN_BRAK INTEGER CLOSE_BRAK)* (ASSIGN valued_exp_def)?)* ;
+valued_expression_def:
+	value_def operation |
+	function_call_def operation |
+	(MULT | REF) OPEN_PAR valued_expression_def CLOSE_PAR |
+	ID (((ASSIGN | auto_assign_op) valued_expression_def) | auto_increm_op | OPEN_BRAK INT CLOSE_BRAK )? operation;
 
-valued_exp_def:
-	value_def |
-	funcCall_def |
-	valued_exp_def (logical_op | arithmetic_op) valued_exp_def |
-	ID (((ASSIGN | auto_assign_op) valued_exp_def) | auto_increm_op | OPEN_BRAK INTEGER CLOSE_BRAK )? ;
+operation:
+	((logical_op | arithmetic_op) valued_expression_def)*;
 
-funcCall_def:
-	(ID '.')? ID OPEN_PAR arg_def CLOSE_PAR ('.' ID OPEN_PAR arg_def CLOSE_PAR)* ;
+function_call_def:
+	DELETE ID |
+	FREE OPEN_PAR ID CLOSE_PAR |
+	NEW ID OPEN_PAR argument_def? CLOSE_PAR |
+	MALLOC OPEN_PAR valued_expression_def CLOSE_PAR |
+	SIZEOF OPEN_PAR type_def (MULT+ | (OPEN_BRAK INT CLOSE_BRAK)+)? CLOSE_PAR |
+	(ID ('.' | ARROW))? ID OPEN_PAR argument_def? CLOSE_PAR (('.' | ARROW) ID OPEN_PAR argument_def? CLOSE_PAR)* ;
 
-arg_def:
-	valued_exp_def (COMMA valued_exp_def)* ;
+argument_def:
+	valued_expression_def (COMMA valued_expression_def)* ;
 
 function_def:
-	type_def ID OPEN_PAR param_def? CLOSE_PAR block_def ;
+	type_def (MULT+ | (OPEN_BRAK INT CLOSE_BRAK)+)? ID OPEN_PAR param_def? CLOSE_PAR block_def ;
 
 param_def:
-	type_def ID (OPEN_BRAK CLOSE_BRAK)* (COMMA param_def)? |
-	CLASS ID ID (OPEN_BRAK CLOSE_BRAK)* (COMMA param_def)? ;
+	type_def MULT+ ID (COMMA param_def)* |
+	type_def ID (OPEN_BRAK INT CLOSE_BRAK)* (COMMA param_def)*;
 
 block_def:
-	OPEN_KEY (valueless_exp_def SEMICOLON | struct_def)* CLOSE_KEY ;
+	OPEN_KEY (valueless_expression_def SEMICOLON | struct_def)* CLOSE_KEY ;
 
-valueless_exp_def:
-	ID (((ASSIGN | auto_assign_op) valued_exp_def) | auto_increm_op ) |
-	funcCall_def |
-	att_def |
-	RETURN valued_exp_def |
+valueless_expression_def:
 	BREAK |
-	CONTINUE ;
+	CONTINUE |
+	attribute_def |
+	function_call_def |
+	RETURN valued_expression_def |
+	(MULT OPEN_PAR ID CLOSE_PAR | ID) ((ASSIGN | auto_assign_op) valued_expression_def | auto_increm_op);
 
 struct_def:
 	if_def |
@@ -66,29 +72,29 @@ struct_def:
 	switch_def ;
 
 if_def:
-	IF OPEN_PAR valued_exp_def CLOSE_PAR block_def (ELSE block_def)? ;
+	IF OPEN_PAR valued_expression_def CLOSE_PAR block_def (ELSE block_def)? ;
 
 for_def:
-	FOR OPEN_PAR att_valued_def (COMMA att_valued_def)* SEMICOLON valued_exp_def SEMICOLON valued_exp_def* CLOSE_PAR block_def ;
+	FOR OPEN_PAR valued_attribute_def (COMMA valued_attribute_def)* SEMICOLON valued_expression_def SEMICOLON valued_expression_def (COMMA valued_expression_def)* CLOSE_PAR block_def ;
 
-att_valued_def:
-	type_def ID (OPEN_BRAK INTEGER CLOSE_BRAK)* ASSIGN valued_exp_def |
-	CLASS ID ID (OPEN_BRAK INTEGER CLOSE_BRAK)* ASSIGN valued_exp_def ;
+valued_attribute_def:
+	(type_def | CLASS ID) (MULT* ID | ID (OPEN_BRAK INT CLOSE_BRAK)+) ASSIGN valued_expression_def ;
 
 while_def:
-	WHILE OPEN_PAR valued_exp_def CLOSE_PAR block_def ;
+	WHILE OPEN_PAR valued_expression_def CLOSE_PAR block_def ;
 
 switch_def:
-	SWITCH OPEN_PAR valued_exp_def CLOSE_PAR OPEN_KEY switch_case_def* switch_default_def CLOSE_KEY ;
+	SWITCH OPEN_PAR valued_expression_def CLOSE_PAR OPEN_KEY switch_case_def* switch_default_def CLOSE_KEY ;
 
 switch_case_def:
-	CASE value_def TWOPOINTS (valueless_exp_def SEMICOLON | struct_def)+  BREAK SEMICOLON;
+	CASE value_def TWOPOINTS (valueless_expression_def SEMICOLON | struct_def)+  BREAK SEMICOLON;
 
 switch_default_def:
-	DEFAULT TWOPOINTS (valueless_exp_def SEMICOLON | struct_def)* BREAK SEMICOLON;
+	DEFAULT TWOPOINTS (valueless_expression_def SEMICOLON | struct_def)* BREAK SEMICOLON;
 
-mainFunction:
-	VOID_T MAIN OPEN_PAR INT_T ID COMMA CHAR_T OPEN_BRAK CLOSE_BRAK OPEN_BRAK CLOSE_BRAK ID CLOSE_PAR block_def ;
+main_def:
+	VOID_T MAIN OPEN_PAR INT_T ID COMMA CHAR_T MULT MULT ID CLOSE_PAR block_def ;
+
 
 type_def:
 	INT_T |
@@ -98,9 +104,12 @@ type_def:
 	DOUBLE_T |
 	CHAR_T |
 	BOOL_T |
-	VOID_T ;
+	VOID_T |
+	CLASS ID ;
 
 value_def:
+	INT |
+	CHAR |
 	STRING |
 	INTEGER |
 	FLOATING |
@@ -133,9 +142,6 @@ auto_increm_op:
 	INCREM |
 	DECREM ;
 
-//! TOKENS ONLY | ! V
-
-//! Primitive types
 INT_T	   : 'int';
 UNSIGNED_T : 'unsigned';
 FLOAT_T	   : 'float';
@@ -169,6 +175,15 @@ PLUS   : '+';
 MINUS  : '-';
 MULT   : '*';
 DIV    : '/';
+REF : '&';
+ARROW : '->';
+
+//! Memory Alocation
+NEW : 'new' ;
+FREE : 'free' ;
+MALLOC : 'malloc' ;
+DELETE : 'delete' ;
+SIZEOF : 'sizeof' ;
 
 INCREM : '++';
 DECREM : '--';
@@ -197,38 +212,34 @@ COMMA	   : ',';
 SEMICOLON  : ';';
 TWOPOINTS  : ':';
 
-BOOLEAN
-	: 'true'
-	| 'false'
-	;
+BOOLEAN : 'true' | 'false' ;
 
 NULL  : 'null';
 
+CHAR:  '\'' ~('\'') '\'' ;
+
 STRING
-	: '"' ( ESC | ~ ["\\])* '"'
-	| '\'' ( ESC | ~ ["\\])* '\''
-	;
-z
-INTEGER
-	: '-'? INT
-	;
+    :  '"' ~('"')* '"' ;
 
-FLOATING
-	: '-'? INT '.' [0-9]+
-	;
+INT 	: NUMBER+ ;
 
-fragment INT
-	: '0'
-	| [1-9] [0-9]*
-	;
+INTEGER : '-'? INT ;
 
-fragment ESC
-	: '\\' (["\\/bfnrt])
-	;
+FLOATING : INTEGER ? '.' INT ;
 
-ID	: [_A-Za-z] [_0-9A-Za-z]*
-	;
+fragment
+NUMBER : '0'..'9';
 
-WS: [ \t\n\r]+ -> channel(HIDDEN);
-LINE_COMMENT: '//' ~('\r' | '\n')* -> channel(HIDDEN);
-COMMENT: '/*' .*? '*/' -> channel(HIDDEN);
+
+ID  : ('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*
+     ;
+
+LINE_COMMENT : ('//' ~('\n'|'\r')* '\r'? '\n') -> channel(HIDDEN) ;
+
+COMMENT : ('/*' .*? '*/') -> channel(HIDDEN) ;
+
+WS  :   ( ' ' | '\t' | '\r' | '\n') -> channel(HIDDEN) ;
+
+fragment
+ESC
+    :   '\\' ('b'|'t'|'n'|'f'|'r') ;
