@@ -1,0 +1,12 @@
+int Function(int a) {
+    class MyClass {
+        public:
+            int x;
+}
+    return a * 2;
+}
+
+double Function2() {
+    return Pi;
+}
+

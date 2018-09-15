@@ -1,0 +1,16 @@
+import "FileName"
+
+class ClassName {
+    private:
+        char ReturnName = "Name";
+        int FunctionName1 (int ParameterName) { return ReturnName; }
+    public:
+        void ClassName () {}
+        int AttributeName;
+
+}
+
+void main (int argc, char **argv) {}
+
+int FunctionName2 () {}
+
