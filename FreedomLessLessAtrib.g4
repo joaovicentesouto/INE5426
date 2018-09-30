@@ -8,7 +8,7 @@ import_def:
 	(IMPORT STRING)+ ;
 
 class_def:
-	CLASS ID OPEN_KEY class_members_def CLOSE_KEY {class_free_name(ID[0])}? ;
+	CLASS ID OPEN_KEY class_members_def CLOSE_KEY {class_free_name(ID)}? ;
 
 class_members_def:
 	private_def |
@@ -24,9 +24,23 @@ class_scope_def:
 	(attribute_def SEMICOLON)* function_def*;
 
 attribute_def:
-	type_def ID (ASSIGN valued_expression_def)? {scope_free_name(ID[0])}? (COMMA ID (ASSIGN valued_expression_def)? {scope_free_name(ID[1])}? )* |
-	type_def ID (OPEN_BRAK INT CLOSE_BRAK)+ (ASSIGN valued_expression_def)? (COMMA ID (OPEN_BRAK INT CLOSE_BRAK)+ (ASSIGN valued_expression_def)?)* |
-	type_def MULT+ ID (ASSIGN valued_expression_def)? (COMMA MULT+ ID (ASSIGN valued_expression_def)?)* ;
+	type_def ID (ASSIGN valued_expression_def)?
+			{scope_free_name(ID[0]) && type_def.type == valued_expression_def.type}?
+		( COMMA ID (ASSIGN valued_expression_def)?
+			{scope_free_name(ID[1]) && type_def.type == valued_expression_def.type}?
+		)* |
+	
+	type_def ID (OPEN_BRAK INT CLOSE_BRAK)+ (ASSIGN valued_expression_def)?
+			{scope_free_name(ID[0]) && type_def.type == valued_expression_def.type && valued_expression_def.type2 == "vector"}?
+		( COMMA ID (OPEN_BRAK INT CLOSE_BRAK)+ (ASSIGN valued_expression_def)?
+			{scope_free_name(ID[1]) && type_def.type == valued_expression_def.type && valued_expression_def.type2 == "vector"}?
+		)* |
+	
+	type_def MULT+ ID (ASSIGN valued_expression_def)?
+			{scope_free_name(ID[0]) && type_def.type == valued_expression_def.type && valued_expression_def.type2 == "pointers"}?
+		( COMMA MULT+ ID (ASSIGN valued_expression_def)?
+			{scope_free_name(ID[0]) && type_def.type == valued_expression_def.type && valued_expression_def.type2 == "pointers"}?
+		)* ;
 
 valued_expression_def:
 	( value_def |
