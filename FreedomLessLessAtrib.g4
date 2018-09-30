@@ -59,12 +59,12 @@ valued_expression_def:
 
 	(MULT {valued_expression_def.type = "* "} | REF {valued_expression_def.type = "& "})
 		OPEN_PAR valued_expression_def CLOSE_PAR
-		{valued_expression_def.type += valued_expression_def[0].type}
+			{valued_expression_def.type += valued_expression_def[0].type}
 		operation |
 
 	ID (
 		((ASSIGN | auto_assign_op)
-			{exits(ID[0])}?
+			{exits(ID[0]) && }?
 			valued_expression_def
 		) |
 		auto_increm_op
@@ -92,16 +92,16 @@ operation:
 
 function_call_def:
 	NEW ID OPEN_PAR argument_def? CLOSE_PAR
-		{lookup(ID[0]) && is_class(ID[0])}? |
+		{exits(ID[0]) && is_class(ID[0])}? |
 
 	DELETE ID
-		{lookup(ID[0]) && is_class(ID[0])}? |
+		{exits(ID[0]) && is_class(ID[0])}? |
 
 	FREE OPEN_PAR ID CLOSE_PAR
-		{lookup(ID[0]) && is_dynamic(ID)}? |
+		{exits(ID[0]) && is_dynamic(ID)}? |
 
 	MALLOC OPEN_PAR valued_expression_def CLOSE_PAR
-		{valued_attribute_def.size() >= 0}? |
+		{valued_expression_def.val >= 0}? |
 
 	SIZEOF OPEN_PAR type_def (MULT+ | (OPEN_BRAK INT CLOSE_BRAK)+)? CLOSE_PAR |
 
