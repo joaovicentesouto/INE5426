@@ -5,7 +5,7 @@ program_def:
 	import_def? class_def* function_def* main_def? ;
 
 import_def:
-	(IMPORT STRING)+ ;
+	(IMPORT STRING {still_not_imported(STRING.val)}? )+ ;
 
 class_def:
 	CLASS ID OPEN_KEY class_members_def CLOSE_KEY {class_free_name(ID)}? ;
@@ -21,7 +21,13 @@ private_def:
 	PRIVATE class_scope_def ;
 
 class_scope_def:
-	(attribute_def SEMICOLON)* function_def*;
+		{class_scope_def.scope = father.scope}
+	(attribute_def SEMICOLON
+		{attribute_def.scope = class_scope_def.scope}
+	)*
+	(function_def
+		{function_def.scope = class_scope_def.scope}
+	)* ;
 
 attribute_def:
 	type_def ID (ASSIGN valued_expression_def)?
@@ -43,29 +49,46 @@ attribute_def:
 		)* ;
 
 valued_expression_def:
-	value_def operation
-		{value_def.type == ctx.operation.type()}? |
+	value_def
+		{valued_expression_def.type = value_def.type}
+		operation |
 
-	function_call_def operation
-		{value_def.type == ctx.operation.type()}? |
+	function_call_def
+		 {valued_expression_def.type = value_def.type} 
+		 operation |
 
-	(MULT | REF) OPEN_PAR valued_expression_def CLOSE_PAR operation
-		{value_def.type == ctx.operation.type()}? |
+	(MULT {valued_expression_def.type = "* "} | REF {valued_expression_def.type = "& "})
+		OPEN_PAR valued_expression_def CLOSE_PAR
+		{valued_expression_def.type += valued_expression_def[0].type}
+		operation |
 
 	ID (
-		((ASSIGN | auto_assign_op) valued_expression_def
-			{ID[0].type == valued_expression_def.type()}?
+		((ASSIGN | auto_assign_op)
+			{exits(ID[0])}?
+			valued_expression_def
 		) |
-		auto_increm_op |
-		(OPEN_BRAK INT CLOSE_BRAK)+ {ID[0].type == quant_braks}?
+		auto_increm_op
+			{!is_class(ID[0])}? |
+		(OPEN_BRAK INT CLOSE_BRAK)+
+			{!is_class(ID[0])}?
 	)?
 		{lookup(ID[0]) && INT[0].val >= 0}?
 	operation
-		{value_def.type == ctx.operation.type()}?
+		{operation == null || function_call_def.type == operation.type}?
+		{valued_expression_def.type = function_call_def.type} |
 	;
 
 operation:
-	((logical_op | arithmetic_op) valued_expression_def)* ;
+	(
+		(logical_op
+			{operation.type == null || operation.type == "bool"}?
+			{operation.type = "bool"} |
+		arithmetic_op
+			{operation.type == null || operation.type != "bool"}?
+	) valued_expression_def
+		{operation.type == null || operation.type == valued_expression_def.type}?
+		{operation.type = valued_expression_def.type}
+	)* ;
 
 function_call_def:
 	NEW ID OPEN_PAR argument_def? CLOSE_PAR
