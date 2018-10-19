@@ -229,10 +229,10 @@ arithmetic_op:
 	DIV   {arithmetic_op.val = "/"} ;
 
 auto_assign_op:
-	AUTOPLUS  {arithmetic_op.val = AUTOPLUS.val} |  ???
-	AUTOMINUS {arithmetic_op.val = AUTOMINUS.val} | ???
-	AUTOMULT  {arithmetic_op.val = AUTOMULT.val} |  ???
-	AUTODIV   {arithmetic_op.val = AUTODIV.val} ;   ???
+	AUTOPLUS  {arithmetic_op.val = AUTOPLUS.val} |
+	AUTOMINUS {arithmetic_op.val = AUTOMINUS.val} |
+	AUTOMULT  {arithmetic_op.val = AUTOMULT.val} |
+	AUTODIV   {arithmetic_op.val = AUTODIV.val} ;
 
 auto_increm_op:
 	INCREM {auto_increm_op.val = "++"} |
