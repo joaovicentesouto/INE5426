@@ -2,10 +2,7 @@
 grammar FreedomLessLess;
 
 program_def:
-	import_def? class_def* function_def* main_def? ;
-
-import_def:
-	(IMPORT STRING)+ ;
+	 attribute_def* function_def* class_def* main_def ;
 
 class_def:
 	CLASS ID OPEN_KEY class_members_def CLOSE_KEY ;
@@ -23,15 +20,15 @@ private_def:
 class_scope_def:
 	(attribute_def SEMICOLON)* function_def* ;
 
-attribute_def: 
+attribute_def:
 	type_def ID (ASSIGN valued_expression_def)? (COMMA ID (ASSIGN valued_expression_def)?)* |
-	type_def ID (OPEN_BRAK INT CLOSE_BRAK)+ (ASSIGN valued_expression_def)? (COMMA ID (OPEN_BRAK INT CLOSE_BRAK)+ (ASSIGN valued_expression_def)?)* |
-	type_def MULT+ ID (ASSIGN valued_expression_def)? (COMMA MULT+ ID (ASSIGN valued_expression_def)?)* ;
+	type_def ID OPEN_BRAK INT CLOSE_BRAK (ASSIGN valued_expression_def)? (COMMA ID OPEN_BRAK INT CLOSE_BRAK (ASSIGN valued_expression_def)?)* |
+	type_def MULT ID (ASSIGN valued_expression_def)? (COMMA MULT ID (ASSIGN valued_expression_def)?)* ;
 
 valued_expression_def:
 	value_def operation|
 	function_call_def operation |
-	(MULT | REF) OPEN_PAR valued_expression_def CLOSE_PAR |
+	(MULT | REF) OPEN_PAR valued_expression_def CLOSE_PAR operation |
 	ID (((ASSIGN | auto_assign_op) valued_expression_def) | auto_increm_op | OPEN_BRAK INT CLOSE_BRAK )? operation ;
 
 operation:
@@ -42,18 +39,19 @@ function_call_def:
 	FREE OPEN_PAR ID CLOSE_PAR |
 	NEW ID OPEN_PAR argument_def? CLOSE_PAR |
 	MALLOC OPEN_PAR valued_expression_def CLOSE_PAR |
-	SIZEOF OPEN_PAR type_def (MULT+ | (OPEN_BRAK INT CLOSE_BRAK)+)? CLOSE_PAR |
+	SIZEOF OPEN_PAR type_def (MULT | OPEN_BRAK INT CLOSE_BRAK)? CLOSE_PAR |
 	(ID ('.' | ARROW))? ID OPEN_PAR argument_def? CLOSE_PAR (('.' | ARROW) ID OPEN_PAR argument_def? CLOSE_PAR)* ;
 
 argument_def:
 	valued_expression_def (COMMA valued_expression_def)* ;
 
 function_def:
-	type_def (MULT+ | (OPEN_BRAK INT CLOSE_BRAK)+)? ID OPEN_PAR param_def? CLOSE_PAR block_def ;
+	VOID_T ID OPEN_PAR param_def? CLOSE_PAR block_def |
+	type_def (MULT | OPEN_BRAK INT CLOSE_BRAK)? ID OPEN_PAR param_def? CLOSE_PAR block_def ;
 
 param_def:
-	type_def MULT+ ID (COMMA param_def)* |
-	type_def ID (OPEN_BRAK INT CLOSE_BRAK)* (COMMA param_def)*;
+	type_def MULT ID (COMMA param_def)* |
+	type_def ID (OPEN_BRAK INT CLOSE_BRAK)? (COMMA param_def)*;
 
 block_def:
 	OPEN_KEY (valueless_expression_def SEMICOLON | struct_def)* CLOSE_KEY ;
@@ -79,7 +77,7 @@ for_def:
 	FOR OPEN_PAR valued_attribute_def (COMMA valued_attribute_def)* SEMICOLON valued_expression_def SEMICOLON valued_expression_def (COMMA valued_expression_def)* CLOSE_PAR block_def ;
 
 valued_attribute_def:
-	(type_def | CLASS ID) (MULT* ID | ID (OPEN_BRAK INT CLOSE_BRAK)+) ASSIGN valued_expression_def ;
+	type_def (MULT ID | ID OPEN_BRAK INT CLOSE_BRAK) ASSIGN valued_expression_def ;
 
 while_def:
 	WHILE OPEN_PAR valued_expression_def CLOSE_PAR block_def ;
@@ -98,13 +96,9 @@ main_def:
 
 type_def:
 	INT_T |
-	UNSIGNED_T |
-	SHORT_T |
-	FLOAT_T |
 	DOUBLE_T |
 	CHAR_T |
 	BOOL_T |
-	VOID_T |
 	CLASS ID ;
 
 value_def:
