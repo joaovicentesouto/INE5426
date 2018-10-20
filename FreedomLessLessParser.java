@@ -1061,25 +1061,9 @@ public class FreedomLessLessParser extends Parser {
 		}
 		public Valued_expression_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
-			switch (parent.type()) {
-				case "program" :
-					_c_scope = "null";
-					_permission = "public";
-					_f_scope = "null";
-					break;
-				case "class" : 
-					_c_scope = parent.c_scope();
-					_permission = parent.permission();
-					_f_scope = "null";
-					break;
-				case "function" :
-					_permission = "private";
-					_c_scope = parent.c_scope();
-					_f_scope = parent.f_scope();
-					break;
-				default:
-					throw new NoViableAltException(this);			
-			}
+			_permission = ((ScopeInformation) parent).permission();
+			_c_scope = ((ScopeInformation) parent).c_scope();
+			_f_scope = ((ScopeInformation) parent).f_scope();
 		}
 		@Override public int getRuleIndex() { return RULE_valued_expression_def; }
 		@Override
@@ -1091,11 +1075,15 @@ public class FreedomLessLessParser extends Parser {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitValued_expression_def(this);
 		}
 
-		public String type() { return "attribute"; }
-		public String c_scope() { return _c_scope; }
-		public String f_scope() { return _f_scope; }
-		public String permission() { return _permission; }
+		//! Our session
+		
+		//! Methods
+		@Override public String type() 		 { return "value"; 	   }
+		@Override public String c_scope() 	 { return _c_scope;    }
+		@Override public String f_scope() 	 { return _f_scope;    }
+		@Override public String permission() { return _permission; }
 
+		//! Attributes
 		public String _permission;
 		public String _c_scope;
 		public String _f_scope;
@@ -1160,13 +1148,14 @@ public class FreedomLessLessParser extends Parser {
 
 				SymbolEntry entry = new SymbolEntry();
 
+				entry.permission = _localctx.permission();
 				entry.c_scope = _localctx.c_scope();
 				entry.f_scope = _localctx.f_scope();
 				entry.features.add("null");
-				entry.permission = _localctx.permission();
+//				entry.features.add("arithmetic");
 				entry.id = _localctx.ID().getSymbol().getText();
-				entry.type = _localctx.type();
-				entry.valid = true;
+				entry.type = "attribute";
+				entry.valid = false;
 
 				lookUpTable(entry);
 
