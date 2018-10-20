@@ -10,6 +10,7 @@ import javax.crypto.IllegalBlockSizeException;
 
 import java.util.Iterator;
 import java.util.ArrayList;
+import java.util.Collections;
 
 class SymbolEntry
 {
@@ -43,34 +44,67 @@ public class FreedomLessLessParser extends Parser {
 
 	public void lookUpTable(SymbolEntry entry)
 	{
-		// SymbolEntry temp;
-		// for (int i = 0; i < _symbolTable.size(); i++)
-		// {
-		// 	temp = _symbolTable[i];
-		// 	if (temp.type != entry.type || temp.id != entry.id)
-		// 		continue;
+		SymbolEntry temp;
+		
+		for (int i = 0; i < _symbolTable.size(); i++)
+		{
+			
+			temp = _symbolTable.get(i);
+			
+			if (temp.type != entry.type || temp.id != entry.id)
+				continue;
 
-		// 	if (entry.valid)
-		// 	{
-		// 		if (entry.c_scope == "null" && entry.f_scope == "null") {
-		// 			if (temp.valid)
-		// 				throw new NoViableAltException(this);						
-		// 			if (entry.features != temp.features) // lista!!!
-		// 				throw new NoViableAltException(this);
+			if (entry.valid) //! Definition
+			{
+				if (entry.c_scope == "null" && entry.f_scope == "null")
+				{
+					if (temp.valid)
+						throw new NoViableAltException(this);
+					
+					//! Features -> Different == Same ID and types differents
+					{
+						if (entry.features.size() != temp.features.size())
+							throw new NoViableAltException(this);
+						
+						ArrayList<String> one = new ArrayList<String>(entry.features);
+						ArrayList<String> two = new ArrayList<String>(temp.features);
+	
+					    Collections.sort(one);
+					    Collections.sort(two);      
+	
+						if (one.equals(two)) // lista!!!
+							throw new NoViableAltException(this);
+					}
 
-		// 			_symbolTable[i] = entry;
-		// 			return;
-		// 		}
-		// 		if (entry.c_scope == "null" && entry.f_scope != "null") {
-		// 			if (temp.valid && temp.c_scope == "null" && temp.f_scope == "null")
-		// 				return 1;
-		// 		}
-		// 	}
-
-
-
-
-		// }
+					_symbolTable.remove(temp);
+					_symbolTable.add(entry);
+					return;
+				
+				}
+				else if (entry.c_scope == "null" && entry.f_scope != "null")
+				{	
+					if (temp.valid && temp.c_scope == "null" && temp.f_scope == "null")
+						return;
+				
+				}
+				else if (entry.c_scope != "null" && entry.f_scope == "null")
+				{
+					
+					return;
+				}
+				else if (entry.c_scope != "null" && entry.f_scope != "null")
+				{
+					
+					return;
+				}
+				return;
+			} else { //! Use
+				return;
+			}
+		}
+		return;
+		//! Not found/match
+		
 	}
 
 	static { RuntimeMetaData.checkVersion("4.7.1", RuntimeMetaData.VERSION); }
