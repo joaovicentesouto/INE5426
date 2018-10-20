@@ -53,7 +53,7 @@ public class FreedomLessLessParser extends Parser {
 
 			if (entry.valid) //! Definitions
 			{
-				//! Inside Global Definition
+				//! Global Definition (Classes, Functions and Variables)
 				if (entry.c_scope == "null" && entry.f_scope == "null")
 				{
 					//! Another definition || Same IDs and diff types
@@ -69,22 +69,25 @@ public class FreedomLessLessParser extends Parser {
 					return;
 				}
 				
-				//! Inside Global Function Definition
+				//! Inside Global Function Definition (ENTRY is ONLY VARIABLE)
 				else if (entry.c_scope == "null" && entry.f_scope != "null")
-				{	
-					if (temp.valid && temp.c_scope == "null" && temp.f_scope == "null")
-						return;
-				
+				{
+					//! temp is a global definition OR same scope definition (temp class id maybe)
+					if (temp.c_scope == "null"
+							&& (temp.f_scope == "null" || temp.f_scope == entry.f_scope))
+						throw new NoViableAltException(this);
+
+					continue;
 				}
 				
-				//! Inside Global Class Definition
+				//! Inside Global Class Definition (ENTRY is ONLY VARIABLE)
 				else if (entry.c_scope != "null" && entry.f_scope == "null")
 				{
 					
 					return;
 				}
 				
-				//! Inside Function Class Definition
+				//! Inside Function Class Definition (ENTRY is ONLY VARIABLE)
 				else if (entry.c_scope != "null" && entry.f_scope != "null")
 				{
 					
