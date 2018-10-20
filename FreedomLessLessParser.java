@@ -8,6 +8,7 @@ import java.util.List;
 
 import java.util.Iterator;
 import java.util.ArrayList;
+import java.util.Collections;
 
 class SymbolEntry
 {
@@ -41,34 +42,67 @@ public class FreedomLessLessParser extends Parser {
 
 	public void lookUpTable(SymbolEntry entry)
 	{
-		// SymbolEntry temp;
-		// for (int i = 0; i < _symbolTable.size(); i++)
-		// {
-		// 	temp = _symbolTable[i];
-		// 	if (temp.type != entry.type || temp.id != entry.id)
-		// 		continue;
+		SymbolEntry temp;
+		
+		for (int i = 0; i < _symbolTable.size(); i++)
+		{
+			
+			temp = _symbolTable.get(i);
+			
+			if (temp.type != entry.type || temp.id != entry.id)
+				continue;
 
-		// 	if (entry.valid)
-		// 	{
-		// 		if (entry.c_scope == "null" && entry.f_scope == "null") {
-		// 			if (temp.valid)
-		// 				throw new NoViableAltException(this);						
-		// 			if (entry.features != temp.features) // lista!!!
-		// 				throw new NoViableAltException(this);
+			if (entry.valid) //! Definition
+			{
+				if (entry.c_scope == "null" && entry.f_scope == "null")
+				{
+					if (temp.valid)
+						throw new NoViableAltException(this);
+					
+					//! Features -> Different == Same ID and types differents
+					{
+						if (entry.features.size() != temp.features.size())
+							throw new NoViableAltException(this);
+						
+						ArrayList<String> one = new ArrayList<String>(entry.features);
+						ArrayList<String> two = new ArrayList<String>(temp.features);
+	
+					    Collections.sort(one);
+					    Collections.sort(two);      
+	
+						if (one.equals(two)) // lista!!!
+							throw new NoViableAltException(this);
+					}
 
-		// 			_symbolTable[i] = entry;
-		// 			return;
-		// 		}
-		// 		if (entry.c_scope == "null" && entry.f_scope != "null") {
-		// 			if (temp.valid && temp.c_scope == "null" && temp.f_scope == "null")
-		// 				return 1;
-		// 		}
-		// 	}
-
-
-
-
-		// }
+					_symbolTable.remove(temp);
+					_symbolTable.add(entry);
+					return;
+				
+				}
+				else if (entry.c_scope == "null" && entry.f_scope != "null")
+				{	
+					if (temp.valid && temp.c_scope == "null" && temp.f_scope == "null")
+						return;
+				
+				}
+				else if (entry.c_scope != "null" && entry.f_scope == "null")
+				{
+					
+					return;
+				}
+				else if (entry.c_scope != "null" && entry.f_scope != "null")
+				{
+					
+					return;
+				}
+				return;
+			} else { //! Use
+				return;
+			}
+		}
+		return;
+		//! Not found/match
+		
 	}
 
 	static { RuntimeMetaData.checkVersion("4.7.1", RuntimeMetaData.VERSION); }
@@ -3647,6 +3681,9 @@ public class FreedomLessLessParser extends Parser {
 		public TerminalNode ID() { return getToken(FreedomLessLessParser.ID, 0); }
 		public Type_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
+			_permission = ((ScopeInformation) parent).permission();
+			_c_scope = ((ScopeInformation) parent).permission();;
+			_f_scope = ((ScopeInformation) parent).permission();;
 		}
 		@Override public int getRuleIndex() { return RULE_type_def; }
 		@Override
@@ -3662,7 +3699,7 @@ public class FreedomLessLessParser extends Parser {
 		
 		//! Methods
 		@Override
-		public String type() 		 { return "type"; 	   }
+		public String type() 		 { return _type; 	   }
 		@Override
 		public String c_scope() 	 { return _c_scope;    }
 		@Override
@@ -3674,6 +3711,7 @@ public class FreedomLessLessParser extends Parser {
 		public String _permission;
 		public String _c_scope;
 		public String _f_scope;
+		public String _type = "type";
 	}
 
 	public final Type_defContext type_def() throws RecognitionException {
@@ -3688,6 +3726,9 @@ public class FreedomLessLessParser extends Parser {
 				{
 				setState(471);
 				match(INT_T);
+				
+				//! Define type
+				_localctx._type = "int";
 				}
 				break;
 			case DOUBLE_T:
@@ -3695,6 +3736,9 @@ public class FreedomLessLessParser extends Parser {
 				{
 				setState(472);
 				match(DOUBLE_T);
+				
+				//! Define type
+				_localctx._type = "double";
 				}
 				break;
 			case CHAR_T:
@@ -3702,6 +3746,9 @@ public class FreedomLessLessParser extends Parser {
 				{
 				setState(473);
 				match(CHAR_T);
+				
+				//! Define type
+				_localctx._type = "char";
 				}
 				break;
 			case BOOL_T:
@@ -3709,6 +3756,9 @@ public class FreedomLessLessParser extends Parser {
 				{
 				setState(474);
 				match(BOOL_T);
+				
+				//! Define type
+				_localctx._type = "bool";
 				}
 				break;
 			case CLASS:
@@ -3718,6 +3768,9 @@ public class FreedomLessLessParser extends Parser {
 				match(CLASS);
 				setState(476);
 				match(ID);
+				
+				//! Define type
+				_localctx._type = "class" + _localctx.ID().getSymbol().getText();;
 				}
 				break;
 			default:
@@ -3760,7 +3813,7 @@ public class FreedomLessLessParser extends Parser {
 		
 		//! Methods
 		@Override
-		public String type() 		 { return "value"; 	   }
+		public String type() 		 { return _type; 	   }
 		@Override
 		public String c_scope() 	 { return _c_scope;    }
 		@Override
@@ -3772,6 +3825,8 @@ public class FreedomLessLessParser extends Parser {
 		public String _permission;
 		public String _c_scope;
 		public String _f_scope;
+		public String _type;
+		public String _value;
 	}
 
 	public final Value_defContext value_def() throws RecognitionException {
