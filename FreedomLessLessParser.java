@@ -1576,6 +1576,9 @@ public class FreedomLessLessParser extends Parser {
 		public TerminalNode CLOSE_BRAK() { return getToken(FreedomLessLessParser.CLOSE_BRAK, 0); }
 		public Function_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
+			_permission = ((ScopeInformation) parent).permission();
+			_c_scope = ((ScopeInformation) parent).c_scope();
+			_f_scope = ((ScopeInformation) parent).f_scope();
 		}
 		@Override public int getRuleIndex() { return RULE_function_def; }
 		@Override
@@ -1586,23 +1589,61 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitFunction_def(this);
 		}
+		
+		//! Our session
+		
+		//! Methods
+		@Override public String type() 		 { return "function";  }
+		@Override public String c_scope() 	 { return _c_scope;    }
+		@Override public String f_scope() 	 { return _f_scope;    }
+		@Override public String permission() { return _permission; }
+
+		//! Attributes
+		public String _permission;
+		public String _c_scope;
+		public String _f_scope;
 	}
 
 	public final Function_defContext function_def() throws RecognitionException {
 		Function_defContext _localctx = new Function_defContext(_ctx, getState());
 		enterRule(_localctx, 22, RULE_function_def);
 		int _la;
+		
+		//! One valid function entry per call
+		SymbolEntry entry = new SymbolEntry();
+		entry.type = _localctx.type();
+		entry.permission = _localctx.permission();
+		entry.c_scope = _localctx.c_scope();
+		entry.f_scope = _localctx.f_scope();
+		entry.valid = true;
+		
+		//! Lambda function
+		Func f = (SymbolEntry entry, Param_defContext p) {
+			//! My own name
+			entry.features.add(p.type_def().type());
+			
+			for (Param_defContext p : p.param_def())
+				f(entry, p);
+		}
+		
 		try {
 			setState(296);
 			_errHandler.sync(this);
 			switch (_input.LA(1)) {
 			case VOID_T:
+				//! Return type
+				entry.features.add("void");
+				
 				enterOuterAlt(_localctx, 1);
 				{
 				setState(273);
 				match(VOID_T);
 				setState(274);
 				match(ID);
+				
+				//! Define ID on table
+				entry.id = _localctx.ID().getSymbol().getText();
+				
 				setState(275);
 				match(OPEN_PAR);
 				setState(277);
@@ -1613,10 +1654,17 @@ public class FreedomLessLessParser extends Parser {
 					setState(276);
 					param_def();
 					}
+										
+					Param_defContext param = _localctx.param_def();
+					f(entry, param);
 				}
 
 				setState(279);
 				match(CLOSE_PAR);
+				
+				//! Insert
+				lookUpTable(entry);
+				
 				setState(280);
 				block_def();
 				}
@@ -1625,11 +1673,15 @@ public class FreedomLessLessParser extends Parser {
 			case DOUBLE_T:
 			case CHAR_T:
 			case BOOL_T:
-			case CLASS:
+			case CLASS:				
 				enterOuterAlt(_localctx, 2);
 				{
 				setState(281);
 				type_def();
+				
+				//! Return type
+				entry.features.add(_localctx.type_def().type());
+				
 				setState(286);
 				_errHandler.sync(this);
 				switch (_input.LA(1)) {
@@ -1638,6 +1690,11 @@ public class FreedomLessLessParser extends Parser {
 					setState(282);
 					match(MULT);
 					}
+					
+					//! Return type
+					entry.features.clear();
+					entry.features.add(_localctx.type_def().type() + " *");
+					
 					break;
 				case OPEN_BRAK:
 					{
@@ -1648,6 +1705,11 @@ public class FreedomLessLessParser extends Parser {
 					setState(285);
 					match(CLOSE_BRAK);
 					}
+					
+					//! Return type
+					entry.features.clear();
+					entry.features.add(_localctx.type_def().type() + "[" + _localctx.INT().getSymbol().getText() + "]");
+					
 					break;
 				case ID:
 					break;
@@ -1656,6 +1718,10 @@ public class FreedomLessLessParser extends Parser {
 				}
 				setState(288);
 				match(ID);
+				
+				//! Id
+				entry.id =  _localctx.ID().getSymbol().getText();
+				
 				setState(289);
 				match(OPEN_PAR);
 				setState(291);
@@ -1666,11 +1732,18 @@ public class FreedomLessLessParser extends Parser {
 					setState(290);
 					param_def();
 					}
+					
+					Param_defContext param = _localctx.param_def();
+					f(entry, param);
 				}
 
 				setState(293);
 				match(CLOSE_PAR);
 				setState(294);
+				
+				//! Verify
+				lookUpTable(entry);
+				
 				block_def();
 				}
 				break;
