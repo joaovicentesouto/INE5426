@@ -6,8 +6,6 @@ import org.antlr.v4.runtime.misc.*;
 import org.antlr.v4.runtime.tree.*;
 import java.util.List;
 
-import javax.crypto.IllegalBlockSizeException;
-
 import java.util.Iterator;
 import java.util.ArrayList;
 
@@ -766,6 +764,7 @@ public class FreedomLessLessParser extends Parser {
 					break;
 				default:
 					// throw new NoViableAltException(this);
+					break;
 			}
 
 		}
@@ -2155,6 +2154,7 @@ public class FreedomLessLessParser extends Parser {
 		Param_defContext _localctx = new Param_defContext(_ctx, getState());
 		enterRule(_localctx, 24, RULE_param_def);
 		int _la;
+		SymbolEntry entry;
 		try {
 			int _alt;
 			setState(322);
@@ -2172,7 +2172,7 @@ public class FreedomLessLessParser extends Parser {
 
 				//**************
 				
-				SymbolEntry entry = new SymbolEntry();
+				entry = new SymbolEntry();
 
 				entry.c_scope = _localctx.c_scope();
 				entry.f_scope = _localctx.f_scope();
@@ -2214,7 +2214,7 @@ public class FreedomLessLessParser extends Parser {
 
 				//**************
 				
-				SymbolEntry entry = new SymbolEntry();
+				entry = new SymbolEntry();
 
 				entry.c_scope = _localctx.c_scope();
 				entry.f_scope = _localctx.f_scope();
