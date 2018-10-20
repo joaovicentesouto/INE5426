@@ -19,7 +19,7 @@ public class SymbolEntry
 	
 	public String permission;
 
-	public ÃrrayList<String> features;
+	public ArrayList<String> features;
 
 	public boolean valid;
 
@@ -700,6 +700,21 @@ public class FreedomLessLessParser extends Parser {
 					match(COMMA);
 					setState(120);
 					match(ID);
+
+					//*********
+				
+					SymbolEntry entry = new SymbolEntry();
+
+					entry.c_scope = _localctx.c_scope();
+					entry.f_scope = _localctx.f_scope();
+					entry.features.add(_localctx.type_def().value());
+					entry.permission = _localctx.permission();
+					entry.id = _localctx.ID().value();
+					entry.type = _localctx.type();
+					entry.valid = true;
+
+					lookUpTable(entry);
+
 					setState(123);
 					_errHandler.sync(this);
 					_la = _input.LA(1);
@@ -727,6 +742,21 @@ public class FreedomLessLessParser extends Parser {
 				type_def();
 				setState(131);
 				match(ID);
+
+				//*********
+				
+				SymbolEntry entry = new SymbolEntry();
+
+				entry.c_scope = _localctx.c_scope();
+				entry.f_scope = _localctx.f_scope();
+				entry.features.add(_localctx.type_def().value());
+				entry.permission = _localctx.permission();
+				entry.id = _localctx.ID().value();
+				entry.type = _localctx.type();
+				entry.valid = true;
+
+				lookUpTable(entry);
+
 				setState(132);
 				match(OPEN_BRAK);
 				setState(133);
@@ -755,6 +785,21 @@ public class FreedomLessLessParser extends Parser {
 					match(COMMA);
 					setState(140);
 					match(ID);
+
+					//*********
+				
+					SymbolEntry entry = new SymbolEntry();
+
+					entry.c_scope = _localctx.c_scope();
+					entry.f_scope = _localctx.f_scope();
+					entry.features.add(_localctx.type_def().value());
+					entry.permission = _localctx.permission();
+					entry.id = _localctx.ID().value();
+					entry.type = _localctx.type();
+					entry.valid = true;
+
+					lookUpTable(entry);
+
 					setState(141);
 					match(OPEN_BRAK);
 					setState(142);
@@ -790,6 +835,21 @@ public class FreedomLessLessParser extends Parser {
 				match(MULT);
 				setState(155);
 				match(ID);
+
+				//*********
+				
+				SymbolEntry entry = new SymbolEntry();
+
+				entry.c_scope = _localctx.c_scope();
+				entry.f_scope = _localctx.f_scope();
+				entry.features.add(_localctx.type_def().value());
+				entry.permission = _localctx.permission();
+				entry.id = _localctx.ID().value();
+				entry.type = _localctx.type();
+				entry.valid = true;
+
+				lookUpTable(entry);
+
 				setState(158);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
@@ -814,6 +874,21 @@ public class FreedomLessLessParser extends Parser {
 					match(MULT);
 					setState(162);
 					match(ID);
+
+					//*********
+				
+					SymbolEntry entry = new SymbolEntry();
+
+					entry.c_scope = _localctx.c_scope();
+					entry.f_scope = _localctx.f_scope();
+					entry.features.add(_localctx.type_def().value());
+					entry.permission = _localctx.permission();
+					entry.id = _localctx.ID().value();
+					entry.type = _localctx.type();
+					entry.valid = true;
+
+					lookUpTable(entry);
+
 					setState(165);
 					_errHandler.sync(this);
 					_la = _input.LA(1);
@@ -943,6 +1018,19 @@ public class FreedomLessLessParser extends Parser {
 				{
 				setState(186);
 				match(ID);
+
+				SymbolEntry entry = new SymbolEntry();
+
+				entry.c_scope = _localctx.c_scope();
+				entry.f_scope = _localctx.f_scope();
+				entry.features.add(_localctx.type_def().value());
+				entry.permission = _localctx.permission();
+				entry.id = _localctx.ID().value();
+				entry.type = _localctx.type();
+				entry.valid = true;
+
+				lookUpTable(entry);
+
 				setState(196);
 				_errHandler.sync(this);
 				switch (_input.LA(1)) {
