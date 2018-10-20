@@ -58,40 +58,97 @@ public class FreedomLessLessParser extends Parser {
 				{
 					//! Another definition || Same IDs and diff types
 					if (temp.valid || entry.type != temp.type)
-						throw new NoViableAltException(this);
+						throw new Exception(temp.id + " já foi declarado globalmente!");
 					
 					//! Different features -> error
 					if (entry.features.equals(temp.features))
-						throw new NoViableAltException(this);
+					{
+						String feature_string;
+						for (String s : temp.features)
+							feature_string += " " + s;
+						
+						throw new Exception(temp.id + " foi declarado como " + feature_string);	
+					}
 
 					_symbolTable.remove(i);
 					_symbolTable.add(entry);
 					return;
 				}
 				
-				//! Inside Global Function Definition (ENTRY is ONLY VARIABLE)
+				//! Inside Global Function Definition (ENTRY is VARIABLE)
 				else if (entry.c_scope == "null" && entry.f_scope != "null")
 				{
 					//! temp is a global definition OR same scope definition (temp class id maybe)
-					if (temp.c_scope == "null"
-							&& (temp.f_scope == "null" || temp.f_scope == entry.f_scope))
-						throw new NoViableAltException(this);
+					if (temp.c_scope == "null" temp.f_scope == "null")
+						throw new Exception(temp.id + " já foi declarado globalmente!");
+					
+					if (temp.c_scope == "null" && temp.f_scope == entry.f_scope)
+						throw new Exception(temp.id + " já foi declarado no mesmo escopo!");
 
 					continue;
 				}
 				
-				//! Inside Global Class Definition (ENTRY is ONLY VARIABLE)
+				//! Inside Global Class Definition (ENTRY is ONLY VARIABLE and FUNCTION)
 				else if (entry.c_scope != "null" && entry.f_scope == "null")
 				{
-					
-					return;
+					if (temp.valid)
+					{
+						//! All
+						if (temp.c_scope == "null" && temp.f_scope == "null")
+							throw new Exception(temp.id + " já foi declarado globalmente!");
+						
+						//! Variable
+						if (temp.c_scope == entry.c_scope && temp.f_scope == "null")
+							throw new Exception(temp.id + " já foi declarado no mesmo escopo!");
+						
+						continue;
+					}
+					else
+					{
+						//! Not exists
+						if (temp.c_scope == "null" && temp.f_scope == "null")
+							throw new Exception(temp.id + " não pode ser usado globalmente!");
+						
+						//! Match
+						if (temp.c_scope == entry.c_scope && temp.f_scope == "null")
+						{	
+							_symbolTable.remove(i);
+							_symbolTable.add(entry);
+							return;
+						}
+						
+						continue;
+					}
 				}
 				
 				//! Inside Function Class Definition (ENTRY is ONLY VARIABLE)
 				else if (entry.c_scope != "null" && entry.f_scope != "null")
 				{
-					
-					return;
+					if (temp.valid)
+					{
+						if (temp.c_scope == "null" && temp.f_scope == "null")
+							throw new Exception(temp.id + " já foi declarado globalmente!");
+						
+						if (temp.c_scope == entry.c_scope && temp.f_scope == "null")
+							throw new Exception(temp.id + " já foi declarado no escopo da classe " + temp.c_scope);
+						
+						if (temp.c_scope == entry.c_scope && temp.f_scope == entry.f_scope)
+							throw new Exception(temp.id + " já foi declarado no mesmo escopo!");
+						
+						continue;
+					}
+					else
+					{
+						//! Never
+						if (temp.c_scope == "null" && temp.f_scope == "null")
+							throw new Exception("É para não acontecer");
+						else if (temp.c_scope == "null" && temp.f_scope != "null")
+							throw new Exception("É para não acontecer");
+						else if (temp.c_scope != "null" && temp.f_scope == "null")
+							x;
+						else if (temp.c_scope != "null" && temp.f_scope != "null")
+							x;
+					}
 				}
 				
 				//! Never
@@ -100,6 +157,29 @@ public class FreedomLessLessParser extends Parser {
 			}
 			else //! Use
 			{
+				if (temp.valid)
+				{
+					if (temp.c_scope == "null" && temp.f_scope == "null")
+						throw new Exception("");
+					else if (temp.c_scope == "null" && temp.f_scope != "null")
+						x;
+					else if (temp.c_scope != "null" && temp.f_scope == "null")
+						x;
+					else if (temp.c_scope != "null" && temp.f_scope != "null")
+						x;
+				}
+				else
+				{
+					if (temp.c_scope == "null" && temp.f_scope == "null")
+						throw new Exception("");
+					else if (temp.c_scope == "null" && temp.f_scope != "null")
+						x;
+					else if (temp.c_scope != "null" && temp.f_scope == "null")
+						x;
+					else if (temp.c_scope != "null" && temp.f_scope != "null")
+						x;
+				}
+				
 				return;
 			}
 		}
