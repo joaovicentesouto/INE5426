@@ -1836,6 +1836,25 @@ public class FreedomLessLessParser extends Parser {
 		public TerminalNode CLOSE_BRAK() { return getToken(FreedomLessLessParser.CLOSE_BRAK, 0); }
 		public Param_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
+			switch (parent.type()) {
+				case "program" :
+					_c_scope = "null";
+					_permission = "public";
+					_f_scope = "null";
+					break;
+				case "class" : 
+					_c_scope = parent.c_scope();
+					_permission = parent.permission();
+					_f_scope = "null";
+					break;
+				case "function" :
+					_permission = "private";
+					_c_scope = parent.c_scope();
+					_f_scope = parent.f_scope();
+					break;
+				default:
+					throw new NoViableAltException(this);			
+			}
 		}
 		@Override public int getRuleIndex() { return RULE_param_def; }
 		@Override
@@ -1846,6 +1865,14 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitParam_def(this);
 		}
+		public String type() { return "attribute"; }
+		public String c_scope() { return _c_scope; }
+		public String f_scope() { return _f_scope; }
+		public String permission() { return _permission; }
+
+		public String _permission;
+		public String _c_scope;
+		public String _f_scope;
 	}
 
 	public final Param_defContext param_def() throws RecognitionException {
@@ -1866,6 +1893,21 @@ public class FreedomLessLessParser extends Parser {
 				match(MULT);
 				setState(300);
 				match(ID);
+
+				//**************
+				
+				SymbolEntry entry = new SymbolEntry();
+
+				entry.c_scope = _localctx.c_scope();
+				entry.f_scope = _localctx.f_scope();
+				entry.features.add("null");
+				entry.permission = _localctx.permission();
+				entry.id = _localctx.ID().getSymbol().getText();;
+				entry.type = _localctx.type();
+				entry.valid = true;
+
+				lookUpTable(entry);
+
 				setState(305);
 				_errHandler.sync(this);
 				_alt = getInterpreter().adaptivePredict(_input,34,_ctx);
@@ -1893,6 +1935,21 @@ public class FreedomLessLessParser extends Parser {
 				type_def();
 				setState(309);
 				match(ID);
+
+				//**************
+				
+				SymbolEntry entry = new SymbolEntry();
+
+				entry.c_scope = _localctx.c_scope();
+				entry.f_scope = _localctx.f_scope();
+				entry.features.add("null");
+				entry.permission = _localctx.permission();
+				entry.id = _localctx.ID().getSymbol().getText();;
+				entry.type = _localctx.type();
+				entry.valid = true;
+
+				lookUpTable(entry);
+
 				setState(313);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
