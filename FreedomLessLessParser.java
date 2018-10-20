@@ -5,6 +5,9 @@ import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.misc.*;
 import org.antlr.v4.runtime.tree.*;
 import java.util.List;
+
+import javax.crypto.IllegalBlockSizeException;
+
 import java.util.Iterator;
 import java.util.ArrayList;
 
@@ -44,18 +47,15 @@ public class FreedomLessLessParser extends Parser {
 			{
 				if (entry.c_scope == "null" && entry.f_scope == "null") {
 					if (temp.valid)
-						throw ####ERRO####;
-
+						throw new NoViableAltException(this);						
 					if (entry.features != temp.features) // lista!!!
-						throw ####ERRO####;
+						throw new NoViableAltException(this);
 
 					_symbolTable[i] = entry;
 					return;
 				}
 				if (entry.c_scope == "null" && entry.f_scope != "null") {
-					if (temp.valid &&
-						((temp.c_scope == "null" && temp.f_scope == "null") ||
-							)
+					if (temp.valid && temp.c_scope == "null" && temp.f_scope == "null")
 
 				}
 			}
@@ -623,7 +623,7 @@ public class FreedomLessLessParser extends Parser {
 					_f_scope = parent.f_scope();
 					break;
 				default:
-					throws ###ERROR###;
+					throw new NoViableAltException(this);
 			}
 
 		}
@@ -881,7 +881,7 @@ public class FreedomLessLessParser extends Parser {
 
 					entry.c_scope = _localctx.c_scope();
 					entry.f_scope = _localctx.f_scope();
-					entry.features.add(_localctx.type_def().value());
+					entry.features.add("null");
 					entry.permission = _localctx.permission();
 					entry.id = _localctx.ID().value();
 					entry.type = _localctx.type();
@@ -952,6 +952,24 @@ public class FreedomLessLessParser extends Parser {
 		}
 		public Valued_expression_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
+			switch (parent.type()) {
+				case "program" :
+					_c_scope = "null";
+					_permission = "public";
+					_f_scope = "null";
+					break;
+				case "class" : 
+					_c_scope = parent.c_scope();
+					_permission = parent.permission();
+					_f_scope = "null";
+					break;
+				case "function" :
+					_permission = "private";
+					_c_scope = parent.c_scope();
+					_f_scope = parent.f_scope();
+					break;
+				default:
+					throw new NoViableAltException(this);			}
 		}
 		@Override public int getRuleIndex() { return RULE_valued_expression_def; }
 		@Override
@@ -962,6 +980,15 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitValued_expression_def(this);
 		}
+
+		public String type() { return "attribute"; }
+		public String c_scope() { return _c_scope; }
+		public String f_scope() { return _f_scope; }
+		public String permission() { return _permission; }
+
+		public String _permission;
+		public String _c_scope;
+		public String _f_scope;
 	}
 
 	public final Valued_expression_defContext valued_expression_def() throws RecognitionException {
