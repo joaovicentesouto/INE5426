@@ -19,12 +19,19 @@ public class SymbolEntry
 	
 	public String permission;
 
-	public ÃrrayList<String> features;
+	public ArrayList<String> features;
 
 	public boolean valid;
 
 	public SymbolEntry() {}
 };
+
+public interface ScopeInformation {
+	public String type();
+	public String c_scope();
+	public String f_scope();
+	public String permission();
+}
 
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast"})
 public class FreedomLessLessParser extends Parser {
@@ -174,7 +181,7 @@ public class FreedomLessLessParser extends Parser {
 		super(input);
 		_interp = new ParserATNSimulator(this,_ATN,_decisionToDFA,_sharedContextCache);
 	}
-	public static class Program_defContext extends ParserRuleContext {
+	public static class Program_defContext extends ParserRuleContext implements ScopeInformation {
 		public Main_defContext main_def() {
 			return getRuleContext(Main_defContext.class,0);
 		}
@@ -279,7 +286,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Class_defContext extends ParserRuleContext {
+	public static class Class_defContext extends ParserRuleContext implements ScopeInformation {
 		public TerminalNode CLASS() { return getToken(FreedomLessLessParser.CLASS, 0); }
 		public TerminalNode ID() { return getToken(FreedomLessLessParser.ID, 0); }
 		public TerminalNode OPEN_KEY() { return getToken(FreedomLessLessParser.OPEN_KEY, 0); }
@@ -289,6 +296,9 @@ public class FreedomLessLessParser extends Parser {
 		public TerminalNode CLOSE_KEY() { return getToken(FreedomLessLessParser.CLOSE_KEY, 0); }
 		public Class_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
+			_permission = "public";
+			_c_scope = "null";
+			_f_scope = "null";
 		}
 		@Override public int getRuleIndex() { return RULE_class_def; }
 		@Override
@@ -299,6 +309,19 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitClass_def(this);
 		}
+		
+		//! Our session
+		
+		//! Methods
+		public String type() { return "class"; }
+		public String c_scope() { return _c_scope; }
+		public String f_scope() { return _f_scope; }
+		public String permission() { return _permission; }
+
+		//! Attributes
+		public String _permission;
+		public String _c_scope;
+		public String _f_scope;
 	}
 
 	public final Class_defContext class_def() throws RecognitionException {
@@ -311,6 +334,22 @@ public class FreedomLessLessParser extends Parser {
 			match(CLASS);
 			setState(81);
 			match(ID);
+			
+			//! Define name of the class ***CLASS
+			_localctx._c_scope = _localctx.ID().getSymbol().getText();
+			
+			SymbolEntry entry = new SymbolEntry();
+
+			entry.c_scope = _localctx.c_scope();
+			entry.f_scope = _localctx.f_scope();
+			entry.features.add("null");
+			entry.permission = _localctx.permission();
+			entry.id = _localctx.ID().getSymbol().getText();
+			entry.type = _localctx.type();
+			entry.valid = true;
+
+			lookUpTable(entry);
+			
 			setState(82);
 			match(OPEN_KEY);
 			setState(83);
@@ -330,7 +369,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Class_members_defContext extends ParserRuleContext {
+	public static class Class_members_defContext extends ParserRuleContext implements ScopeInformation {
 		public Private_defContext private_def() {
 			return getRuleContext(Private_defContext.class,0);
 		}
@@ -339,6 +378,9 @@ public class FreedomLessLessParser extends Parser {
 		}
 		public Class_members_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
+			_permission = "null";
+			_c_scope = ((ScopeInformation) parent).c_scope();
+			_f_scope = "null";
 		}
 		@Override public int getRuleIndex() { return RULE_class_members_def; }
 		@Override
@@ -349,6 +391,16 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitClass_members_def(this);
 		}
+		
+		@Override public String type() 		 { return "class"; 	   }
+		@Override public String c_scope() 	 { return _c_scope;    }
+		@Override public String f_scope() 	 { return _f_scope;    }
+		@Override public String permission() { return _permission; }
+
+		//! Attributes
+		public String _permission;
+		public String _c_scope;
+		public String _f_scope;
 	}
 
 	public final Class_members_defContext class_members_def() throws RecognitionException {
@@ -362,6 +414,9 @@ public class FreedomLessLessParser extends Parser {
 			case PRIVATE:
 				enterOuterAlt(_localctx, 1);
 				{
+				//! Define private permission
+				_localctx._permission = "private";
+					
 				setState(86);
 				private_def();
 				}
@@ -369,6 +424,9 @@ public class FreedomLessLessParser extends Parser {
 			case PUBLIC:
 				enterOuterAlt(_localctx, 2);
 				{
+				//! Define public permission
+				_localctx._permission = "public";
+				
 				setState(87);
 				public_def();
 				setState(89);
@@ -376,6 +434,9 @@ public class FreedomLessLessParser extends Parser {
 				_la = _input.LA(1);
 				if (_la==PRIVATE) {
 					{
+					//! Define private permission
+					_localctx._permission = "private";
+					
 					setState(88);
 					private_def();
 					}
@@ -398,7 +459,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Public_defContext extends ParserRuleContext {
+	public static class Public_defContext extends ParserRuleContext implements ScopeInformation {
 		public TerminalNode PUBLIC() { return getToken(FreedomLessLessParser.PUBLIC, 0); }
 		public Class_scope_defContext class_scope_def() {
 			return getRuleContext(Class_scope_defContext.class,0);
@@ -440,7 +501,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Private_defContext extends ParserRuleContext {
+	public static class Private_defContext extends ParserRuleContext implements ScopeInformation {
 		public TerminalNode PRIVATE() { return getToken(FreedomLessLessParser.PRIVATE, 0); }
 		public Class_scope_defContext class_scope_def() {
 			return getRuleContext(Class_scope_defContext.class,0);
@@ -482,7 +543,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Class_scope_defContext extends ParserRuleContext {
+	public static class Class_scope_defContext extends ParserRuleContext implements ScopeInformation {
 		public List<Attribute_defContext> attribute_def() {
 			return getRuleContexts(Attribute_defContext.class);
 		}
@@ -566,7 +627,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Attribute_defContext extends ParserRuleContext {
+	public static class Attribute_defContext extends ParserRuleContext implements ScopeInformation {
 		public Type_defContext type_def() {
 			return getRuleContext(Type_defContext.class,0);
 		}
@@ -847,7 +908,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Valued_expression_defContext extends ParserRuleContext {
+	public static class Valued_expression_defContext extends ParserRuleContext implements ScopeInformation {
 		public Value_defContext value_def() {
 			return getRuleContext(Value_defContext.class,0);
 		}
@@ -1038,7 +1099,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class OperationContext extends ParserRuleContext {
+	public static class OperationContext extends ParserRuleContext implements ScopeInformation {
 		public List<Valued_expression_defContext> valued_expression_def() {
 			return getRuleContexts(Valued_expression_defContext.class);
 		}
@@ -1135,7 +1196,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Function_call_defContext extends ParserRuleContext {
+	public static class Function_call_defContext extends ParserRuleContext implements ScopeInformation {
 		public TerminalNode DELETE() { return getToken(FreedomLessLessParser.DELETE, 0); }
 		public List<TerminalNode> ID() { return getTokens(FreedomLessLessParser.ID); }
 		public TerminalNode ID(int i) {
@@ -1384,7 +1445,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Argument_defContext extends ParserRuleContext {
+	public static class Argument_defContext extends ParserRuleContext implements ScopeInformation {
 		public List<Valued_expression_defContext> valued_expression_def() {
 			return getRuleContexts(Valued_expression_defContext.class);
 		}
@@ -1447,7 +1508,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Function_defContext extends ParserRuleContext {
+	public static class Function_defContext extends ParserRuleContext implements ScopeInformation {
 		public TerminalNode VOID_T() { return getToken(FreedomLessLessParser.VOID_T, 0); }
 		public TerminalNode ID() { return getToken(FreedomLessLessParser.ID, 0); }
 		public TerminalNode OPEN_PAR() { return getToken(FreedomLessLessParser.OPEN_PAR, 0); }
@@ -1580,7 +1641,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Param_defContext extends ParserRuleContext {
+	public static class Param_defContext extends ParserRuleContext implements ScopeInformation {
 		public Type_defContext type_def() {
 			return getRuleContext(Type_defContext.class,0);
 		}
@@ -1705,7 +1766,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Block_defContext extends ParserRuleContext {
+	public static class Block_defContext extends ParserRuleContext implements ScopeInformation {
 		public TerminalNode OPEN_KEY() { return getToken(FreedomLessLessParser.OPEN_KEY, 0); }
 		public TerminalNode CLOSE_KEY() { return getToken(FreedomLessLessParser.CLOSE_KEY, 0); }
 		public List<Valueless_expression_defContext> valueless_expression_def() {
@@ -1809,7 +1870,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Valueless_expression_defContext extends ParserRuleContext {
+	public static class Valueless_expression_defContext extends ParserRuleContext implements ScopeInformation {
 		public TerminalNode BREAK() { return getToken(FreedomLessLessParser.BREAK, 0); }
 		public TerminalNode CONTINUE() { return getToken(FreedomLessLessParser.CONTINUE, 0); }
 		public Attribute_defContext attribute_def() {
@@ -1977,7 +2038,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Struct_defContext extends ParserRuleContext {
+	public static class Struct_defContext extends ParserRuleContext implements ScopeInformation {
 		public If_defContext if_def() {
 			return getRuleContext(If_defContext.class,0);
 		}
@@ -2054,7 +2115,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class If_defContext extends ParserRuleContext {
+	public static class If_defContext extends ParserRuleContext implements ScopeInformation {
 		public TerminalNode IF() { return getToken(FreedomLessLessParser.IF, 0); }
 		public TerminalNode OPEN_PAR() { return getToken(FreedomLessLessParser.OPEN_PAR, 0); }
 		public Valued_expression_defContext valued_expression_def() {
@@ -2124,7 +2185,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class For_defContext extends ParserRuleContext {
+	public static class For_defContext extends ParserRuleContext implements ScopeInformation {
 		public TerminalNode FOR() { return getToken(FreedomLessLessParser.FOR, 0); }
 		public TerminalNode OPEN_PAR() { return getToken(FreedomLessLessParser.OPEN_PAR, 0); }
 		public List<Valued_attribute_defContext> valued_attribute_def() {
@@ -2235,7 +2296,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Valued_attribute_defContext extends ParserRuleContext {
+	public static class Valued_attribute_defContext extends ParserRuleContext implements ScopeInformation {
 		public Type_defContext type_def() {
 			return getRuleContext(Type_defContext.class,0);
 		}
@@ -2313,7 +2374,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class While_defContext extends ParserRuleContext {
+	public static class While_defContext extends ParserRuleContext implements ScopeInformation {
 		public TerminalNode WHILE() { return getToken(FreedomLessLessParser.WHILE, 0); }
 		public TerminalNode OPEN_PAR() { return getToken(FreedomLessLessParser.OPEN_PAR, 0); }
 		public Valued_expression_defContext valued_expression_def() {
@@ -2366,7 +2427,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Switch_defContext extends ParserRuleContext {
+	public static class Switch_defContext extends ParserRuleContext implements ScopeInformation {
 		public TerminalNode SWITCH() { return getToken(FreedomLessLessParser.SWITCH, 0); }
 		public TerminalNode OPEN_PAR() { return getToken(FreedomLessLessParser.OPEN_PAR, 0); }
 		public Valued_expression_defContext valued_expression_def() {
@@ -2446,7 +2507,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Switch_case_defContext extends ParserRuleContext {
+	public static class Switch_case_defContext extends ParserRuleContext implements ScopeInformation {
 		public TerminalNode CASE() { return getToken(FreedomLessLessParser.CASE, 0); }
 		public Value_defContext value_def() {
 			return getRuleContext(Value_defContext.class,0);
@@ -2566,7 +2627,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Switch_default_defContext extends ParserRuleContext {
+	public static class Switch_default_defContext extends ParserRuleContext implements ScopeInformation {
 		public TerminalNode DEFAULT() { return getToken(FreedomLessLessParser.DEFAULT, 0); }
 		public TerminalNode TWOPOINTS() { return getToken(FreedomLessLessParser.TWOPOINTS, 0); }
 		public TerminalNode BREAK() { return getToken(FreedomLessLessParser.BREAK, 0); }
@@ -2677,7 +2738,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Main_defContext extends ParserRuleContext {
+	public static class Main_defContext extends ParserRuleContext implements ScopeInformation {
 		public TerminalNode VOID_T() { return getToken(FreedomLessLessParser.VOID_T, 0); }
 		public TerminalNode MAIN() { return getToken(FreedomLessLessParser.MAIN, 0); }
 		public TerminalNode OPEN_PAR() { return getToken(FreedomLessLessParser.OPEN_PAR, 0); }
@@ -2753,7 +2814,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Type_defContext extends ParserRuleContext {
+	public static class Type_defContext extends ParserRuleContext implements ScopeInformation {
 		public TerminalNode INT_T() { return getToken(FreedomLessLessParser.INT_T, 0); }
 		public TerminalNode DOUBLE_T() { return getToken(FreedomLessLessParser.DOUBLE_T, 0); }
 		public TerminalNode CHAR_T() { return getToken(FreedomLessLessParser.CHAR_T, 0); }
@@ -2833,7 +2894,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Value_defContext extends ParserRuleContext {
+	public static class Value_defContext extends ParserRuleContext implements ScopeInformation {
 		public TerminalNode INT() { return getToken(FreedomLessLessParser.INT, 0); }
 		public TerminalNode CHAR() { return getToken(FreedomLessLessParser.CHAR, 0); }
 		public TerminalNode STRING() { return getToken(FreedomLessLessParser.STRING, 0); }
@@ -2885,7 +2946,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Logical_opContext extends ParserRuleContext {
+	public static class Logical_opContext extends ParserRuleContext implements ScopeInformation {
 		public TerminalNode LESS() { return getToken(FreedomLessLessParser.LESS, 0); }
 		public TerminalNode BIGGER() { return getToken(FreedomLessLessParser.BIGGER, 0); }
 		public TerminalNode LESS_EQ() { return getToken(FreedomLessLessParser.LESS_EQ, 0); }
@@ -2938,7 +2999,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Arithmetic_opContext extends ParserRuleContext {
+	public static class Arithmetic_opContext extends ParserRuleContext implements ScopeInformation {
 		public TerminalNode PLUS() { return getToken(FreedomLessLessParser.PLUS, 0); }
 		public TerminalNode MINUS() { return getToken(FreedomLessLessParser.MINUS, 0); }
 		public TerminalNode MULT() { return getToken(FreedomLessLessParser.MULT, 0); }
@@ -2987,7 +3048,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Auto_assign_opContext extends ParserRuleContext {
+	public static class Auto_assign_opContext extends ParserRuleContext implements ScopeInformation {
 		public TerminalNode AUTOPLUS() { return getToken(FreedomLessLessParser.AUTOPLUS, 0); }
 		public TerminalNode AUTOMINUS() { return getToken(FreedomLessLessParser.AUTOMINUS, 0); }
 		public TerminalNode AUTOMULT() { return getToken(FreedomLessLessParser.AUTOMULT, 0); }
@@ -3036,7 +3097,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Auto_increm_opContext extends ParserRuleContext {
+	public static class Auto_increm_opContext extends ParserRuleContext implements ScopeInformation {
 		public TerminalNode INCREM() { return getToken(FreedomLessLessParser.INCREM, 0); }
 		public TerminalNode DECREM() { return getToken(FreedomLessLessParser.DECREM, 0); }
 		public Auto_increm_opContext(ParserRuleContext parent, int invokingState) {
