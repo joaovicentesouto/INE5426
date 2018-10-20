@@ -3682,8 +3682,8 @@ public class FreedomLessLessParser extends Parser {
 		public Type_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 			_permission = ((ScopeInformation) parent).permission();
-			_c_scope = ((ScopeInformation) parent).permission();;
-			_f_scope = ((ScopeInformation) parent).permission();;
+			_c_scope = ((ScopeInformation) parent).permission();
+			_f_scope = ((ScopeInformation) parent).permission();
 		}
 		@Override public int getRuleIndex() { return RULE_type_def; }
 		@Override
@@ -3798,6 +3798,9 @@ public class FreedomLessLessParser extends Parser {
 		public TerminalNode NULL() { return getToken(FreedomLessLessParser.NULL, 0); }
 		public Value_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
+			_permission = ((ScopeInformation) parent).permission();
+			_c_scope = ((ScopeInformation) parent).permission();
+			_f_scope = ((ScopeInformation) parent).permission();
 		}
 		@Override public int getRuleIndex() { return RULE_value_def; }
 		@Override
@@ -3870,6 +3873,9 @@ public class FreedomLessLessParser extends Parser {
 		public TerminalNode OR() { return getToken(FreedomLessLessParser.OR, 0); }
 		public Logical_opContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
+			_permission = ((ScopeInformation) parent).permission();
+			_c_scope = ((ScopeInformation) parent).permission();
+			_f_scope = ((ScopeInformation) parent).permission();
 		}
 		@Override public int getRuleIndex() { return RULE_logical_op; }
 		@Override
@@ -3936,6 +3942,9 @@ public class FreedomLessLessParser extends Parser {
 		public TerminalNode DIV() { return getToken(FreedomLessLessParser.DIV, 0); }
 		public Arithmetic_opContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
+			_permission = ((ScopeInformation) parent).permission();
+			_c_scope = ((ScopeInformation) parent).permission();
+			_f_scope = ((ScopeInformation) parent).permission();
 		}
 		@Override public int getRuleIndex() { return RULE_arithmetic_op; }
 		@Override
@@ -4002,6 +4011,9 @@ public class FreedomLessLessParser extends Parser {
 		public TerminalNode AUTODIV() { return getToken(FreedomLessLessParser.AUTODIV, 0); }
 		public Auto_assign_opContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
+			_permission = ((ScopeInformation) parent).permission();
+			_c_scope = ((ScopeInformation) parent).permission();
+			_f_scope = ((ScopeInformation) parent).permission();
 		}
 		@Override public int getRuleIndex() { return RULE_auto_assign_op; }
 		@Override
@@ -4066,6 +4078,9 @@ public class FreedomLessLessParser extends Parser {
 		public TerminalNode DECREM() { return getToken(FreedomLessLessParser.DECREM, 0); }
 		public Auto_increm_opContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
+			_permission = ((ScopeInformation) parent).permission();
+			_c_scope = ((ScopeInformation) parent).permission();
+			_f_scope = ((ScopeInformation) parent).permission();
 		}
 		@Override public int getRuleIndex() { return RULE_auto_increm_op; }
 		@Override
