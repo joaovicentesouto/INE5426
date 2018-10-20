@@ -149,34 +149,146 @@ public class FreedomLessLessParser extends Parser {
 				
 				//! Never
 				throw new NoViableAltException(this);
-				
 			}
-			else //! Use
-			{
-				if (temp.valid)
+			else //! Use -> variable or function call
+			{	
+				//! Global Definition (Classes, Functions and Variables)
+				if (entry.c_scope == "null" && entry.f_scope == "null")
 				{
-					if (temp.c_scope == "null" && temp.f_scope == "null")
-						throw new Exception("");
-					else if (temp.c_scope == "null" && temp.f_scope != "null")
-						x;
-					else if (temp.c_scope != "null" && temp.f_scope == "null")
-						x;
-					else if (temp.c_scope != "null" && temp.f_scope != "null")
-						x;
-				}
-				else
-				{
-					if (temp.c_scope == "null" && temp.f_scope == "null")
-						throw new Exception("");
-					else if (temp.c_scope == "null" && temp.f_scope != "null")
-						x;
-					else if (temp.c_scope != "null" && temp.f_scope == "null")
-						x;
-					else if (temp.c_scope != "null" && temp.f_scope != "null")
-						x;
+					if (temp.valid)
+					{
+						//! Found
+						if (temp.c_scope == "null" && temp.f_scope == "null")
+							return;
+						
+						//! Define inside a function -> not exist global
+						if (temp.c_scope == "null" && temp.f_scope != "null")
+							throw new Exception(temp.id + " não pode ser utilizado globalmente!");
+
+						//! Define inside a class -> not exist global
+						if (temp.c_scope != "null" && temp.f_scope == "null")
+							throw new Exception(temp.id + " não pode ser utilizado globalmente!");
+						
+						//! Define inside a function class -> not exist global
+						if (temp.c_scope != "null" && temp.f_scope != "null")
+							throw new Exception(temp.id + " não pode ser utilizado globalmente!");
+					}
+					else
+					{
+						if (temp.c_scope == "null" && temp.f_scope == "null")
+							throw new Exception("Não deveria acontecer!");
+						
+						if (temp.c_scope == "null" && temp.f_scope != "null")
+							continue;
+						
+						if (temp.c_scope != "null" && temp.f_scope == "null")
+							continue;
+						
+						if (temp.c_scope != "null" && temp.f_scope != "null")
+							continue;
+					}
+					
+					throw new Exception(temp.id + " já devia ter sido declarado!");
 				}
 				
-				return;
+				//! Inside Global Function Definition (ENTRY is VARIABLE)
+				else if (entry.c_scope == "null" && entry.f_scope != "null")
+				{
+					if (temp.valid)
+					{
+						//! Found
+						if (temp.c_scope == "null" && temp.f_scope == "null")
+							return;
+						
+						//! Found
+						if (temp.c_scope == "null" && temp.f_scope == entry.f_scope)
+							return;
+
+//						if (temp.c_scope != "null" && temp.f_scope == "null")
+//							continue;
+//						
+//						if (temp.c_scope != "null" && temp.f_scope != "null")
+//							continue;
+					}
+					else
+					{
+						if (temp.c_scope == "null" && temp.f_scope == "null")
+							throw new Exception("Não deveria acontecer!");
+						
+//						if (temp.c_scope == "null" && temp.f_scope == entry.f_scope)
+//							continue;
+//						
+//						if (temp.c_scope != "null" && temp.f_scope == "null")
+//							continue;
+//						
+//						if (temp.c_scope != "null" && temp.f_scope != "null")
+//							continue;
+					}
+					
+					continue;
+				}
+				
+				//! Inside Global Class Definition (ENTRY is ONLY VARIABLE and FUNCTION)
+				else if (entry.c_scope != "null" && entry.f_scope == "null")
+				{
+					if (temp.valid)
+					{
+						//! Found
+						if (temp.c_scope == "null" && temp.f_scope == "null")
+							return;
+						
+//						if (temp.c_scope == "null" && temp.f_scope == entry.f_scope)
+//							continue;
+
+						//! Found
+						if (temp.c_scope == entry.c_scope && temp.f_scope == "null")
+							return;
+						
+						if (temp.c_scope == entry.c_scope && temp.f_scope != "null")
+							throw new Exception(temp.id + " conflito com outra variável na funcão " + temp.f_scope);
+					}
+					else
+					{
+						//! Not exists
+						if (temp.c_scope == "null" && temp.f_scope == "null")
+							throw new Exception(temp.id + " não pode ser usado globalmente!");
+						
+//						if (temp.c_scope == "null" && temp.f_scope == entry.f_scope)
+//							continue;
+
+						//! Another like me
+						if (temp.c_scope == entry.c_scope && temp.f_scope == "null")
+							return;
+						
+						if (temp.c_scope == entry.c_scope && temp.f_scope != "null")
+							throw new Exception(temp.id + " conflito com outra variável na funcão " + temp.f_scope);
+					}
+					
+					continue;
+				}
+				
+				//! Inside Function Class Definition (ENTRY is ONLY VARIABLE)
+				else if (entry.c_scope != "null" && entry.f_scope != "null")
+				{
+					if (temp.valid)
+					{
+						if (temp.c_scope == "null" && temp.f_scope == "null")
+							throw new Exception(temp.id + " já foi declarado globalmente!");
+						
+						if (temp.c_scope == entry.c_scope && temp.f_scope == "null")
+							throw new Exception(temp.id + " já foi declarado no escopo da classe " + temp.c_scope);
+						
+						if (temp.c_scope == entry.c_scope && temp.f_scope == entry.f_scope)
+							throw new Exception(temp.id + " já foi declarado no mesmo escopo!");
+					}
+					else if (temp.c_scope == entry.c_scope && temp.f_scope == entry.f_scope)
+						throw new Exception(temp.id + " foi usado antes de ser declarado no escopo da funcão " temp.f_scope);
+					
+					continue;
+				}
+				
+				//! Never
+				throw new NoViableAltException(this);
 			}
 		}
 		
