@@ -203,6 +203,9 @@ public class FreedomLessLessParser extends Parser {
 		}
 		public Program_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
+			_permission = "null";
+			_c_scope = "null";
+			_f_scope = "null";
 		}
 		@Override public int getRuleIndex() { return RULE_program_def; }
 		@Override
@@ -1806,6 +1809,9 @@ public class FreedomLessLessParser extends Parser {
 		}
 		public Argument_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
+			_permission = ((ScopeInformation) parent).permission();
+			_c_scope = ((ScopeInformation) parent).c_scope();
+			_f_scope = ((ScopeInformation) parent).f_scope();
 		}
 		@Override public int getRuleIndex() { return RULE_argument_def; }
 		@Override
@@ -2294,6 +2300,9 @@ public class FreedomLessLessParser extends Parser {
 		}
 		public Block_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
+			_permission = ((ScopeInformation) parent).permission();
+			_c_scope = ((ScopeInformation) parent).c_scope();
+			_f_scope = ((ScopeInformation) parent).f_scope();
 		}
 		@Override public int getRuleIndex() { return RULE_block_def; }
 		@Override
@@ -2420,6 +2429,9 @@ public class FreedomLessLessParser extends Parser {
 		}
 		public Valueless_expression_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
+			_permission = ((ScopeInformation) parent).permission();
+			_c_scope = ((ScopeInformation) parent).c_scope();
+			_f_scope = ((ScopeInformation) parent).f_scope();
 		}
 		@Override public int getRuleIndex() { return RULE_valueless_expression_def; }
 		@Override
@@ -2625,6 +2637,9 @@ public class FreedomLessLessParser extends Parser {
 		}
 		public Struct_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
+			_permission = ((ScopeInformation) parent).permission();
+			_c_scope = ((ScopeInformation) parent).c_scope();
+			_f_scope = ((ScopeInformation) parent).f_scope();
 		}
 		@Override public int getRuleIndex() { return RULE_struct_def; }
 		@Override
@@ -2720,6 +2735,9 @@ public class FreedomLessLessParser extends Parser {
 		public TerminalNode ELSE() { return getToken(FreedomLessLessParser.ELSE, 0); }
 		public If_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
+			_permission = ((ScopeInformation) parent).permission();
+			_c_scope = ((ScopeInformation) parent).c_scope();
+			_f_scope = ((ScopeInformation) parent).f_scope();
 		}
 		@Override public int getRuleIndex() { return RULE_if_def; }
 		@Override
@@ -2820,6 +2838,9 @@ public class FreedomLessLessParser extends Parser {
 		}
 		public For_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
+			_permission = ((ScopeInformation) parent).permission();
+			_c_scope = ((ScopeInformation) parent).c_scope();
+			_f_scope = ((ScopeInformation) parent).f_scope();
 		}
 		@Override public int getRuleIndex() { return RULE_for_def; }
 		@Override
@@ -2934,6 +2955,9 @@ public class FreedomLessLessParser extends Parser {
 		public TerminalNode CLOSE_BRAK() { return getToken(FreedomLessLessParser.CLOSE_BRAK, 0); }
 		public Valued_attribute_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
+			_permission = ((ScopeInformation) parent).permission();
+			_c_scope = ((ScopeInformation) parent).c_scope();
+			_f_scope = ((ScopeInformation) parent).f_scope();
 		}
 		@Override public int getRuleIndex() { return RULE_valued_attribute_def; }
 		@Override
@@ -2995,7 +3019,7 @@ public class FreedomLessLessParser extends Parser {
 				entry.valid = true;
 
 				lookUpTable(entry);
-				
+
 				}
 				break;
 			case ID:
@@ -3057,6 +3081,9 @@ public class FreedomLessLessParser extends Parser {
 		}
 		public While_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
+			_permission = ((ScopeInformation) parent).permission();
+			_c_scope = ((ScopeInformation) parent).c_scope();
+			_f_scope = ((ScopeInformation) parent).f_scope();
 		}
 		@Override public int getRuleIndex() { return RULE_while_def; }
 		@Override
@@ -3135,6 +3162,9 @@ public class FreedomLessLessParser extends Parser {
 		}
 		public Switch_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
+			_permission = ((ScopeInformation) parent).permission();
+			_c_scope = ((ScopeInformation) parent).c_scope();
+			_f_scope = ((ScopeInformation) parent).f_scope();
 		}
 		@Override public int getRuleIndex() { return RULE_switch_def; }
 		@Override
@@ -3237,6 +3267,9 @@ public class FreedomLessLessParser extends Parser {
 		}
 		public Switch_case_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
+			_permission = ((ScopeInformation) parent).permission();
+			_c_scope = ((ScopeInformation) parent).c_scope();
+			_f_scope = ((ScopeInformation) parent).f_scope();
 		}
 		@Override public int getRuleIndex() { return RULE_switch_case_def; }
 		@Override
@@ -3371,6 +3404,9 @@ public class FreedomLessLessParser extends Parser {
 		}
 		public Switch_default_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
+			_permission = ((ScopeInformation) parent).permission();
+			_c_scope = ((ScopeInformation) parent).c_scope();
+			_f_scope = ((ScopeInformation) parent).f_scope();
 		}
 		@Override public int getRuleIndex() { return RULE_switch_default_def; }
 		@Override
@@ -3498,6 +3534,9 @@ public class FreedomLessLessParser extends Parser {
 		}
 		public Main_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
+			_permission = ((ScopeInformation) parent).permission();
+			_c_scope = ((ScopeInformation) parent).c_scope();
+			_f_scope = ((ScopeInformation) parent).f_scope();
 		}
 		@Override public int getRuleIndex() { return RULE_main_def; }
 		@Override
@@ -3530,6 +3569,7 @@ public class FreedomLessLessParser extends Parser {
 	public final Main_defContext main_def() throws RecognitionException {
 		Main_defContext _localctx = new Main_defContext(_ctx, getState());
 		enterRule(_localctx, 46, RULE_main_def);
+		SymbolEntry entry;
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
@@ -3543,6 +3583,20 @@ public class FreedomLessLessParser extends Parser {
 			match(INT_T);
 			setState(462);
 			match(ID);
+
+			//**************
+				
+			entry = new SymbolEntry();
+
+			entry.c_scope = _localctx.c_scope();
+			entry.f_scope = _localctx.f_scope();
+			entry.features.add("null");
+			entry.permission = _localctx.permission();
+			entry.id = _localctx.ID(0).getSymbol().getText();;
+			entry.type = _localctx.type();
+			entry.valid = true;
+
+			lookUpTable(entry);
 			setState(463);
 			match(COMMA);
 			setState(464);
@@ -3553,6 +3607,20 @@ public class FreedomLessLessParser extends Parser {
 			match(MULT);
 			setState(467);
 			match(ID);
+
+			//**************
+				
+			entry = new SymbolEntry();
+
+			entry.c_scope = _localctx.c_scope();
+			entry.f_scope = _localctx.f_scope();
+			entry.features.add("null");
+			entry.permission = _localctx.permission();
+			entry.id = _localctx.ID(1).getSymbol().getText();;
+			entry.type = _localctx.type();
+			entry.valid = true;
+
+			lookUpTable(entry);
 			setState(468);
 			match(CLOSE_PAR);
 			setState(469);
