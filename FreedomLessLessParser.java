@@ -46,63 +46,63 @@ public class FreedomLessLessParser extends Parser {
 		
 		for (int i = 0; i < _symbolTable.size(); i++)
 		{
-			
 			temp = _symbolTable.get(i);
 			
-			if (temp.type != entry.type || temp.id != entry.id)
+			if (temp.id != entry.id)
 				continue;
 
-			if (entry.valid) //! Definition
+			if (entry.valid) //! Definitions
 			{
+				//! Inside Global Definition
 				if (entry.c_scope == "null" && entry.f_scope == "null")
 				{
-					if (temp.valid)
+					//! Another definition || Same IDs and diff types
+					if (temp.valid || entry.type != temp.type)
 						throw new NoViableAltException(this);
 					
-					//! Features -> Different == Same ID and types differents
-					{
-						if (entry.features.size() != temp.features.size())
-							throw new NoViableAltException(this);
-						
-						ArrayList<String> one = new ArrayList<String>(entry.features);
-						ArrayList<String> two = new ArrayList<String>(temp.features);
-	
-					    Collections.sort(one);
-					    Collections.sort(two);      
-	
-						if (one.equals(two)) // lista!!!
-							throw new NoViableAltException(this);
-					}
+					//! Different features -> error
+					if (entry.features.equals(temp.features))
+						throw new NoViableAltException(this);
 
-					_symbolTable.remove(temp);
+					_symbolTable.remove(i);
 					_symbolTable.add(entry);
 					return;
-				
 				}
+				
+				//! Inside Global Function Definition
 				else if (entry.c_scope == "null" && entry.f_scope != "null")
 				{	
 					if (temp.valid && temp.c_scope == "null" && temp.f_scope == "null")
 						return;
 				
 				}
+				
+				//! Inside Global Class Definition
 				else if (entry.c_scope != "null" && entry.f_scope == "null")
 				{
 					
 					return;
 				}
+				
+				//! Inside Function Class Definition
 				else if (entry.c_scope != "null" && entry.f_scope != "null")
 				{
 					
 					return;
 				}
-				return;
-			} else { //! Use
+				
+				//! Never
+				throw new NoViableAltException(this);
+				
+			}
+			else //! Use
+			{
 				return;
 			}
 		}
-		return;
-		//! Not found/match
 		
+		//! Not found/match
+		return;
 	}
 
 	static { RuntimeMetaData.checkVersion("4.7.1", RuntimeMetaData.VERSION); }
@@ -783,27 +783,9 @@ public class FreedomLessLessParser extends Parser {
 		}
 		public Attribute_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
-			switch (((ScopeInformation) parent).type()) {
-				case "program" :
-					_permission = "public";
-					_c_scope = "null";
-					_f_scope = "null";
-					break;
-				case "class" : 
-					_permission = ((ScopeInformation) parent).permission();
-					_c_scope = ((ScopeInformation) parent).c_scope();
-					_f_scope = "null";
-					break;
-				case "function" :
-					_permission = "private";
-					_c_scope = ((ScopeInformation) parent).c_scope();
-					_f_scope = ((ScopeInformation) parent).f_scope();
-					break;
-				default:
-					// throw new NoViableAltException(this);
-					break;
-			}
-
+			_permission = ((ScopeInformation) parent).c_scope();
+			_c_scope = ((ScopeInformation) parent).c_scope();
+			_f_scope = ((ScopeInformation) parent).f_scope();
 		}
 		@Override public int getRuleIndex() { return RULE_attribute_def; }
 		@Override
@@ -819,7 +801,7 @@ public class FreedomLessLessParser extends Parser {
 		
 		//! Methods
 		@Override
-		public String type() 		 { return "attribute"; }
+		public String type() 		 { return "variable"; }
 		@Override
 		public String c_scope() 	 { return _c_scope;    }
 		@Override
@@ -1238,7 +1220,7 @@ public class FreedomLessLessParser extends Parser {
 				entry.features.add("null");
 //				entry.features.add("arithmetic");
 				entry.id = _localctx.ID().getSymbol().getText();
-				entry.type = "attribute";
+				entry.type = "variable";
 				entry.valid = false;
 
 				lookUpTable(entry);
@@ -1575,7 +1557,7 @@ public class FreedomLessLessParser extends Parser {
 				//**************
 				
 				entry.id = _localctx.ID(2).getSymbol().getText();
-				entry.type = "attribute";
+				entry.type = "variable";
 				entry.features.add("null");
 
 				lookUpTable(entry);
@@ -2177,7 +2159,7 @@ public class FreedomLessLessParser extends Parser {
 		}
 		
 		@Override
-		public String type() { return "attribute"; }
+		public String type() { return "variable"; }
 		@Override
 		public String c_scope() { return _c_scope; }
 		@Override
