@@ -3517,6 +3517,9 @@ public class FreedomLessLessParser extends Parser {
 		public TerminalNode ID() { return getToken(FreedomLessLessParser.ID, 0); }
 		public Type_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
+			_permission = ((ScopeInformation) parent).permission();
+			_c_scope = ((ScopeInformation) parent).permission();;
+			_f_scope = ((ScopeInformation) parent).permission();;
 		}
 		@Override public int getRuleIndex() { return RULE_type_def; }
 		@Override
@@ -3532,7 +3535,7 @@ public class FreedomLessLessParser extends Parser {
 		
 		//! Methods
 		@Override
-		public String type() 		 { return "type"; 	   }
+		public String type() 		 { return _type; 	   }
 		@Override
 		public String c_scope() 	 { return _c_scope;    }
 		@Override
@@ -3544,6 +3547,7 @@ public class FreedomLessLessParser extends Parser {
 		public String _permission;
 		public String _c_scope;
 		public String _f_scope;
+		public String _type = "type";
 	}
 
 	public final Type_defContext type_def() throws RecognitionException {
@@ -3558,6 +3562,9 @@ public class FreedomLessLessParser extends Parser {
 				{
 				setState(471);
 				match(INT_T);
+				
+				//! Define type
+				_localctx._type = "int";
 				}
 				break;
 			case DOUBLE_T:
@@ -3565,6 +3572,9 @@ public class FreedomLessLessParser extends Parser {
 				{
 				setState(472);
 				match(DOUBLE_T);
+				
+				//! Define type
+				_localctx._type = "double";
 				}
 				break;
 			case CHAR_T:
@@ -3572,6 +3582,9 @@ public class FreedomLessLessParser extends Parser {
 				{
 				setState(473);
 				match(CHAR_T);
+				
+				//! Define type
+				_localctx._type = "char";
 				}
 				break;
 			case BOOL_T:
@@ -3579,6 +3592,9 @@ public class FreedomLessLessParser extends Parser {
 				{
 				setState(474);
 				match(BOOL_T);
+				
+				//! Define type
+				_localctx._type = "bool";
 				}
 				break;
 			case CLASS:
@@ -3588,6 +3604,9 @@ public class FreedomLessLessParser extends Parser {
 				match(CLASS);
 				setState(476);
 				match(ID);
+				
+				//! Define type
+				_localctx._type = "class" + _localctx.ID().getSymbol().getText();;
 				}
 				break;
 			default:
@@ -3630,7 +3649,7 @@ public class FreedomLessLessParser extends Parser {
 		
 		//! Methods
 		@Override
-		public String type() 		 { return "value"; 	   }
+		public String type() 		 { return _type; 	   }
 		@Override
 		public String c_scope() 	 { return _c_scope;    }
 		@Override
@@ -3642,6 +3661,8 @@ public class FreedomLessLessParser extends Parser {
 		public String _permission;
 		public String _c_scope;
 		public String _f_scope;
+		public String _type;
+		public String _value;
 	}
 
 	public final Value_defContext value_def() throws RecognitionException {
