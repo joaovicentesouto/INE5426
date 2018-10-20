@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.lang.Exception;
 
 class SymbolEntry
 {
@@ -40,7 +41,7 @@ public class FreedomLessLessParser extends Parser {
 
 	private static ArrayList<SymbolEntry> _symbolTable;
 
-	public void lookUpTable(SymbolEntry entry)
+	public void lookUpTable(SymbolEntry entry) throws Exception
 	{
 		SymbolEntry temp;
 		
@@ -63,7 +64,7 @@ public class FreedomLessLessParser extends Parser {
 					//! Different features -> error
 					if (entry.features.equals(temp.features))
 					{
-						String feature_string;
+						String feature_string = "";
 						for (String s : temp.features)
 							feature_string += " " + s;
 						
@@ -142,7 +143,7 @@ public class FreedomLessLessParser extends Parser {
 							throw new Exception(temp.id + " já foi declarado no mesmo escopo!");
 					}
 					else if (temp.c_scope == entry.c_scope && temp.f_scope == entry.f_scope)
-						throw new Exception(temp.id + " foi usado antes de ser declarado no escopo da funcão " temp.f_scope);
+						throw new Exception(temp.id + " foi usado antes de ser declarado no escopo da funcão " + temp.f_scope);
 					
 					continue;
 				}
@@ -482,7 +483,7 @@ public class FreedomLessLessParser extends Parser {
 		public String _f_scope;
 	}
 
-	public final Program_defContext program_def() throws RecognitionException {
+	public final Program_defContext program_def() throws RecognitionException, Exception {
 		Program_defContext _localctx = new Program_defContext(_ctx, getState());
 		enterRule(_localctx, 0, RULE_program_def);
 		int _la;
@@ -593,7 +594,7 @@ public class FreedomLessLessParser extends Parser {
 		public String _f_scope;
 	}
 
-	public final Class_defContext class_def() throws RecognitionException {
+	public final Class_defContext class_def() throws RecognitionException, Exception {
 		Class_defContext _localctx = new Class_defContext(_ctx, getState());
 		enterRule(_localctx, 2, RULE_class_def);
 		try {
@@ -676,7 +677,7 @@ public class FreedomLessLessParser extends Parser {
 		public String _f_scope;
 	}
 
-	public final Class_members_defContext class_members_def() throws RecognitionException {
+	public final Class_members_defContext class_members_def() throws RecognitionException, Exception {
 		Class_members_defContext _localctx = new Class_members_defContext(_ctx, getState());
 		enterRule(_localctx, 4, RULE_class_members_def);
 		int _la;
@@ -762,7 +763,7 @@ public class FreedomLessLessParser extends Parser {
 		public String _f_scope;
 	}
 
-	public final Public_defContext public_def() throws RecognitionException {
+	public final Public_defContext public_def() throws RecognitionException, Exception {
 		Public_defContext _localctx = new Public_defContext(_ctx, getState());
 		enterRule(_localctx, 6, RULE_public_def);
 		try {
@@ -824,7 +825,7 @@ public class FreedomLessLessParser extends Parser {
 		public String _f_scope;
 	}
 
-	public final Private_defContext private_def() throws RecognitionException {
+	public final Private_defContext private_def() throws RecognitionException, Exception {
 		Private_defContext _localctx = new Private_defContext(_ctx, getState());
 		enterRule(_localctx, 8, RULE_private_def);
 		try {
@@ -898,7 +899,7 @@ public class FreedomLessLessParser extends Parser {
 		public String _f_scope;
 	}
 
-	public final Class_scope_defContext class_scope_def() throws RecognitionException {
+	public final Class_scope_defContext class_scope_def() throws RecognitionException, Exception {
 		Class_scope_defContext _localctx = new Class_scope_defContext(_ctx, getState());
 		enterRule(_localctx, 10, RULE_class_scope_def);
 		int _la;
@@ -1028,7 +1029,7 @@ public class FreedomLessLessParser extends Parser {
 		public String _f_scope;
 	}
 
-	public final Attribute_defContext attribute_def() throws RecognitionException {
+	public final Attribute_defContext attribute_def() throws RecognitionException, Exception {
 		Attribute_defContext _localctx = new Attribute_defContext(_ctx, getState());
 		enterRule(_localctx, 12, RULE_attribute_def);
 		int _la;
@@ -1368,7 +1369,7 @@ public class FreedomLessLessParser extends Parser {
 		public String _f_scope;
 	}
 
-	public final Valued_expression_defContext valued_expression_def() throws RecognitionException {
+	public final Valued_expression_defContext valued_expression_def() throws RecognitionException, Exception {
 		Valued_expression_defContext _localctx = new Valued_expression_defContext(_ctx, getState());
 		enterRule(_localctx, 14, RULE_valued_expression_def);
 		int _la;
@@ -1586,7 +1587,7 @@ public class FreedomLessLessParser extends Parser {
 		public String _f_scope;
 	}
 
-	public final OperationContext operation() throws RecognitionException {
+	public final OperationContext operation() throws RecognitionException, Exception {
 		OperationContext _localctx = new OperationContext(_ctx, getState());
 		enterRule(_localctx, 16, RULE_operation);
 		try {
@@ -1722,7 +1723,7 @@ public class FreedomLessLessParser extends Parser {
 		public String _f_scope;
 	}
 
-	public final Function_call_defContext function_call_def() throws RecognitionException {
+	public final Function_call_defContext function_call_def() throws RecognitionException, Exception {
 		Function_call_defContext _localctx = new Function_call_defContext(_ctx, getState());
 		enterRule(_localctx, 18, RULE_function_call_def);
 		int _la;
@@ -2070,7 +2071,7 @@ public class FreedomLessLessParser extends Parser {
 		public String _f_scope;
 	}
 
-	public final Argument_defContext argument_def() throws RecognitionException {
+	public final Argument_defContext argument_def() throws RecognitionException, Exception {
 		Argument_defContext _localctx = new Argument_defContext(_ctx, getState());
 		enterRule(_localctx, 20, RULE_argument_def);
 		int _la;
@@ -2168,7 +2169,7 @@ public class FreedomLessLessParser extends Parser {
 			getParamsTypes(entry, aux);
 	}
 
-	public final Function_defContext function_def() throws RecognitionException {
+	public final Function_defContext function_def() throws RecognitionException, Exception {
 		Function_defContext _localctx = new Function_defContext(_ctx, getState());
 		enterRule(_localctx, 22, RULE_function_def);
 		int _la;
@@ -2385,7 +2386,7 @@ public class FreedomLessLessParser extends Parser {
 		public String _f_scope;
 	}
 
-	public final Param_defContext param_def() throws RecognitionException {
+	public final Param_defContext param_def() throws RecognitionException, Exception {
 		Param_defContext _localctx = new Param_defContext(_ctx, getState());
 		enterRule(_localctx, 24, RULE_param_def);
 		int _la;
@@ -2561,7 +2562,7 @@ public class FreedomLessLessParser extends Parser {
 		public String _f_scope;
 	}
 
-	public final Block_defContext block_def() throws RecognitionException {
+	public final Block_defContext block_def() throws RecognitionException, Exception {
 		Block_defContext _localctx = new Block_defContext(_ctx, getState());
 		enterRule(_localctx, 26, RULE_block_def);
 		int _la;
@@ -2690,7 +2691,7 @@ public class FreedomLessLessParser extends Parser {
 		public String _f_scope;
 	}
 
-	public final Valueless_expression_defContext valueless_expression_def() throws RecognitionException {
+	public final Valueless_expression_defContext valueless_expression_def() throws RecognitionException, Exception {
 		Valueless_expression_defContext _localctx = new Valueless_expression_defContext(_ctx, getState());
 		enterRule(_localctx, 28, RULE_valueless_expression_def);
 		SymbolEntry entry;
@@ -2898,7 +2899,7 @@ public class FreedomLessLessParser extends Parser {
 		public String _f_scope;
 	}
 
-	public final Struct_defContext struct_def() throws RecognitionException {
+	public final Struct_defContext struct_def() throws RecognitionException, Exception {
 		Struct_defContext _localctx = new Struct_defContext(_ctx, getState());
 		enterRule(_localctx, 30, RULE_struct_def);
 		try {
@@ -2996,7 +2997,7 @@ public class FreedomLessLessParser extends Parser {
 		public String _f_scope;
 	}
 
-	public final If_defContext if_def() throws RecognitionException {
+	public final If_defContext if_def() throws RecognitionException, Exception {
 		If_defContext _localctx = new If_defContext(_ctx, getState());
 		enterRule(_localctx, 32, RULE_if_def);
 		int _la;
@@ -3099,7 +3100,7 @@ public class FreedomLessLessParser extends Parser {
 		public String _f_scope;
 	}
 
-	public final For_defContext for_def() throws RecognitionException {
+	public final For_defContext for_def() throws RecognitionException, Exception {
 		For_defContext _localctx = new For_defContext(_ctx, getState());
 		enterRule(_localctx, 34, RULE_for_def);
 		int _la;
@@ -3216,7 +3217,7 @@ public class FreedomLessLessParser extends Parser {
 		public String _f_scope;
 	}
 
-	public final Valued_attribute_defContext valued_attribute_def() throws RecognitionException {
+	public final Valued_attribute_defContext valued_attribute_def() throws RecognitionException, Exception {
 		Valued_attribute_defContext _localctx = new Valued_attribute_defContext(_ctx, getState());
 		enterRule(_localctx, 36, RULE_valued_attribute_def);
 		SymbolEntry entry;
@@ -3342,7 +3343,7 @@ public class FreedomLessLessParser extends Parser {
 		public String _f_scope;
 	}
 
-	public final While_defContext while_def() throws RecognitionException {
+	public final While_defContext while_def() throws RecognitionException, Exception {
 		While_defContext _localctx = new While_defContext(_ctx, getState());
 		enterRule(_localctx, 38, RULE_while_def);
 		try {
@@ -3423,7 +3424,7 @@ public class FreedomLessLessParser extends Parser {
 		public String _f_scope;
 	}
 
-	public final Switch_defContext switch_def() throws RecognitionException {
+	public final Switch_defContext switch_def() throws RecognitionException, Exception {
 		Switch_defContext _localctx = new Switch_defContext(_ctx, getState());
 		enterRule(_localctx, 40, RULE_switch_def);
 		int _la;
@@ -3528,7 +3529,7 @@ public class FreedomLessLessParser extends Parser {
 		public String _f_scope;
 	}
 
-	public final Switch_case_defContext switch_case_def() throws RecognitionException {
+	public final Switch_case_defContext switch_case_def() throws RecognitionException, Exception {
 		Switch_case_defContext _localctx = new Switch_case_defContext(_ctx, getState());
 		enterRule(_localctx, 42, RULE_switch_case_def);
 		try {
@@ -3665,7 +3666,7 @@ public class FreedomLessLessParser extends Parser {
 		public String _f_scope;
 	}
 
-	public final Switch_default_defContext switch_default_def() throws RecognitionException {
+	public final Switch_default_defContext switch_default_def() throws RecognitionException, Exception {
 		Switch_default_defContext _localctx = new Switch_default_defContext(_ctx, getState());
 		enterRule(_localctx, 44, RULE_switch_default_def);
 		try {
@@ -3795,7 +3796,7 @@ public class FreedomLessLessParser extends Parser {
 		public String _f_scope;
 	}
 
-	public final Main_defContext main_def() throws RecognitionException {
+	public final Main_defContext main_def() throws RecognitionException, Exception {
 		Main_defContext _localctx = new Main_defContext(_ctx, getState());
 		enterRule(_localctx, 46, RULE_main_def);
 		SymbolEntry entry;
@@ -3909,7 +3910,7 @@ public class FreedomLessLessParser extends Parser {
 		public String _type = "type";
 	}
 
-	public final Type_defContext type_def() throws RecognitionException {
+	public final Type_defContext type_def() throws RecognitionException, Exception {
 		Type_defContext _localctx = new Type_defContext(_ctx, getState());
 		enterRule(_localctx, 48, RULE_type_def);
 		try {
@@ -4027,7 +4028,7 @@ public class FreedomLessLessParser extends Parser {
 		public String _value;
 	}
 
-	public final Value_defContext value_def() throws RecognitionException {
+	public final Value_defContext value_def() throws RecognitionException, Exception {
 		Value_defContext _localctx = new Value_defContext(_ctx, getState());
 		enterRule(_localctx, 50, RULE_value_def);
 		int _la;
@@ -4100,7 +4101,7 @@ public class FreedomLessLessParser extends Parser {
 		public String _f_scope;
 	}
 
-	public final Logical_opContext logical_op() throws RecognitionException {
+	public final Logical_opContext logical_op() throws RecognitionException, Exception {
 		Logical_opContext _localctx = new Logical_opContext(_ctx, getState());
 		enterRule(_localctx, 52, RULE_logical_op);
 		int _la;
@@ -4169,7 +4170,7 @@ public class FreedomLessLessParser extends Parser {
 		public String _f_scope;
 	}
 
-	public final Arithmetic_opContext arithmetic_op() throws RecognitionException {
+	public final Arithmetic_opContext arithmetic_op() throws RecognitionException, Exception {
 		Arithmetic_opContext _localctx = new Arithmetic_opContext(_ctx, getState());
 		enterRule(_localctx, 54, RULE_arithmetic_op);
 		int _la;
@@ -4238,7 +4239,7 @@ public class FreedomLessLessParser extends Parser {
 		public String _f_scope;
 	}
 
-	public final Auto_assign_opContext auto_assign_op() throws RecognitionException {
+	public final Auto_assign_opContext auto_assign_op() throws RecognitionException, Exception {
 		Auto_assign_opContext _localctx = new Auto_assign_opContext(_ctx, getState());
 		enterRule(_localctx, 56, RULE_auto_assign_op);
 		int _la;
@@ -4304,7 +4305,7 @@ public class FreedomLessLessParser extends Parser {
 		public String _f_scope;
 	}
 
-	public final Auto_increm_opContext auto_increm_op() throws RecognitionException {
+	public final Auto_increm_opContext auto_increm_op() throws RecognitionException, Exception {
 		Auto_increm_opContext _localctx = new Auto_increm_opContext(_ctx, getState());
 		enterRule(_localctx, 58, RULE_auto_increm_op);
 		int _la;
