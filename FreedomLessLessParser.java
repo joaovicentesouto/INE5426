@@ -2452,6 +2452,7 @@ public class FreedomLessLessParser extends Parser {
 	public final Valueless_expression_defContext valueless_expression_def() throws RecognitionException {
 		Valueless_expression_defContext _localctx = new Valueless_expression_defContext(_ctx, getState());
 		enterRule(_localctx, 28, RULE_valueless_expression_def);
+		SymbolEntry entry;
 		try {
 			setState(357);
 			_errHandler.sync(this);
@@ -2507,6 +2508,21 @@ public class FreedomLessLessParser extends Parser {
 					match(OPEN_PAR);
 					setState(344);
 					match(ID);
+
+					//**************
+				
+					entry = new SymbolEntry();
+
+					entry.c_scope = _localctx.c_scope();
+					entry.f_scope = _localctx.f_scope();
+					entry.features.add("null");
+					entry.permission = _localctx.permission();
+					entry.id = _localctx.ID().getSymbol().getText();;
+					entry.type = _localctx.type();
+					entry.valid = false;
+
+					lookUpTable(entry);
+
 					setState(345);
 					match(CLOSE_PAR);
 					}
@@ -2515,6 +2531,21 @@ public class FreedomLessLessParser extends Parser {
 					{
 					setState(346);
 					match(ID);
+
+					//**************
+				
+					entry = new SymbolEntry();
+
+					entry.c_scope = _localctx.c_scope();
+					entry.f_scope = _localctx.f_scope();
+					entry.features.add("null");
+					entry.permission = _localctx.permission();
+					entry.id = _localctx.ID().getSymbol().getText();;
+					entry.type = _localctx.type();
+					entry.valid = false;
+
+					lookUpTable(entry);
+
 					}
 					break;
 				default:
@@ -2935,6 +2966,7 @@ public class FreedomLessLessParser extends Parser {
 	public final Valued_attribute_defContext valued_attribute_def() throws RecognitionException {
 		Valued_attribute_defContext _localctx = new Valued_attribute_defContext(_ctx, getState());
 		enterRule(_localctx, 36, RULE_valued_attribute_def);
+		SymbolEntry entry;
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
@@ -2949,12 +2981,42 @@ public class FreedomLessLessParser extends Parser {
 				match(MULT);
 				setState(400);
 				match(ID);
+
+				//**************
+				
+				entry = new SymbolEntry();
+
+				entry.c_scope = _localctx.c_scope();
+				entry.f_scope = _localctx.f_scope();
+				entry.features.add("null");
+				entry.permission = _localctx.permission();
+				entry.id = _localctx.ID().getSymbol().getText();;
+				entry.type = _localctx.type();
+				entry.valid = true;
+
+				lookUpTable(entry);
+				
 				}
 				break;
 			case ID:
 				{
 				setState(401);
 				match(ID);
+				
+				//**************
+				
+				entry = new SymbolEntry();
+
+				entry.c_scope = _localctx.c_scope();
+				entry.f_scope = _localctx.f_scope();
+				entry.features.add("null");
+				entry.permission = _localctx.permission();
+				entry.id = _localctx.ID().getSymbol().getText();;
+				entry.type = _localctx.type();
+				entry.valid = true;
+
+				lookUpTable(entry);
+
 				setState(402);
 				match(OPEN_BRAK);
 				setState(403);
