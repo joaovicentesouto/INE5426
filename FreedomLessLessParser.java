@@ -79,11 +79,11 @@ public class FreedomLessLessParser extends Parser {
 				else if (entry.c_scope == "null" && entry.f_scope != "null")
 				{
 					//! temp is a global definition OR same scope definition (temp class id maybe)
-					if (temp.c_scope == "null" temp.f_scope == "null")
+					if (temp.c_scope == "null" && temp.f_scope == "null")
 						throw new Exception(temp.id + " já foi declarado globalmente!");
 					
 					if (temp.c_scope == "null" && temp.f_scope == entry.f_scope)
-						throw new Exception(temp.id + " já foi declarado no mesmo escopo!");
+						throw new Exception(temp.id + " já foi usado/declarado no mesmo escopo!");
 
 					continue;
 				}
@@ -98,10 +98,8 @@ public class FreedomLessLessParser extends Parser {
 							throw new Exception(temp.id + " já foi declarado globalmente!");
 						
 						//! Variable
-						if (temp.c_scope == entry.c_scope && temp.f_scope == "null")
+						if (temp.c_scope == entry.c_scope)
 							throw new Exception(temp.id + " já foi declarado no mesmo escopo!");
-						
-						continue;
 					}
 					else
 					{
@@ -109,16 +107,24 @@ public class FreedomLessLessParser extends Parser {
 						if (temp.c_scope == "null" && temp.f_scope == "null")
 							throw new Exception(temp.id + " não pode ser usado globalmente!");
 						
-						//! Match
+						//! Match outside a function
 						if (temp.c_scope == entry.c_scope && temp.f_scope == "null")
-						{	
+						{
 							_symbolTable.remove(i);
 							_symbolTable.add(entry);
 							return;
 						}
 						
-						continue;
+						//! Match inside a function
+						if (temp.c_scope == entry.c_scope && temp.f_scope == entry.id)
+						{	
+							_symbolTable.remove(i);
+							_symbolTable.add(entry);
+							return;
+						}
 					}
+					
+					continue;
 				}
 				
 				//! Inside Function Class Definition (ENTRY is ONLY VARIABLE)
@@ -134,21 +140,11 @@ public class FreedomLessLessParser extends Parser {
 						
 						if (temp.c_scope == entry.c_scope && temp.f_scope == entry.f_scope)
 							throw new Exception(temp.id + " já foi declarado no mesmo escopo!");
-						
-						continue;
 					}
-					else
-					{
-						//! Never
-						if (temp.c_scope == "null" && temp.f_scope == "null")
-							throw new Exception("É para não acontecer");
-						else if (temp.c_scope == "null" && temp.f_scope != "null")
-							throw new Exception("É para não acontecer");
-						else if (temp.c_scope != "null" && temp.f_scope == "null")
-							x;
-						else if (temp.c_scope != "null" && temp.f_scope != "null")
-							x;
-					}
+					else if (temp.c_scope == entry.c_scope && temp.f_scope == entry.f_scope)
+						throw new Exception(temp.id + " foi usado antes de ser declarado no escopo da funcão " temp.f_scope);
+					
+					continue;
 				}
 				
 				//! Never
