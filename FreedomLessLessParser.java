@@ -215,9 +215,10 @@ public class FreedomLessLessParser extends Parser {
 						if (temp.c_scope == "null" && temp.f_scope == "null")
 							throw new Exception("Não deveria acontecer!");
 						
-//						if (temp.c_scope == "null" && temp.f_scope == entry.f_scope)
-//							continue;
-//						
+						//! Another like me
+						if (temp.c_scope == "null" && temp.f_scope == entry.f_scope)
+							return;
+						
 //						if (temp.c_scope != "null" && temp.f_scope == "null")
 //							continue;
 //						
@@ -245,7 +246,7 @@ public class FreedomLessLessParser extends Parser {
 							return;
 						
 						if (temp.c_scope == entry.c_scope && temp.f_scope != "null")
-							throw new Exception(temp.id + " conflito com outra variável na funcão " + temp.f_scope);
+							throw new Exception(temp.id + " conflito com outra variável da funcão " + temp.f_scope);
 					}
 					else
 					{
@@ -260,8 +261,8 @@ public class FreedomLessLessParser extends Parser {
 						if (temp.c_scope == entry.c_scope && temp.f_scope == "null")
 							return;
 						
-						if (temp.c_scope == entry.c_scope && temp.f_scope != "null")
-							throw new Exception(temp.id + " conflito com outra variável na funcão " + temp.f_scope);
+//						if (temp.c_scope == entry.c_scope && temp.f_scope != "null")
+//							throw new Exception(temp.id + " conflito com outra variável na funcão " + temp.f_scope);
 					}
 					
 					continue;
@@ -272,17 +273,38 @@ public class FreedomLessLessParser extends Parser {
 				{
 					if (temp.valid)
 					{
+						//! Found
 						if (temp.c_scope == "null" && temp.f_scope == "null")
-							throw new Exception(temp.id + " já foi declarado globalmente!");
+							return;
 						
+//						//! Another scope
+//						if (temp.c_scope == "null" && temp.f_scope == entry.f_scope)
+//							continue;
+
+						//! Found
 						if (temp.c_scope == entry.c_scope && temp.f_scope == "null")
-							throw new Exception(temp.id + " já foi declarado no escopo da classe " + temp.c_scope);
+							return;
 						
+						//! Found
 						if (temp.c_scope == entry.c_scope && temp.f_scope == entry.f_scope)
-							throw new Exception(temp.id + " já foi declarado no mesmo escopo!");
+							return;
 					}
-					else if (temp.c_scope == entry.c_scope && temp.f_scope == entry.f_scope)
-						throw new Exception(temp.id + " foi usado antes de ser declarado no escopo da funcão " temp.f_scope);
+					else
+					{
+						//! Not exists
+						if (temp.c_scope == "null" && temp.f_scope == "null")
+							throw new Exception(temp.id + " não pode ser usado globalmente!");
+						
+//						if (temp.c_scope == "null" && temp.f_scope == entry.f_scope)
+//							continue;
+
+						if (temp.c_scope == entry.c_scope && temp.f_scope == "null")
+							return;
+
+						//! Another like me
+						if (temp.c_scope == entry.c_scope && temp.f_scope == entry.f_scope)
+							return;
+					}
 					
 					continue;
 				}
