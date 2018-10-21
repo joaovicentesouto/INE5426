@@ -147,19 +147,22 @@ public class FreedomLessLessParser extends Parser {
 							throw new Exception(temp.id + " não pode ser usado globalmente!");
 						
 						//! Match outside a function
-						if (temp.c_scope.equals(entry.c_scope) && temp.f_scope.equals("null"))
-						{
+						if (temp.c_scope.equals(entry.c_scope) && entry.features.size() == temp.features.size()) {
 							_symbolTable.remove(i);
 							_symbolTable.add(entry);
 							return;
 						}
-						
-						//! Match inside a function
-						if (temp.c_scope.equals(entry.c_scope))
-						{
-							_symbolTable.remove(i);
-							_symbolTable.add(entry);
-							return;
+
+						if (temp.c_scope.equals(entry.c_scope) && entry.features.size() != temp.features.size()) {
+							String msg = temp.features.get(0) + "(";
+							int x;
+							for (x = 1; x < temp.features.size() - 1; x++)
+								msg += temp.features.get(x) + ", ";
+
+							if (x < temp.features.size())
+								msg += temp.features.get(x);
+
+							throw new Exception(entry.id + " está sendo usado de forma diferente.");
 						}
 					}
 					
@@ -272,8 +275,20 @@ public class FreedomLessLessParser extends Parser {
 							throw new Exception("Não deveria acontecer!");
 						
 						//! Another like me
-						if (temp.c_scope.equals("null") && temp.f_scope.equals(entry.f_scope))
-							return;
+						if (temp.c_scope.equals("null") && temp.f_scope.equals(entry.f_scope)) {
+							if (entry.features.size() == temp.features.size())
+								return;
+
+							String msg = temp.features.get(0) + "(";
+							int x;
+							for (x = 1; x < temp.features.size() - 1; x++)
+								msg += temp.features.get(x) + ", ";
+
+							if (x < temp.features.size())
+								msg += temp.features.get(x);
+
+							throw new Exception(entry.id + " está sendo usado de forma diferente.");
+						}
 						
 //						if (!temp.c_scope.equals("null") && temp.f_scope.equals("null"))
 //							continue;
@@ -291,15 +306,39 @@ public class FreedomLessLessParser extends Parser {
 					if (temp.valid)
 					{
 						//! Found
-						if (temp.c_scope.equals("null") && temp.f_scope.equals("null"))
-							return;
+						if (temp.c_scope.equals("null") && temp.f_scope.equals("null")) {
+							if (entry.features.size() == temp.features.size())
+								return;
+
+							String msg = temp.features.get(0) + "(";
+							int x;
+							for (x = 1; x < temp.features.size() - 1; x++)
+								msg += temp.features.get(x) + ", ";
+
+							if (x < temp.features.size())
+								msg += temp.features.get(x);
+
+							throw new Exception(entry.id + " está sendo usado de forma diferente.");
+						}
 						
 //						if (temp.c_scope.equals("null") && temp.f_scope.equals(entry.f_scope))
 //							continue;
 
 						//! Found
-						if (temp.c_scope.equals(entry.c_scope) && temp.f_scope.equals("null"))
-							return;
+						if (temp.c_scope.equals(entry.c_scope) && temp.f_scope.equals("null")) {
+							if (entry.features.size() == temp.features.size())
+								return;
+
+							String msg = temp.features.get(0) + "(";
+							int x;
+							for (x = 1; x < temp.features.size() - 1; x++)
+								msg += temp.features.get(x) + ", ";
+
+							if (x < temp.features.size())
+								msg += temp.features.get(x);
+
+							throw new Exception(entry.id + " está sendo usado de forma diferente.");
+						}
 						
 						if (temp.c_scope.equals(entry.c_scope) && !temp.f_scope.equals("null"))
 							throw new Exception(temp.id + " conflito com outra variável da funcão " + temp.f_scope);
@@ -314,8 +353,20 @@ public class FreedomLessLessParser extends Parser {
 //							continue;
 
 						//! Another like me
-						if (temp.c_scope.equals(entry.c_scope) && temp.f_scope.equals("null"))
-							return;
+						if (temp.c_scope.equals(entry.c_scope) && temp.f_scope.equals("null")) {
+							if (entry.features.size() == temp.features.size())
+								return;
+
+							String msg = temp.features.get(0) + "(";
+							int x;
+							for (x = 1; x < temp.features.size() - 1; x++)
+								msg += temp.features.get(x) + ", ";
+
+							if (x < temp.features.size())
+								msg += temp.features.get(x);
+
+							throw new Exception(entry.id + " está sendo usado de forma diferente.");
+						}
 						
 //						if (temp.c_scope.equals(entry.c_scope) && !temp.f_scope.equals("null"))
 //							throw new Exception(temp.id + " conflito com outra variável na funcão " + temp.f_scope);
@@ -330,20 +381,56 @@ public class FreedomLessLessParser extends Parser {
 					if (temp.valid)
 					{
 						//! Found
-						if (temp.c_scope.equals("null") && temp.f_scope.equals("null"))
-							return;
+						if (temp.c_scope.equals("null") && temp.f_scope.equals("null")) {
+							if (entry.features.size() == temp.features.size())
+								return;
+
+							String msg = temp.features.get(0) + "(";
+							int x;
+							for (x = 1; x < temp.features.size() - 1; x++)
+								msg += temp.features.get(x) + ", ";
+
+							if (x < temp.features.size())
+								msg += temp.features.get(x);
+
+							throw new Exception(entry.id + " está sendo usado de forma diferente.");
+						}
 						
 //						//! Another scope
 //						if (temp.c_scope.equals("null") && temp.f_scope.equals(entry.f_scope))
 //							continue;
 
 						//! Found
-						if (temp.c_scope.equals(entry.c_scope) && temp.f_scope.equals("null"))
-							return;
+						if (temp.c_scope.equals(entry.c_scope) && temp.f_scope.equals("null")) {
+							if (entry.features.size() == temp.features.size())
+								return;
+
+							String msg = temp.features.get(0) + "(";
+							int x;
+							for (x = 1; x < temp.features.size() - 1; x++)
+								msg += temp.features.get(x) + ", ";
+
+							if (x < temp.features.size())
+								msg += temp.features.get(x);
+
+							throw new Exception(entry.id + " está sendo usado de forma diferente.");
+						}
 						
 						//! Found
-						if (temp.c_scope.equals(entry.c_scope) && temp.f_scope.equals(entry.f_scope))
-							return;
+						if (temp.c_scope.equals(entry.c_scope) && temp.f_scope.equals(entry.f_scope)) {
+							if (entry.features.size() == temp.features.size())
+								return;
+
+							String msg = temp.features.get(0) + "(";
+							int x;
+							for (x = 1; x < temp.features.size() - 1; x++)
+								msg += temp.features.get(x) + ", ";
+
+							if (x < temp.features.size())
+								msg += temp.features.get(x);
+
+							throw new Exception(entry.id + " está sendo usado de forma diferente.");
+						}
 					}
 					else
 					{
@@ -354,12 +441,36 @@ public class FreedomLessLessParser extends Parser {
 //						if (temp.c_scope.equals("null") && temp.f_scope.equals(entry.f_scope))
 //							continue;
 
-						if (temp.c_scope.equals(entry.c_scope) && temp.f_scope.equals("null"))
-							return;
+						if (temp.c_scope.equals(entry.c_scope) && temp.f_scope.equals("null")) {
+							if (entry.features.size() == temp.features.size())
+								return;
+
+							String msg = temp.features.get(0) + "(";
+							int x;
+							for (x = 1; x < temp.features.size() - 1; x++)
+								msg += temp.features.get(x) + ", ";
+
+							if (x < temp.features.size())
+								msg += temp.features.get(x);
+
+							throw new Exception(entry.id + " está sendo usado de forma diferente.");
+						}
 
 						//! Another like me
-						if (temp.c_scope.equals(entry.c_scope) && temp.f_scope.equals(entry.f_scope))
-							return;
+						if (temp.c_scope.equals(entry.c_scope) && temp.f_scope.equals(entry.f_scope)) {
+							if (entry.features.size() == temp.features.size())
+								return;
+
+							String msg = temp.features.get(0) + "(";
+							int x;
+							for (x = 1; x < temp.features.size() - 1; x++)
+								msg += temp.features.get(x) + ", ";
+
+							if (x < temp.features.size())
+								msg += temp.features.get(x);
+
+							throw new Exception(entry.id + " está sendo usado de forma diferente.");
+						}
 					}
 					
 					continue;
@@ -1544,7 +1655,7 @@ public class FreedomLessLessParser extends Parser {
 				entry.permission = _localctx.permission();
 				entry.c_scope = _localctx.c_scope();
 				entry.f_scope = _localctx.f_scope();
-				// entry.features.add("null");
+				entry.features.add("null");
 //				entry.features.add("arithmetic");
 				entry.id = _localctx.ID().getSymbol().getText();
 				entry.type = "variable";
@@ -1845,6 +1956,7 @@ public class FreedomLessLessParser extends Parser {
 		entry.permission = _localctx.permission();
 		entry.c_scope = _localctx.c_scope();
 		entry.f_scope = _localctx.f_scope();
+		entry.features.add("null");
 		entry.valid = false;
 
 		try {
@@ -2020,6 +2132,7 @@ public class FreedomLessLessParser extends Parser {
 					entry_aux.f_scope = _localctx.f_scope();
 					entry_aux.permission = _localctx.permission();
 					entry_aux.id = _localctx.ID(id_offset++).getSymbol().getText();;
+					entry_aux.features.add("null");
 					entry_aux.type = "variable";
 					entry_aux.valid = false;
 
@@ -2048,7 +2161,7 @@ public class FreedomLessLessParser extends Parser {
 				entry.id = _localctx.ID(id_offset++).getSymbol().getText();;
 				entry.type = "function";
 				entry.valid = false;
-				entry.features.add("null");
+				// entry.features.add("null");
 
 				//**************
 
@@ -2883,7 +2996,7 @@ public class FreedomLessLessParser extends Parser {
 
 					entry.c_scope = _localctx.c_scope();
 					entry.f_scope = _localctx.f_scope();
-					// entry.features.add("null");
+					entry.features.add("null");
 					entry.permission = _localctx.permission();
 					entry.id = _localctx.ID().getSymbol().getText();;
 					entry.type = "variable";
@@ -2908,7 +3021,7 @@ public class FreedomLessLessParser extends Parser {
 
 					entry.c_scope = _localctx.c_scope();
 					entry.f_scope = _localctx.f_scope();
-					// entry.features.add("null");
+					entry.features.add("null");
 					entry.permission = _localctx.permission();
 					entry.id = _localctx.ID().getSymbol().getText();;
 					entry.type = "variable";
