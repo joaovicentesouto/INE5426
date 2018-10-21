@@ -70,16 +70,22 @@ public class FreedomLessLessParser extends Parser {
 
 			if (entry.valid) //! Definitions
 			{
+				System.out.println("** Temp: 2" + temp.id);
 				//! Global Definition (Classes, Functions and Variables)
 				if (entry.c_scope.equals("null") && entry.f_scope.equals("null"))
 				{
+					System.out.println("** Temp: 3" + temp.id);
 					//! Another definition || Same IDs and diff types
-					if (temp.valid || !temp.c_scope.equals("null") || !temp.f_scope.equals("null"))
+					if (temp.valid || temp.type.equals("variable") && (temp.valid || !temp.c_scope.equals("null") || !temp.f_scope.equals("null")))
+						throw new Exception(temp.id + " já foi declarado localmente como " + temp.type);
+
+					if (!temp.c_scope.equals("null") && !temp.f_scope.equals("null") && temp.type.equals("function"))
 						throw new Exception(temp.id + " já foi declarado localmente como " + temp.type);
 					
 					//! Different features -> error
 					if (entry.features.equals(temp.features))
 					{
+						System.out.println("** Temp: 2" + temp.id);
 						String feature_string = "";
 						for (String s : temp.features)
 							feature_string += " " + s;
@@ -95,6 +101,7 @@ public class FreedomLessLessParser extends Parser {
 				//! Inside Global Function Definition (ENTRY is VARIABLE)
 				else if (entry.c_scope.equals("null") && !entry.f_scope.equals("null"))
 				{
+					System.out.println("** Temp: 4" + temp.id);
 					//! temp is a global definition OR same scope definition (temp class id maybe)
 					if (temp.c_scope.equals("null") && temp.f_scope.equals("null"))
 						throw new Exception(temp.id + " já foi declarado globalmente como " + temp.type);
@@ -108,6 +115,7 @@ public class FreedomLessLessParser extends Parser {
 				//! Inside Global Class Definition (ENTRY is ONLY VARIABLE and FUNCTION)
 				else if (!entry.c_scope.equals("null") && entry.f_scope.equals("null"))
 				{
+					System.out.println("** Temp: 5" + temp.id);
 					if (temp.valid)
 					{
 						//! All
@@ -147,6 +155,7 @@ public class FreedomLessLessParser extends Parser {
 				//! Inside Function Class Definition (ENTRY is ONLY VARIABLE)
 				else if (!entry.c_scope.equals("null") && !entry.f_scope.equals("null"))
 				{
+					System.out.println("** Temp: 6" + temp.id);
 					if (temp.valid)
 					{
 						if (temp.c_scope.equals("null") && temp.f_scope.equals("null"))
@@ -163,6 +172,8 @@ public class FreedomLessLessParser extends Parser {
 					
 					continue;
 				}
+
+				System.out.println("** Temp: 7" + temp.id);
 				
 				//! Never
 				throw new NoViableAltException(this);
