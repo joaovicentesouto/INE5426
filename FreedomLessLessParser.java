@@ -51,10 +51,8 @@ public class FreedomLessLessParser extends Parser {
 		System.out.println("c_scope: " + entry.c_scope);
 		System.out.println("f_scope: " + entry.f_scope);
 		System.out.println("permission: " + entry.permission);
-		System.out.print("features: ");
-		for (String s : entry.features)
-			System.out.print(s + " ");
-		System.out.println("\nValid: " + entry.valid);
+		System.out.println("features: " + entry.features);
+		System.out.println("Valid: " + entry.valid);
 
 		SymbolEntry temp;
 		
@@ -70,9 +68,11 @@ public class FreedomLessLessParser extends Parser {
 
 			if (entry.valid) //! Definitions
 			{
+				System.out.println("33");
 				//! Global Definition (Classes, Functions and Variables)
 				if (entry.c_scope.equals("null") && entry.f_scope.equals("null"))
 				{
+					System.out.println("33.3");
 					//! Another definition
 					if (temp.valid || temp.type.equals("variable") && (!temp.c_scope.equals("null") || !temp.f_scope.equals("null")))
 						throw new Exception(temp.id + " já foi declarado localmente como " + temp.type);
@@ -80,14 +80,16 @@ public class FreedomLessLessParser extends Parser {
 					if (!temp.c_scope.equals("null") && !temp.f_scope.equals("null") && temp.type.equals("function"))
 						throw new Exception(temp.id + " já foi declarado localmente como " + temp.type);
 					
-					//! Different features -> error
-					if (entry.features.equals(temp.features))
-					{
-						String feature_string = "";
-						for (String s : temp.features)
-							feature_string += " " + s;
-						
-						throw new Exception(temp.id + " foi declarado como " + feature_string);	
+					if (entry.features.size() != temp.features.size()) {
+						String msg = temp.features.get(0) + "(";
+						int x;
+						for (x = 1; x < temp.features.size() - 1; x++)
+							msg += temp.features.get(x) + ", ";
+
+						if (x < temp.features.size())
+							msg += temp.features.get(x);
+
+						throw new Exception(entry.id + " está sendo usado de forma diferente.");
 					}
 
 					_symbolTable.remove(i);
@@ -95,15 +97,32 @@ public class FreedomLessLessParser extends Parser {
 					return;
 				}
 				
-				//! Inside Global Function Definition (ENTRY is VARIABLE)
+				//! Inside Global Function Definition (ENTRY is VARIABLE and FUNCTION)
 				else if (entry.c_scope.equals("null") && !entry.f_scope.equals("null"))
 				{
-					//! temp is a global definition OR same scope definition (temp class id maybe)
-					if (temp.c_scope.equals("null") && temp.f_scope.equals("null"))
-						throw new Exception(temp.id + " já foi declarado globalmente como " + temp.type);
-					
-					if (temp.c_scope.equals("null") && temp.f_scope.equals(entry.f_scope))
-						throw new Exception(temp.id + " já foi usado/declarado no mesmo escopo!");
+					if (temp.valid)
+					{
+						//! temp is a global definition OR same scope definition (temp class id maybe)
+						if (temp.c_scope.equals("null") && temp.f_scope.equals("null"))
+							throw new Exception(temp.id + " já foi declarado globalmente como " + temp.type);
+						
+						if (temp.c_scope.equals("null") && temp.f_scope.equals(entry.f_scope))
+							throw new Exception(temp.id + " já foi usado/declarado no mesmo escopo!");
+					}
+					else
+					{
+						if (entry.f_scope.equals(temp.f_scope) && entry.features.size() != temp.features.size()) {
+							String msg = temp.features.get(0) + "(";
+							int x;
+							for (x = 1; x < temp.features.size() - 1; x++)
+								msg += temp.features.get(x) + ", ";
+
+							if (x < temp.features.size())
+								msg += temp.features.get(x);
+
+							throw new Exception(entry.id + " está sendo usado de forma diferente.");
+						}
+					}
 
 					continue;
 				}
