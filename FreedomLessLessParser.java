@@ -42,26 +42,39 @@ interface ScopeInformation {
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast"})
 public class FreedomLessLessParser extends Parser {
 
-	private static ArrayList<SymbolEntry> _symbolTable = new ArrayList<SymbolEntry>();
+	public static ArrayList<SymbolEntry> _symbolTable = new ArrayList<SymbolEntry>();
 
 	public void lookUpTable(SymbolEntry entry) throws Exception
 	{
+		System.out.println("\ntype: " + entry.type);
+		System.out.println("id: " + entry.id);
+		System.out.println("c_scope: " + entry.c_scope);
+		System.out.println("f_scope: " + entry.f_scope);
+		System.out.println("permission: " + entry.permission);
+		System.out.print("features: ");
+		for (String s : entry.features)
+			System.out.print(s + " ");
+		System.out.println("\nValid: " + entry.valid);
+
 		SymbolEntry temp;
 		
 		for (int i = 0; i < _symbolTable.size(); i++)
 		{
 			temp = _symbolTable.get(i);
+			System.out.println("-- Temp: " + temp.id);
 			
-			if (temp.id != entry.id)
+			if (!temp.id.equals(entry.id))
 				continue;
+
+			System.out.println("** Temp: " + temp.id);
 
 			if (entry.valid) //! Definitions
 			{
 				//! Global Definition (Classes, Functions and Variables)
-				if (entry.c_scope == "null" && entry.f_scope == "null")
+				if (entry.c_scope.equals("null") && entry.f_scope.equals("null"))
 				{
 					//! Another definition || Same IDs and diff types
-					if (temp.valid || entry.type != temp.type)
+					if (temp.valid || !entry.type.equals(temp.type))
 						throw new Exception(temp.id + " já foi declarado globalmente!");
 					
 					//! Different features -> error
@@ -80,39 +93,39 @@ public class FreedomLessLessParser extends Parser {
 				}
 				
 				//! Inside Global Function Definition (ENTRY is VARIABLE)
-				else if (entry.c_scope == "null" && entry.f_scope != "null")
+				else if (entry.c_scope.equals("null") && !entry.f_scope.equals("null"))
 				{
 					//! temp is a global definition OR same scope definition (temp class id maybe)
-					if (temp.c_scope == "null" && temp.f_scope == "null")
+					if (temp.c_scope.equals("null") && temp.f_scope.equals("null"))
 						throw new Exception(temp.id + " já foi declarado globalmente!");
 					
-					if (temp.c_scope == "null" && temp.f_scope == entry.f_scope)
+					if (temp.c_scope.equals("null") && temp.f_scope.equals(entry.f_scope))
 						throw new Exception(temp.id + " já foi usado/declarado no mesmo escopo!");
 
 					continue;
 				}
 				
 				//! Inside Global Class Definition (ENTRY is ONLY VARIABLE and FUNCTION)
-				else if (entry.c_scope != "null" && entry.f_scope == "null")
+				else if (!entry.c_scope.equals("null") && entry.f_scope.equals("null"))
 				{
 					if (temp.valid)
 					{
 						//! All
-						if (temp.c_scope == "null" && temp.f_scope == "null")
+						if (temp.c_scope.equals("null") && temp.f_scope.equals("null"))
 							throw new Exception(temp.id + " já foi declarado globalmente!");
 						
 						//! Variable
-						if (temp.c_scope == entry.c_scope)
+						if (temp.c_scope.equals(entry.c_scope))
 							throw new Exception(temp.id + " já foi declarado no mesmo escopo!");
 					}
 					else
 					{
 						//! Not exists
-						if (temp.c_scope == "null" && temp.f_scope == "null")
+						if (temp.c_scope.equals("null") && temp.f_scope.equals("null"))
 							throw new Exception(temp.id + " não pode ser usado globalmente!");
 						
 						//! Match outside a function
-						if (temp.c_scope == entry.c_scope && temp.f_scope == "null")
+						if (temp.c_scope.equals(entry.c_scope) && temp.f_scope.equals("null"))
 						{
 							_symbolTable.remove(i);
 							_symbolTable.add(entry);
@@ -120,7 +133,7 @@ public class FreedomLessLessParser extends Parser {
 						}
 						
 						//! Match inside a function
-						if (temp.c_scope == entry.c_scope && temp.f_scope == entry.id)
+						if (temp.c_scope.equals(entry.c_scope) && temp.f_scope.equals(entry.id))
 						{	
 							_symbolTable.remove(i);
 							_symbolTable.add(entry);
@@ -132,20 +145,20 @@ public class FreedomLessLessParser extends Parser {
 				}
 				
 				//! Inside Function Class Definition (ENTRY is ONLY VARIABLE)
-				else if (entry.c_scope != "null" && entry.f_scope != "null")
+				else if (!entry.c_scope.equals("null") && !entry.f_scope.equals("null"))
 				{
 					if (temp.valid)
 					{
-						if (temp.c_scope == "null" && temp.f_scope == "null")
+						if (temp.c_scope.equals("null") && temp.f_scope.equals("null"))
 							throw new Exception(temp.id + " já foi declarado globalmente!");
 						
-						if (temp.c_scope == entry.c_scope && temp.f_scope == "null")
+						if (temp.c_scope.equals(entry.c_scope) && temp.f_scope.equals("null"))
 							throw new Exception(temp.id + " já foi declarado no escopo da classe " + temp.c_scope);
 						
-						if (temp.c_scope == entry.c_scope && temp.f_scope == entry.f_scope)
+						if (temp.c_scope.equals(entry.c_scope) && temp.f_scope.equals(entry.f_scope))
 							throw new Exception(temp.id + " já foi declarado no mesmo escopo!");
 					}
-					else if (temp.c_scope == entry.c_scope && temp.f_scope == entry.f_scope)
+					else if (temp.c_scope.equals(entry.c_scope) && temp.f_scope.equals(entry.f_scope))
 						throw new Exception(temp.id + " foi usado antes de ser declarado no escopo da funcão " + temp.f_scope);
 					
 					continue;
@@ -157,38 +170,38 @@ public class FreedomLessLessParser extends Parser {
 			else //! Use -> variable or function call
 			{	
 				//! Global Definition (Classes, Functions and Variables)
-				if (entry.c_scope == "null" && entry.f_scope == "null")
+				if (entry.c_scope.equals("null") && entry.f_scope.equals("null"))
 				{
 					if (temp.valid)
 					{
 						//! Found
-						if (temp.c_scope == "null" && temp.f_scope == "null")
+						if (temp.c_scope.equals("null") && temp.f_scope.equals("null"))
 							return;
 						
 						//! Define inside a function -> not exist global
-						if (temp.c_scope == "null" && temp.f_scope != "null")
+						if (temp.c_scope.equals("null") && !temp.f_scope.equals("null"))
 							throw new Exception(temp.id + " não pode ser utilizado globalmente!");
 
 						//! Define inside a class -> not exist global
-						if (temp.c_scope != "null" && temp.f_scope == "null")
+						if (!temp.c_scope.equals("null") && temp.f_scope.equals("null"))
 							throw new Exception(temp.id + " não pode ser utilizado globalmente!");
 						
 						//! Define inside a function class -> not exist global
-						if (temp.c_scope != "null" && temp.f_scope != "null")
+						if (!temp.c_scope.equals("null") && !temp.f_scope.equals("null"))
 							throw new Exception(temp.id + " não pode ser utilizado globalmente!");
 					}
 					else
 					{
-						if (temp.c_scope == "null" && temp.f_scope == "null")
+						if (temp.c_scope.equals("null") && temp.f_scope.equals("null"))
 							throw new Exception("Não deveria acontecer!");
 						
-						if (temp.c_scope == "null" && temp.f_scope != "null")
+						if (temp.c_scope.equals("null") && !temp.f_scope.equals("null"))
 							continue;
 						
-						if (temp.c_scope != "null" && temp.f_scope == "null")
+						if (!temp.c_scope.equals("null") && temp.f_scope.equals("null"))
 							continue;
 						
-						if (temp.c_scope != "null" && temp.f_scope != "null")
+						if (!temp.c_scope.equals("null") && !temp.f_scope.equals("null"))
 							continue;
 					}
 					
@@ -196,37 +209,37 @@ public class FreedomLessLessParser extends Parser {
 				}
 				
 				//! Inside Global Function Definition (ENTRY is VARIABLE)
-				else if (entry.c_scope == "null" && entry.f_scope != "null")
+				else if (entry.c_scope.equals("null") && !entry.f_scope.equals("null"))
 				{
 					if (temp.valid)
 					{
 						//! Found
-						if (temp.c_scope == "null" && temp.f_scope == "null")
+						if (temp.c_scope.equals("null") && temp.f_scope.equals("null"))
 							return;
 						
 						//! Found
-						if (temp.c_scope == "null" && temp.f_scope == entry.f_scope)
+						if (temp.c_scope.equals("null") && temp.f_scope.equals(entry.f_scope))
 							return;
 
-//						if (temp.c_scope != "null" && temp.f_scope == "null")
+//						if (!temp.c_scope.equals("null") && temp.f_scope.equals("null"))
 //							continue;
 //						
-//						if (temp.c_scope != "null" && temp.f_scope != "null")
+//						if (!temp.c_scope.equals("null") && !temp.f_scope.equals("null"))
 //							continue;
 					}
 					else
 					{
-						if (temp.c_scope == "null" && temp.f_scope == "null")
+						if (temp.c_scope.equals("null") && temp.f_scope.equals("null"))
 							throw new Exception("Não deveria acontecer!");
 						
 						//! Another like me
-						if (temp.c_scope == "null" && temp.f_scope == entry.f_scope)
+						if (temp.c_scope.equals("null") && temp.f_scope.equals(entry.f_scope))
 							return;
 						
-//						if (temp.c_scope != "null" && temp.f_scope == "null")
+//						if (!temp.c_scope.equals("null") && temp.f_scope.equals("null"))
 //							continue;
 //						
-//						if (temp.c_scope != "null" && temp.f_scope != "null")
+//						if (!temp.c_scope.equals("null") && !temp.f_scope.equals("null"))
 //							continue;
 					}
 					
@@ -234,38 +247,38 @@ public class FreedomLessLessParser extends Parser {
 				}
 				
 				//! Inside Global Class Definition (ENTRY is ONLY VARIABLE and FUNCTION)
-				else if (entry.c_scope != "null" && entry.f_scope == "null")
+				else if (!entry.c_scope.equals("null") && entry.f_scope.equals("null"))
 				{
 					if (temp.valid)
 					{
 						//! Found
-						if (temp.c_scope == "null" && temp.f_scope == "null")
+						if (temp.c_scope.equals("null") && temp.f_scope.equals("null"))
 							return;
 						
-//						if (temp.c_scope == "null" && temp.f_scope == entry.f_scope)
+//						if (temp.c_scope.equals("null") && temp.f_scope.equals(entry.f_scope))
 //							continue;
 
 						//! Found
-						if (temp.c_scope == entry.c_scope && temp.f_scope == "null")
+						if (temp.c_scope.equals(entry.c_scope) && temp.f_scope.equals("null"))
 							return;
 						
-						if (temp.c_scope == entry.c_scope && temp.f_scope != "null")
+						if (temp.c_scope.equals(entry.c_scope) && !temp.f_scope.equals("null"))
 							throw new Exception(temp.id + " conflito com outra variável da funcão " + temp.f_scope);
 					}
 					else
 					{
 						//! Not exists
-						if (temp.c_scope == "null" && temp.f_scope == "null")
+						if (temp.c_scope.equals("null") && temp.f_scope.equals("null"))
 							throw new Exception(temp.id + " não pode ser usado globalmente!");
 						
-//						if (temp.c_scope == "null" && temp.f_scope == entry.f_scope)
+//						if (temp.c_scope.equals("null") && temp.f_scope.equals(entry.f_scope))
 //							continue;
 
 						//! Another like me
-						if (temp.c_scope == entry.c_scope && temp.f_scope == "null")
+						if (temp.c_scope.equals(entry.c_scope) && temp.f_scope.equals("null"))
 							return;
 						
-//						if (temp.c_scope == entry.c_scope && temp.f_scope != "null")
+//						if (temp.c_scope.equals(entry.c_scope) && !temp.f_scope.equals("null"))
 //							throw new Exception(temp.id + " conflito com outra variável na funcão " + temp.f_scope);
 					}
 					
@@ -273,40 +286,40 @@ public class FreedomLessLessParser extends Parser {
 				}
 				
 				//! Inside Function Class Definition (ENTRY is ONLY VARIABLE)
-				else if (entry.c_scope != "null" && entry.f_scope != "null")
+				else if (!entry.c_scope.equals("null") && !entry.f_scope.equals("null"))
 				{
 					if (temp.valid)
 					{
 						//! Found
-						if (temp.c_scope == "null" && temp.f_scope == "null")
+						if (temp.c_scope.equals("null") && temp.f_scope.equals("null"))
 							return;
 						
 //						//! Another scope
-//						if (temp.c_scope == "null" && temp.f_scope == entry.f_scope)
+//						if (temp.c_scope.equals("null") && temp.f_scope.equals(entry.f_scope))
 //							continue;
 
 						//! Found
-						if (temp.c_scope == entry.c_scope && temp.f_scope == "null")
+						if (temp.c_scope.equals(entry.c_scope) && temp.f_scope.equals("null"))
 							return;
 						
 						//! Found
-						if (temp.c_scope == entry.c_scope && temp.f_scope == entry.f_scope)
+						if (temp.c_scope.equals(entry.c_scope) && temp.f_scope.equals(entry.f_scope))
 							return;
 					}
 					else
 					{
 						//! Not exists
-						if (temp.c_scope == "null" && temp.f_scope == "null")
+						if (temp.c_scope.equals("null") && temp.f_scope.equals("null"))
 							throw new Exception(temp.id + " não pode ser usado globalmente!");
 						
-//						if (temp.c_scope == "null" && temp.f_scope == entry.f_scope)
+//						if (temp.c_scope.equals("null") && temp.f_scope.equals(entry.f_scope))
 //							continue;
 
-						if (temp.c_scope == entry.c_scope && temp.f_scope == "null")
+						if (temp.c_scope.equals(entry.c_scope) && temp.f_scope.equals("null"))
 							return;
 
 						//! Another like me
-						if (temp.c_scope == entry.c_scope && temp.f_scope == entry.f_scope)
+						if (temp.c_scope.equals(entry.c_scope) && temp.f_scope.equals(entry.f_scope))
 							return;
 					}
 					
@@ -317,8 +330,15 @@ public class FreedomLessLessParser extends Parser {
 				throw new NoViableAltException(this);
 			}
 		}
+
+		//! Usado Antes de declarado
+		if (!entry.valid && entry.type.equals("variable") && entry.c_scope.equals("null") && entry.f_scope.equals("null"))
+			throw new Exception("Variável " + entry.id + " está sendo usada antes de ser declarada!");
+		// if (!entry.valid && entry.type.equals("variable") && !entry.c_scope.equals("null") && entry.f_scope.equals("null"))
+		// 	throw new Exception("Variável " + entry.id + " está sendo usada antes de ser declarada!");
 		
 		//! Not found/match
+		System.out.println("Insert");
 		_symbolTable.add(entry);
 	}
 
@@ -428,6 +448,7 @@ public class FreedomLessLessParser extends Parser {
 
 	public FreedomLessLessParser(TokenStream input) {
 		super(input);
+		addParseListener(new FreedomLessLessBaseListener());
 		_interp = new ParserATNSimulator(this,_ATN,_decisionToDFA,_sharedContextCache);
 	}
 	public static class Program_defContext extends ParserRuleContext implements ScopeInformation {

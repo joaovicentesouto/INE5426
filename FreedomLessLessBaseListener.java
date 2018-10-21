@@ -15,13 +15,18 @@ public class FreedomLessLessBaseListener implements FreedomLessLessListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterProgram_def(FreedomLessLessParser.Program_defContext ctx) { }
+	@Override public void enterProgram_def(FreedomLessLessParser.Program_defContext ctx) {
+		FreedomLessLessParser._symbolTable.clear();
+		System.out.println("Hello!");
+	}
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitProgram_def(FreedomLessLessParser.Program_defContext ctx) { }
+	@Override public void exitProgram_def(FreedomLessLessParser.Program_defContext ctx) {
+		System.out.println("Good bye!");
+	}
 	/**
 	 * {@inheritDoc}
 	 *
