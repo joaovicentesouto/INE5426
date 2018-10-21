@@ -66,9 +66,30 @@ public class FreedomLessLessParser extends Parser {
 
 			System.out.println("** Temp: " + temp.id);
 
+			if (temp.type.equals("class")) {
+				if (entry.type.equals("class"))
+					throw new Exception(temp.id + " já foi declarado.");
+				
+				if (entry.type.equals("variable"))
+					throw new Exception(temp.id + " já foi declarado como uma classe.");
+
+				if (entry.type.equals("function")) {
+					if (entry.c_scope.equals(temp.id)) {
+						for (SymbolEntry e : _symbolTable)
+							if (e.type.equals("function") && e.id.equals(temp.id))
+								throw new Exception(temp.id + " já usado ou construtor já declarado.");
+					
+						continue;
+					}
+					
+					throw new Exception(temp.id + " é uma classe só pode ser usada como construtor.");
+				}
+			}
+
 			if (entry.valid) //! Definitions
 			{
 				System.out.println("33");
+
 				//! Global Definition (Classes, Functions and Variables)
 				if (entry.c_scope.equals("null") && entry.f_scope.equals("null"))
 				{
