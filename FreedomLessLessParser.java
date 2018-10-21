@@ -74,8 +74,8 @@ public class FreedomLessLessParser extends Parser {
 				if (entry.c_scope.equals("null") && entry.f_scope.equals("null"))
 				{
 					//! Another definition || Same IDs and diff types
-					if (temp.valid || !entry.type.equals(temp.type))
-						throw new Exception(temp.id + " já foi declarado globalmente!");
+					if (temp.valid || !temp.c_scope.equals("null") || !temp.f_scope.equals("null"))
+						throw new Exception(temp.id + " já foi declarado localmente como " + temp.type);
 					
 					//! Different features -> error
 					if (entry.features.equals(temp.features))
@@ -97,7 +97,7 @@ public class FreedomLessLessParser extends Parser {
 				{
 					//! temp is a global definition OR same scope definition (temp class id maybe)
 					if (temp.c_scope.equals("null") && temp.f_scope.equals("null"))
-						throw new Exception(temp.id + " já foi declarado globalmente!");
+						throw new Exception(temp.id + " já foi declarado globalmente como " + temp.type);
 					
 					if (temp.c_scope.equals("null") && temp.f_scope.equals(entry.f_scope))
 						throw new Exception(temp.id + " já foi usado/declarado no mesmo escopo!");
@@ -112,7 +112,7 @@ public class FreedomLessLessParser extends Parser {
 					{
 						//! All
 						if (temp.c_scope.equals("null") && temp.f_scope.equals("null"))
-							throw new Exception(temp.id + " já foi declarado globalmente!");
+							throw new Exception(temp.id + " já foi declarado globalmente como " + temp.type);
 						
 						//! Variable
 						if (temp.c_scope.equals(entry.c_scope))
@@ -133,8 +133,8 @@ public class FreedomLessLessParser extends Parser {
 						}
 						
 						//! Match inside a function
-						if (temp.c_scope.equals(entry.c_scope) && temp.f_scope.equals(entry.id))
-						{	
+						if (temp.c_scope.equals(entry.c_scope))
+						{
 							_symbolTable.remove(i);
 							_symbolTable.add(entry);
 							return;
@@ -150,7 +150,7 @@ public class FreedomLessLessParser extends Parser {
 					if (temp.valid)
 					{
 						if (temp.c_scope.equals("null") && temp.f_scope.equals("null"))
-							throw new Exception(temp.id + " já foi declarado globalmente!");
+							throw new Exception(temp.id + " já foi declarado globalmente como " + temp.type);
 						
 						if (temp.c_scope.equals(entry.c_scope) && temp.f_scope.equals("null"))
 							throw new Exception(temp.id + " já foi declarado no escopo da classe " + temp.c_scope);
@@ -332,14 +332,30 @@ public class FreedomLessLessParser extends Parser {
 		}
 
 		//! Usado Antes de declarado
-		if (!entry.valid && entry.type.equals("variable") && entry.c_scope.equals("null") && entry.f_scope.equals("null"))
-			throw new Exception("Variável " + entry.id + " está sendo usada antes de ser declarada!");
-		// if (!entry.valid && entry.type.equals("variable") && !entry.c_scope.equals("null") && entry.f_scope.equals("null"))
-		// 	throw new Exception("Variável " + entry.id + " está sendo usada antes de ser declarada!");
+		{
+			if (!entry.valid && entry.type.equals("variable") && entry.c_scope.equals("null") && entry.f_scope.equals("null"))
+				throw new Exception("Variável " + entry.id + " está sendo usada antes de ser declarada!");
+		
+			if (!entry.valid && entry.type.equals("variable") && entry.c_scope.equals("null") && !entry.f_scope.equals("null"))
+				throw new Exception("Variável " + entry.id + " está sendo usada antes de ser declarada!");
+		}
 		
 		//! Not found/match
 		System.out.println("Insert");
 		_symbolTable.add(entry);
+	}
+
+	private void finalCheck() throws Exception {
+		String msg = "";
+		boolean error = false;
+		for (SymbolEntry entry : _symbolTable)
+			if (!entry.valid) {
+				msg += entry.id + "\n";
+				error = true;
+			}
+
+		if (error)
+			throw new Exception("\nAs seguintes variáveis não foram definidas (ou no lugar errado):\n" + msg);
 	}
 
 	static { RuntimeMetaData.checkVersion("4.7.1", RuntimeMetaData.VERSION); }
@@ -580,6 +596,7 @@ public class FreedomLessLessParser extends Parser {
 		}
 		finally {
 			exitRule();
+			finalCheck();
 		}
 		return _localctx;
 	}
