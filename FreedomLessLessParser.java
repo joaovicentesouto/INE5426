@@ -70,13 +70,11 @@ public class FreedomLessLessParser extends Parser {
 
 			if (entry.valid) //! Definitions
 			{
-				System.out.println("** Temp: 2" + temp.id);
 				//! Global Definition (Classes, Functions and Variables)
 				if (entry.c_scope.equals("null") && entry.f_scope.equals("null"))
 				{
-					System.out.println("** Temp: 3" + temp.id);
-					//! Another definition || Same IDs and diff types
-					if (temp.valid || temp.type.equals("variable") && (temp.valid || !temp.c_scope.equals("null") || !temp.f_scope.equals("null")))
+					//! Another definition
+					if (temp.valid || temp.type.equals("variable") && (!temp.c_scope.equals("null") || !temp.f_scope.equals("null")))
 						throw new Exception(temp.id + " já foi declarado localmente como " + temp.type);
 
 					if (!temp.c_scope.equals("null") && !temp.f_scope.equals("null") && temp.type.equals("function"))
@@ -85,7 +83,6 @@ public class FreedomLessLessParser extends Parser {
 					//! Different features -> error
 					if (entry.features.equals(temp.features))
 					{
-						System.out.println("** Temp: 2" + temp.id);
 						String feature_string = "";
 						for (String s : temp.features)
 							feature_string += " " + s;
@@ -101,7 +98,6 @@ public class FreedomLessLessParser extends Parser {
 				//! Inside Global Function Definition (ENTRY is VARIABLE)
 				else if (entry.c_scope.equals("null") && !entry.f_scope.equals("null"))
 				{
-					System.out.println("** Temp: 4" + temp.id);
 					//! temp is a global definition OR same scope definition (temp class id maybe)
 					if (temp.c_scope.equals("null") && temp.f_scope.equals("null"))
 						throw new Exception(temp.id + " já foi declarado globalmente como " + temp.type);
@@ -115,7 +111,6 @@ public class FreedomLessLessParser extends Parser {
 				//! Inside Global Class Definition (ENTRY is ONLY VARIABLE and FUNCTION)
 				else if (!entry.c_scope.equals("null") && entry.f_scope.equals("null"))
 				{
-					System.out.println("** Temp: 5" + temp.id);
 					if (temp.valid)
 					{
 						//! All
@@ -155,7 +150,6 @@ public class FreedomLessLessParser extends Parser {
 				//! Inside Function Class Definition (ENTRY is ONLY VARIABLE)
 				else if (!entry.c_scope.equals("null") && !entry.f_scope.equals("null"))
 				{
-					System.out.println("** Temp: 6" + temp.id);
 					if (temp.valid)
 					{
 						if (temp.c_scope.equals("null") && temp.f_scope.equals("null"))
@@ -172,8 +166,6 @@ public class FreedomLessLessParser extends Parser {
 					
 					continue;
 				}
-
-				System.out.println("** Temp: 7" + temp.id);
 				
 				//! Never
 				throw new NoViableAltException(this);
@@ -225,7 +217,24 @@ public class FreedomLessLessParser extends Parser {
 					if (temp.valid)
 					{
 						//! Found
-						if (temp.c_scope.equals("null") && temp.f_scope.equals("null"))
+						if (temp.c_scope.equals("null") && temp.f_scope.equals("null") && temp.type.equals("function")) {
+							if (temp.features.size() != entry.features.size()) {
+								String msg = temp.features.get(0) + "(";
+								int x;
+								for (x = 1; x < temp.features.size() - 1; x++)
+									msg += temp.features.get(x) + ", ";
+
+								if (x < temp.features.size())
+									msg += temp.features.get(x);
+
+								throw new Exception(temp.id + " é uma função com a seguinte assinatura: " + msg + ")");
+							}
+
+							return;
+						}
+
+						//! Found
+						if (temp.c_scope.equals("null") && temp.f_scope.equals("null") && temp.type.equals("variable"))
 							return;
 						
 						//! Found
@@ -1811,6 +1820,7 @@ public class FreedomLessLessParser extends Parser {
 		enterRule(_localctx, 18, RULE_function_call_def);
 		int _la;
 
+		int id_offset = 0;
 		SymbolEntry entry = new SymbolEntry();
 
 		entry.permission = _localctx.permission();
@@ -1891,7 +1901,7 @@ public class FreedomLessLessParser extends Parser {
 				
 				entry.id = _localctx.ID(1).getSymbol().getText();
 				entry.type = "function";
-				// entry.features.add("class " + entry.id); //! qual o retorno do construtor?
+				entry.features.add("null"); //! ainda nao sei qual retorno
 
 				setState(222);
 				match(OPEN_PAR);
@@ -1904,9 +1914,9 @@ public class FreedomLessLessParser extends Parser {
 					argument_def();
 					}
 
-					// Argument_defContext arg = _localctx.argument_def(0);
-					// for (Valued_expression_defContext c : arg.valued_expression_def())
-					// 	entry.features.add(c.type()); //! mudar o type conforme o tipo das operações???
+					Argument_defContext arg = _localctx.argument_def(0);
+					for (Valued_expression_defContext c : arg.valued_expression_def())
+						entry.features.add(c.type()); //! só para deixar a lista com o tamanho correto
 				}
 
 				lookUpTable(entry);
@@ -1973,7 +1983,6 @@ public class FreedomLessLessParser extends Parser {
 				}
 				break;
 			case ID:
-				int id_offset = 0;
 				enterOuterAlt(_localctx, 6);
 				{
 				setState(245);
@@ -2020,6 +2029,7 @@ public class FreedomLessLessParser extends Parser {
 				entry.id = _localctx.ID(id_offset++).getSymbol().getText();;
 				entry.type = "function";
 				entry.valid = false;
+				entry.features.add("null");
 
 				//**************
 
@@ -2034,9 +2044,9 @@ public class FreedomLessLessParser extends Parser {
 					argument_def();
 					}
 
-					// Argument_defContext arg = _localctx.argument_def(0);
-					// for (Valued_expression_defContext c : arg.valued_expression_def())
-					// 	entry.features.add(c.type()); //! mudar o type conforme o tipo das operações???
+					Argument_defContext arg = _localctx.argument_def(0);
+					for (Valued_expression_defContext c : arg.valued_expression_def())
+						entry.features.add(c.type()); //! mudar o type conforme o tipo das operações???
 				}
 
 				lookUpTable(entry);
@@ -2048,6 +2058,7 @@ public class FreedomLessLessParser extends Parser {
 				setState(262);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
+				// id_offset++;
 				while (_la==T__0 || _la==ARROW) {
 					{
 					{
@@ -2071,9 +2082,10 @@ public class FreedomLessLessParser extends Parser {
 					entry_aux.c_scope = _localctx.c_scope();
 					entry_aux.f_scope = _localctx.f_scope();
 					entry_aux.permission = _localctx.permission();
-					entry_aux.id = _localctx.ID(id_offset).getSymbol().getText();
+					entry_aux.id = _localctx.ID(id_offset++).getSymbol().getText();
 					entry_aux.type = "function";
 					entry_aux.valid = false;
+					entry_aux.features.add("null");
 
 					setState(255);
 					match(OPEN_PAR);
@@ -2086,12 +2098,12 @@ public class FreedomLessLessParser extends Parser {
 						argument_def();
 						}
 
-						// Argument_defContext arg = _localctx.argument_def(1);
-						// for (Valued_expression_defContext c : arg.valued_expression_def())
-						// 	entry_aux.features.add(c.type()); //! mudar o type conforme o tipo das operações???
+						Argument_defContext arg = _localctx.argument_def(1);
+						for (Valued_expression_defContext c : arg.valued_expression_def())
+							entry_aux.features.add(c.type()); //! mudar o type conforme o tipo das operações???
 					}
 
-					lookUpTable(entry);
+					lookUpTable(entry_aux);
 
 					//**************
 
@@ -2283,9 +2295,6 @@ public class FreedomLessLessParser extends Parser {
 			_errHandler.sync(this);
 			switch (_input.LA(1)) {
 			case VOID_T:
-				//! Return type
-				entry.features.add("void");
-
 				enterOuterAlt(_localctx, 1);
 				{
 				setState(275);
@@ -2295,6 +2304,8 @@ public class FreedomLessLessParser extends Parser {
 
 				//! Define ID on table
 				entry.id = _localctx._f_scope = _localctx._name = _localctx.ID().getSymbol().getText();
+				//! Return type
+				entry.features.add("void");
 
 				setState(277);
 				match(OPEN_PAR);
@@ -2384,8 +2395,8 @@ public class FreedomLessLessParser extends Parser {
 					param_def();
 					}
 
-					// Param_defContext param = _localctx.param_def();
-					// getParamsTypes(entry, param);
+					Param_defContext param = _localctx.param_def();
+					getParamsTypes(entry, param);
 				}
 
 				//! Verify
