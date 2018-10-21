@@ -1516,7 +1516,7 @@ public class FreedomLessLessParser extends Parser {
 				entry.permission = _localctx.permission();
 				entry.c_scope = _localctx.c_scope();
 				entry.f_scope = _localctx.f_scope();
-				entry.features.add("null");
+				// entry.features.add("null");
 //				entry.features.add("arithmetic");
 				entry.id = _localctx.ID().getSymbol().getText();
 				entry.type = "variable";
