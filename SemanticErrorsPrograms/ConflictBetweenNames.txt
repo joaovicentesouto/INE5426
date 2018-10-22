@@ -1,0 +1,14 @@
+int firstVariable = 3;
+int globalVariable = firstVariable + 1;
+
+double definedFunction(double conflictBetweenNames) {
+	return conflictBetweenNames * 2;
+}
+
+int FunctionName () {
+	return globalVariable + definedFunction(firstVariable);
+}
+
+void conflictBetweenNames() { int nothing; }
+
+void main (int argc, char **argv) {}

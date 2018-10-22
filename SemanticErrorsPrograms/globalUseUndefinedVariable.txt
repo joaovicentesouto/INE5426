@@ -1,0 +1,7 @@
+int undefinedGlobalVariable = firstVariable + 1;
+
+int FunctionName () {
+	return undefinedGlobalVariable;
+}
+
+void main (int argc, char **argv) {}

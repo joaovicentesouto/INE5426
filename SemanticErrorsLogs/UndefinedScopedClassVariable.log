@@ -1,0 +1,16 @@
+Exception in thread "main" java.lang.reflect.InvocationTargetException
+        at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+        at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+        at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+        at java.lang.reflect.Method.invoke(Method.java:498)
+        at org.antlr.v4.gui.TestRig.process(TestRig.java:207)
+        at org.antlr.v4.gui.TestRig.process(TestRig.java:158)
+        at org.antlr.v4.gui.TestRig.main(TestRig.java:119)
+        
+Caused by: java.lang.Exception: 
+As seguintes variáveis não foram definidas (ou definidas no lugar errado):
+ - x tipo: variable
+
+        at FreedomLessLessParser.finalCheck(FreedomLessLessParser.java:529)
+        at FreedomLessLessParser.program_def(FreedomLessLessParser.java:770)
+        ... 7 more

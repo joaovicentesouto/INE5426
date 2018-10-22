@@ -46,25 +46,25 @@ public class FreedomLessLessParser extends Parser {
 
 	public void lookUpTable(SymbolEntry entry) throws Exception
 	{
-		System.out.println("\ntype: " + entry.type);
-		System.out.println("id: " + entry.id);
-		System.out.println("c_scope: " + entry.c_scope);
-		System.out.println("f_scope: " + entry.f_scope);
-		System.out.println("permission: " + entry.permission);
-		System.out.println("features: " + entry.features);
-		System.out.println("Valid: " + entry.valid);
+		//System.out.println("\ntype: " + entry.type);
+		//System.out.println("id: " + entry.id);
+		//System.out.println("c_scope: " + entry.c_scope);
+		//System.out.println("f_scope: " + entry.f_scope);
+		//System.out.println("permission: " + entry.permission);
+		//System.out.println("features: " + entry.features);
+		//System.out.println("Valid: " + entry.valid);
 
 		SymbolEntry temp;
 		
 		for (int i = 0; i < _symbolTable.size(); i++)
 		{
 			temp = _symbolTable.get(i);
-			System.out.println("-- Temp: " + temp.id);
+			//System.out.println("-- Temp: " + temp.id);
 			
 			if (!temp.id.equals(entry.id))
 				continue;
 
-			System.out.println("** Temp: " + temp.id);
+			//System.out.println("** Temp: " + temp.id);
 
 			if (temp.type.equals("class")) {
 				if (entry.type.equals("class"))
@@ -88,12 +88,12 @@ public class FreedomLessLessParser extends Parser {
 
 			if (entry.valid) //! Definitions
 			{
-				System.out.println("33");
+				//System.out.println("33");
 
 				//! Global Definition (Classes, Functions and Variables)
 				if (entry.c_scope.equals("null") && entry.f_scope.equals("null"))
 				{
-					System.out.println("33.3");
+					//System.out.println("33.3");
 					//! Another definition
 					if (temp.valid || temp.type.equals("variable") && (!temp.c_scope.equals("null") || !temp.f_scope.equals("null")))
 						throw new Exception(temp.id + " já foi declarado localmente como " + temp.type);
@@ -512,7 +512,7 @@ public class FreedomLessLessParser extends Parser {
 		}
 		
 		//! Not found/match
-		System.out.println("Insert");
+		//System.out.println("Insert");
 		_symbolTable.add(entry);
 	}
 
@@ -521,12 +521,12 @@ public class FreedomLessLessParser extends Parser {
 		boolean error = false;
 		for (SymbolEntry entry : _symbolTable)
 			if (!entry.valid) {
-				msg += entry.id + "\n";
+				msg += " - " + entry.id + " tipo: " + entry.type + "\n";
 				error = true;
 			}
 
 		if (error)
-			throw new Exception("\nAs seguintes variáveis não foram definidas (ou no lugar errado):\n" + msg);
+			throw new Exception("\nAs seguintes variáveis não foram definidas (ou definidas no lugar errado):\n" + msg);
 	}
 
 	static { RuntimeMetaData.checkVersion("4.7.1", RuntimeMetaData.VERSION); }
