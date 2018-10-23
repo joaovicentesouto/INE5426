@@ -7,528 +7,9 @@ import org.antlr.v4.runtime.tree.*;
 import java.util.List;
 import java.util.Iterator;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.lang.Exception;
-
-class SymbolEntry
-{
-	public String type; //! func, attr, class
-	public String id;
-	public String c_scope;
-	public String f_scope;
-	public String permission;
-	public ArrayList<String> features;
-	public boolean valid;
-
-	public SymbolEntry() {
-		this.type = "null";
-		this.id = "null";
-		this.c_scope = "null";
-		this.f_scope = "null";
-		this.permission = "null";
-		this.features = new ArrayList<String>();
-		this.valid = false;
-	}
-};
-
-interface ScopeInformation {
-	public String type();
-	public String c_scope();
-	public String f_scope();
-	public String permission();
-	public String name();
-}
 
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast"})
 public class FreedomLessLessParser extends Parser {
-
-	public static ArrayList<SymbolEntry> _symbolTable = new ArrayList<SymbolEntry>();
-
-	public void lookUpTable(SymbolEntry entry) throws Exception
-	{
-		//System.out.println("\ntype: " + entry.type);
-		//System.out.println("id: " + entry.id);
-		//System.out.println("c_scope: " + entry.c_scope);
-		//System.out.println("f_scope: " + entry.f_scope);
-		//System.out.println("permission: " + entry.permission);
-		//System.out.println("features: " + entry.features);
-		//System.out.println("Valid: " + entry.valid);
-
-		SymbolEntry temp;
-		
-		for (int i = 0; i < _symbolTable.size(); i++)
-		{
-			temp = _symbolTable.get(i);
-			//System.out.println("-- Temp: " + temp.id);
-			
-			if (!temp.id.equals(entry.id))
-				continue;
-
-			//System.out.println("** Temp: " + temp.id);
-
-			if (temp.type.equals("class")) {
-				if (entry.type.equals("class"))
-					throw new Exception(temp.id + " já foi declarado.");
-				
-				if (entry.type.equals("variable"))
-					throw new Exception(temp.id + " já foi declarado como uma classe.");
-
-				if (entry.type.equals("function")) {
-					if (entry.c_scope.equals(temp.id)) {
-						for (SymbolEntry e : _symbolTable)
-							if (e.type.equals("function") && e.id.equals(temp.id))
-								throw new Exception(temp.id + " já usado ou construtor já declarado.");
-					
-						continue;
-					}
-					
-					throw new Exception(temp.id + " é uma classe só pode ser usada como construtor.");
-				}
-			}
-
-			if (entry.valid) //! Definitions
-			{
-				//System.out.println("33");
-
-				//! Global Definition (Classes, Functions and Variables)
-				if (entry.c_scope.equals("null") && entry.f_scope.equals("null"))
-				{
-					//System.out.println("33.3");
-					//! Another definition
-					if (temp.valid || temp.type.equals("variable") && (!temp.c_scope.equals("null") || !temp.f_scope.equals("null")))
-						throw new Exception(temp.id + " já foi declarado localmente como " + temp.type);
-
-					if (!temp.c_scope.equals("null") && !temp.f_scope.equals("null") && temp.type.equals("function"))
-						throw new Exception(temp.id + " já foi declarado localmente como " + temp.type);
-					
-					if (entry.features.size() != temp.features.size()) {
-						String msg = temp.features.get(0) + "(";
-						int x;
-						for (x = 1; x < temp.features.size() - 1; x++)
-							msg += temp.features.get(x) + ", ";
-
-						if (x < temp.features.size())
-							msg += temp.features.get(x);
-
-						throw new Exception(entry.id + " está sendo usado de forma diferente.");
-					}
-
-					_symbolTable.remove(i);
-					_symbolTable.add(entry);
-					return;
-				}
-				
-				//! Inside Global Function Definition (ENTRY is VARIABLE and FUNCTION)
-				else if (entry.c_scope.equals("null") && !entry.f_scope.equals("null"))
-				{
-					if (temp.valid)
-					{
-						//! temp is a global definition OR same scope definition (temp class id maybe)
-						if (temp.c_scope.equals("null") && temp.f_scope.equals("null"))
-							throw new Exception(temp.id + " já foi declarado globalmente como " + temp.type);
-						
-						if (temp.c_scope.equals("null") && temp.f_scope.equals(entry.f_scope))
-							throw new Exception(temp.id + " já foi usado/declarado no mesmo escopo!");
-					}
-					else
-					{
-						if (entry.f_scope.equals(temp.f_scope) && entry.features.size() != temp.features.size()) {
-							String msg = temp.features.get(0) + "(";
-							int x;
-							for (x = 1; x < temp.features.size() - 1; x++)
-								msg += temp.features.get(x) + ", ";
-
-							if (x < temp.features.size())
-								msg += temp.features.get(x);
-
-							throw new Exception(entry.id + " está sendo usado de forma diferente.");
-						}
-					}
-
-					continue;
-				}
-				
-				//! Inside Global Class Definition (ENTRY is ONLY VARIABLE and FUNCTION)
-				else if (!entry.c_scope.equals("null") && entry.f_scope.equals("null"))
-				{
-					if (temp.valid)
-					{
-						//! All
-						if (temp.c_scope.equals("null") && temp.f_scope.equals("null"))
-							throw new Exception(temp.id + " já foi declarado globalmente como " + temp.type);
-						
-						//! Variable
-						if (temp.c_scope.equals(entry.c_scope))
-							throw new Exception(temp.id + " já foi declarado no mesmo escopo!");
-					}
-					else
-					{
-						//! Not exists
-						if (temp.c_scope.equals("null") && temp.f_scope.equals("null"))
-							throw new Exception(temp.id + " não pode ser usado globalmente!");
-						
-						//! Match outside a function
-						if (temp.c_scope.equals(entry.c_scope) && entry.features.size() == temp.features.size()) {
-							_symbolTable.remove(i);
-							_symbolTable.add(entry);
-							return;
-						}
-
-						if (temp.c_scope.equals(entry.c_scope) && entry.features.size() != temp.features.size()) {
-							String msg = temp.features.get(0) + "(";
-							int x;
-							for (x = 1; x < temp.features.size() - 1; x++)
-								msg += temp.features.get(x) + ", ";
-
-							if (x < temp.features.size())
-								msg += temp.features.get(x);
-
-							throw new Exception(entry.id + " está sendo usado de forma diferente.");
-						}
-					}
-					
-					continue;
-				}
-				
-				//! Inside Function Class Definition (ENTRY is ONLY VARIABLE)
-				else if (!entry.c_scope.equals("null") && !entry.f_scope.equals("null"))
-				{
-					if (temp.valid)
-					{
-						if (temp.c_scope.equals("null") && temp.f_scope.equals("null"))
-							throw new Exception(temp.id + " já foi declarado globalmente como " + temp.type);
-						
-						if (temp.c_scope.equals(entry.c_scope) && temp.f_scope.equals("null"))
-							throw new Exception(temp.id + " já foi declarado no escopo da classe " + temp.c_scope);
-						
-						if (temp.c_scope.equals(entry.c_scope) && temp.f_scope.equals(entry.f_scope))
-							throw new Exception(temp.id + " já foi declarado no mesmo escopo!");
-					}
-					else if (temp.c_scope.equals(entry.c_scope) && temp.f_scope.equals(entry.f_scope))
-						throw new Exception(temp.id + " foi usado antes de ser declarado no escopo da funcão " + temp.f_scope);
-					
-					continue;
-				}
-				
-				//! Never
-				throw new NoViableAltException(this);
-			}
-			else //! Use -> variable or function call
-			{	
-				//! Global Definition (Classes, Functions and Variables)
-				if (entry.c_scope.equals("null") && entry.f_scope.equals("null"))
-				{
-					if (temp.valid)
-					{
-						//! Found
-						if (temp.c_scope.equals("null") && temp.f_scope.equals("null"))
-							return;
-						
-						//! Define inside a function -> not exist global
-						if (temp.c_scope.equals("null") && !temp.f_scope.equals("null"))
-							throw new Exception(temp.id + " não pode ser utilizado globalmente!");
-
-						//! Define inside a class -> not exist global
-						if (!temp.c_scope.equals("null") && temp.f_scope.equals("null"))
-							throw new Exception(temp.id + " não pode ser utilizado globalmente!");
-						
-						//! Define inside a function class -> not exist global
-						if (!temp.c_scope.equals("null") && !temp.f_scope.equals("null"))
-							throw new Exception(temp.id + " não pode ser utilizado globalmente!");
-					}
-					else
-					{
-						if (temp.c_scope.equals("null") && temp.f_scope.equals("null"))
-							throw new Exception("Não deveria acontecer!");
-						
-						if (temp.c_scope.equals("null") && !temp.f_scope.equals("null"))
-							continue;
-						
-						if (!temp.c_scope.equals("null") && temp.f_scope.equals("null"))
-							continue;
-						
-						if (!temp.c_scope.equals("null") && !temp.f_scope.equals("null"))
-							continue;
-					}
-					
-					throw new Exception(temp.id + " já devia ter sido declarado!");
-				}
-				
-				//! Inside Global Function Definition (ENTRY is VARIABLE)
-				else if (entry.c_scope.equals("null") && !entry.f_scope.equals("null"))
-				{
-					if (temp.valid)
-					{
-						//! Found
-						if (temp.c_scope.equals("null") && temp.f_scope.equals("null") && temp.type.equals("function")) {
-							if (temp.features.size() != entry.features.size()) {
-								String msg = temp.features.get(0) + "(";
-								int x;
-								for (x = 1; x < temp.features.size() - 1; x++)
-									msg += temp.features.get(x) + ", ";
-
-								if (x < temp.features.size())
-									msg += temp.features.get(x);
-
-								throw new Exception(temp.id + " é uma função com a seguinte assinatura: " + msg + ")");
-							}
-
-							return;
-						}
-
-						//! Found
-						if (temp.c_scope.equals("null") && temp.f_scope.equals("null") && temp.type.equals("variable"))
-							return;
-						
-						//! Found
-						if (temp.c_scope.equals("null") && temp.f_scope.equals(entry.f_scope))
-							return;
-
-//						if (!temp.c_scope.equals("null") && temp.f_scope.equals("null"))
-//							continue;
-//						
-//						if (!temp.c_scope.equals("null") && !temp.f_scope.equals("null"))
-//							continue;
-					}
-					else
-					{
-						if (temp.c_scope.equals("null") && temp.f_scope.equals("null"))
-							throw new Exception("Não deveria acontecer!");
-						
-						//! Another like me
-						if (temp.c_scope.equals("null") && temp.f_scope.equals(entry.f_scope)) {
-							if (entry.features.size() == temp.features.size())
-								return;
-
-							String msg = temp.features.get(0) + "(";
-							int x;
-							for (x = 1; x < temp.features.size() - 1; x++)
-								msg += temp.features.get(x) + ", ";
-
-							if (x < temp.features.size())
-								msg += temp.features.get(x);
-
-							throw new Exception(entry.id + " está sendo usado de forma diferente.");
-						}
-						
-//						if (!temp.c_scope.equals("null") && temp.f_scope.equals("null"))
-//							continue;
-//						
-//						if (!temp.c_scope.equals("null") && !temp.f_scope.equals("null"))
-//							continue;
-					}
-					
-					continue;
-				}
-				
-				//! Inside Global Class Definition (ENTRY is ONLY VARIABLE and FUNCTION)
-				else if (!entry.c_scope.equals("null") && entry.f_scope.equals("null"))
-				{
-					if (temp.valid)
-					{
-						//! Found
-						if (temp.c_scope.equals("null") && temp.f_scope.equals("null")) {
-							if (entry.features.size() == temp.features.size())
-								return;
-
-							String msg = temp.features.get(0) + "(";
-							int x;
-							for (x = 1; x < temp.features.size() - 1; x++)
-								msg += temp.features.get(x) + ", ";
-
-							if (x < temp.features.size())
-								msg += temp.features.get(x);
-
-							throw new Exception(entry.id + " está sendo usado de forma diferente.");
-						}
-						
-//						if (temp.c_scope.equals("null") && temp.f_scope.equals(entry.f_scope))
-//							continue;
-
-						//! Found
-						if (temp.c_scope.equals(entry.c_scope) && temp.f_scope.equals("null")) {
-							if (entry.features.size() == temp.features.size())
-								return;
-
-							String msg = temp.features.get(0) + "(";
-							int x;
-							for (x = 1; x < temp.features.size() - 1; x++)
-								msg += temp.features.get(x) + ", ";
-
-							if (x < temp.features.size())
-								msg += temp.features.get(x);
-
-							throw new Exception(entry.id + " está sendo usado de forma diferente.");
-						}
-						
-						if (temp.c_scope.equals(entry.c_scope) && !temp.f_scope.equals("null"))
-							throw new Exception(temp.id + " conflito com outra variável da funcão " + temp.f_scope);
-					}
-					else
-					{
-						//! Not exists
-						if (temp.c_scope.equals("null") && temp.f_scope.equals("null"))
-							throw new Exception(temp.id + " não pode ser usado globalmente!");
-						
-//						if (temp.c_scope.equals("null") && temp.f_scope.equals(entry.f_scope))
-//							continue;
-
-						//! Another like me
-						if (temp.c_scope.equals(entry.c_scope) && temp.f_scope.equals("null")) {
-							if (entry.features.size() == temp.features.size())
-								return;
-
-							String msg = temp.features.get(0) + "(";
-							int x;
-							for (x = 1; x < temp.features.size() - 1; x++)
-								msg += temp.features.get(x) + ", ";
-
-							if (x < temp.features.size())
-								msg += temp.features.get(x);
-
-							throw new Exception(entry.id + " está sendo usado de forma diferente.");
-						}
-						
-//						if (temp.c_scope.equals(entry.c_scope) && !temp.f_scope.equals("null"))
-//							throw new Exception(temp.id + " conflito com outra variável na funcão " + temp.f_scope);
-					}
-					
-					continue;
-				}
-				
-				//! Inside Function Class Definition (ENTRY is ONLY VARIABLE)
-				else if (!entry.c_scope.equals("null") && !entry.f_scope.equals("null"))
-				{
-					if (temp.valid)
-					{
-						//! Found
-						if (temp.c_scope.equals("null") && temp.f_scope.equals("null")) {
-							if (entry.features.size() == temp.features.size())
-								return;
-
-							String msg = temp.features.get(0) + "(";
-							int x;
-							for (x = 1; x < temp.features.size() - 1; x++)
-								msg += temp.features.get(x) + ", ";
-
-							if (x < temp.features.size())
-								msg += temp.features.get(x);
-
-							throw new Exception(entry.id + " está sendo usado de forma diferente.");
-						}
-						
-//						//! Another scope
-//						if (temp.c_scope.equals("null") && temp.f_scope.equals(entry.f_scope))
-//							continue;
-
-						//! Found
-						if (temp.c_scope.equals(entry.c_scope) && temp.f_scope.equals("null")) {
-							if (entry.features.size() == temp.features.size())
-								return;
-
-							String msg = temp.features.get(0) + "(";
-							int x;
-							for (x = 1; x < temp.features.size() - 1; x++)
-								msg += temp.features.get(x) + ", ";
-
-							if (x < temp.features.size())
-								msg += temp.features.get(x);
-
-							throw new Exception(entry.id + " está sendo usado de forma diferente.");
-						}
-						
-						//! Found
-						if (temp.c_scope.equals(entry.c_scope) && temp.f_scope.equals(entry.f_scope)) {
-							if (entry.features.size() == temp.features.size())
-								return;
-
-							String msg = temp.features.get(0) + "(";
-							int x;
-							for (x = 1; x < temp.features.size() - 1; x++)
-								msg += temp.features.get(x) + ", ";
-
-							if (x < temp.features.size())
-								msg += temp.features.get(x);
-
-							throw new Exception(entry.id + " está sendo usado de forma diferente.");
-						}
-					}
-					else
-					{
-						//! Not exists
-						if (temp.c_scope.equals("null") && temp.f_scope.equals("null"))
-							throw new Exception(temp.id + " não pode ser usado globalmente!");
-						
-//						if (temp.c_scope.equals("null") && temp.f_scope.equals(entry.f_scope))
-//							continue;
-
-						if (temp.c_scope.equals(entry.c_scope) && temp.f_scope.equals("null")) {
-							if (entry.features.size() == temp.features.size())
-								return;
-
-							String msg = temp.features.get(0) + "(";
-							int x;
-							for (x = 1; x < temp.features.size() - 1; x++)
-								msg += temp.features.get(x) + ", ";
-
-							if (x < temp.features.size())
-								msg += temp.features.get(x);
-
-							throw new Exception(entry.id + " está sendo usado de forma diferente.");
-						}
-
-						//! Another like me
-						if (temp.c_scope.equals(entry.c_scope) && temp.f_scope.equals(entry.f_scope)) {
-							if (entry.features.size() == temp.features.size())
-								return;
-
-							String msg = temp.features.get(0) + "(";
-							int x;
-							for (x = 1; x < temp.features.size() - 1; x++)
-								msg += temp.features.get(x) + ", ";
-
-							if (x < temp.features.size())
-								msg += temp.features.get(x);
-
-							throw new Exception(entry.id + " está sendo usado de forma diferente.");
-						}
-					}
-					
-					continue;
-				}
-				
-				//! Never
-				throw new NoViableAltException(this);
-			}
-		}
-
-		//! Usado Antes de declarado
-		{
-			if (!entry.valid && entry.type.equals("variable") && entry.c_scope.equals("null") && entry.f_scope.equals("null"))
-				throw new Exception("Variável " + entry.id + " está sendo usada antes de ser declarada!");
-		
-			if (!entry.valid && entry.type.equals("variable") && entry.c_scope.equals("null") && !entry.f_scope.equals("null"))
-				throw new Exception("Variável " + entry.id + " está sendo usada antes de ser declarada!");
-		}
-		
-		//! Not found/match
-		//System.out.println("Insert");
-		_symbolTable.add(entry);
-	}
-
-	private void finalCheck() throws Exception {
-		String msg = "";
-		boolean error = false;
-		for (SymbolEntry entry : _symbolTable)
-			if (!entry.valid) {
-				msg += " - " + entry.id + " tipo: " + entry.type + "\n";
-				error = true;
-			}
-
-		if (error)
-			throw new Exception("\nAs seguintes variáveis não foram definidas (ou definidas no lugar errado):\n" + msg);
-	}
-
 	static { RuntimeMetaData.checkVersion("4.7.1", RuntimeMetaData.VERSION); }
 
 	protected static final DFA[] _decisionToDFA;
@@ -635,10 +116,9 @@ public class FreedomLessLessParser extends Parser {
 
 	public FreedomLessLessParser(TokenStream input) {
 		super(input);
-		addParseListener(new FreedomLessLessBaseListener());
 		_interp = new ParserATNSimulator(this,_ATN,_decisionToDFA,_sharedContextCache);
 	}
-	public static class Program_defContext extends ParserRuleContext implements ScopeInformation {
+	public static class Program_defContext extends ParserRuleContext {
 		public Main_defContext main_def() {
 			return getRuleContext(Main_defContext.class,0);
 		}
@@ -666,9 +146,6 @@ public class FreedomLessLessParser extends Parser {
 		}
 		public Program_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
-			_permission = "public";
-			_c_scope = "null";
-			_f_scope = "null";
 		}
 		@Override public int getRuleIndex() { return RULE_program_def; }
 		@Override
@@ -679,28 +156,9 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitProgram_def(this);
 		}
-
-		//! Our session
-		//! Methods
-		@Override
-		public String type() 		 { return "program";  }
-		@Override
-		public String c_scope() 	 { return _c_scope;    }
-		@Override
-		public String f_scope() 	 { return _f_scope;    }
-		@Override
-		public String permission() { return _permission; }
-		@Override
-		public String name() { return "program"; }
-
-		//! Attributes
-		public String _permission;
-		public String _c_scope;
-		public String _f_scope;
-		public String _name = "null";
 	}
 
-	public final Program_defContext program_def() throws RecognitionException, Exception {
+	public final Program_defContext program_def() throws RecognitionException {
 		Program_defContext _localctx = new Program_defContext(_ctx, getState());
 		enterRule(_localctx, 0, RULE_program_def);
 		int _la;
@@ -767,12 +225,11 @@ public class FreedomLessLessParser extends Parser {
 		}
 		finally {
 			exitRule();
-			finalCheck();
 		}
 		return _localctx;
 	}
 
-	public static class Class_defContext extends ParserRuleContext implements ScopeInformation {
+	public static class Class_defContext extends ParserRuleContext {
 		public TerminalNode CLASS() { return getToken(FreedomLessLessParser.CLASS, 0); }
 		public TerminalNode ID() { return getToken(FreedomLessLessParser.ID, 0); }
 		public TerminalNode OPEN_KEY() { return getToken(FreedomLessLessParser.OPEN_KEY, 0); }
@@ -782,9 +239,6 @@ public class FreedomLessLessParser extends Parser {
 		public TerminalNode CLOSE_KEY() { return getToken(FreedomLessLessParser.CLOSE_KEY, 0); }
 		public Class_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
-			_permission = "public";
-			_c_scope = "null";
-			_f_scope = "null";
 		}
 		@Override public int getRuleIndex() { return RULE_class_def; }
 		@Override
@@ -795,28 +249,9 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitClass_def(this);
 		}
-		
-		//! Our session
-		//! Methods
-		@Override
-		public String type() 		 { return "class"; 	   }
-		@Override
-		public String c_scope() 	 { return _c_scope;    }
-		@Override
-		public String f_scope() 	 { return _f_scope;    }
-		@Override
-		public String permission() { return _permission; }
-		@Override
-		public String name() { return _name; }
-
-		//! Attributes
-		public String _permission;
-		public String _c_scope;
-		public String _f_scope;
-		public String _name = "null";
 	}
 
-	public final Class_defContext class_def() throws RecognitionException, Exception {
+	public final Class_defContext class_def() throws RecognitionException {
 		Class_defContext _localctx = new Class_defContext(_ctx, getState());
 		enterRule(_localctx, 2, RULE_class_def);
 		try {
@@ -826,24 +261,6 @@ public class FreedomLessLessParser extends Parser {
 			match(CLASS);
 			setState(83);
 			match(ID);
-
-			//! Verify Type ID
-
-			//! Define name of the class ***CLASS
-			_localctx._name = _localctx.ID().getSymbol().getText();
-			
-			SymbolEntry entry = new SymbolEntry();
-
-			entry.c_scope = _localctx.c_scope();
-			entry.f_scope = _localctx.f_scope();
-			entry.features.add("null");
-			entry.permission = _localctx.permission();
-			entry.id = _localctx.ID().getSymbol().getText();
-			entry.type = _localctx.type();
-			entry.valid = true;
-
-			lookUpTable(entry);
-
 			setState(84);
 			match(OPEN_KEY);
 			setState(85);
@@ -863,7 +280,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Class_members_defContext extends ParserRuleContext implements ScopeInformation {
+	public static class Class_members_defContext extends ParserRuleContext {
 		public Private_defContext private_def() {
 			return getRuleContext(Private_defContext.class,0);
 		}
@@ -872,10 +289,6 @@ public class FreedomLessLessParser extends Parser {
 		}
 		public Class_members_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
-			_permission = ((ScopeInformation) parent).permission();
-			_c_scope = ((ScopeInformation) parent).name();
-			_f_scope = "null";
-			_name = ((ScopeInformation) parent).name();
 		}
 		@Override public int getRuleIndex() { return RULE_class_members_def; }
 		@Override
@@ -886,26 +299,9 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitClass_members_def(this);
 		}
-
-		@Override
-		public String type() 		 { return "class"; 	   }
-		@Override
-		public String c_scope() 	 { return _c_scope;    }
-		@Override
-		public String f_scope() 	 { return _f_scope;    }
-		@Override
-		public String permission() { return _permission; }
-		@Override
-		public String name() { return _name; }
-
-		//! Attributes
-		public String _permission;
-		public String _c_scope;
-		public String _f_scope;
-		public String _name;
 	}
 
-	public final Class_members_defContext class_members_def() throws RecognitionException, Exception {
+	public final Class_members_defContext class_members_def() throws RecognitionException {
 		Class_members_defContext _localctx = new Class_members_defContext(_ctx, getState());
 		enterRule(_localctx, 4, RULE_class_members_def);
 		int _la;
@@ -952,17 +348,13 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Public_defContext extends ParserRuleContext implements ScopeInformation {
+	public static class Public_defContext extends ParserRuleContext {
 		public TerminalNode PUBLIC() { return getToken(FreedomLessLessParser.PUBLIC, 0); }
 		public Class_scope_defContext class_scope_def() {
 			return getRuleContext(Class_scope_defContext.class,0);
 		}
 		public Public_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
-			_permission = "public";
-			_c_scope = ((ScopeInformation) parent).c_scope();
-			_f_scope = ((ScopeInformation) parent).f_scope();
-			_name = ((ScopeInformation) parent).name() + " public";
 		}
 		@Override public int getRuleIndex() { return RULE_public_def; }
 		@Override
@@ -973,27 +365,9 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitPublic_def(this);
 		}
-
-		//! Methods
-		@Override
-		public String type() 		 { return "class"; 	   }
-		@Override
-		public String c_scope() 	 { return _c_scope;    }
-		@Override
-		public String f_scope() 	 { return _f_scope;    }
-		@Override
-		public String permission() { return _permission; }
-		@Override
-		public String name() { return _name; }
-
-		//! Attributes
-		public String _permission;
-		public String _c_scope;
-		public String _f_scope;
-		public String _name;
 	}
 
-	public final Public_defContext public_def() throws RecognitionException, Exception {
+	public final Public_defContext public_def() throws RecognitionException {
 		Public_defContext _localctx = new Public_defContext(_ctx, getState());
 		enterRule(_localctx, 6, RULE_public_def);
 		try {
@@ -1016,17 +390,13 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Private_defContext extends ParserRuleContext implements ScopeInformation {
+	public static class Private_defContext extends ParserRuleContext {
 		public TerminalNode PRIVATE() { return getToken(FreedomLessLessParser.PRIVATE, 0); }
 		public Class_scope_defContext class_scope_def() {
 			return getRuleContext(Class_scope_defContext.class,0);
 		}
 		public Private_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
-			_permission = "private";
-			_c_scope = ((ScopeInformation) parent).c_scope();
-			_f_scope = ((ScopeInformation) parent).f_scope();
-			_name = ((ScopeInformation) parent).name() + " private";
 		}
 		@Override public int getRuleIndex() { return RULE_private_def; }
 		@Override
@@ -1037,26 +407,9 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitPrivate_def(this);
 		}
-
-		@Override
-		public String type() 		 { return "class"; 	   }
-		@Override
-		public String c_scope() 	 { return _c_scope;    }
-		@Override
-		public String f_scope() 	 { return _f_scope;    }
-		@Override
-		public String permission() { return _permission; }
-		@Override
-		public String name() { return _name; }
-
-		//! Attributes
-		public String _permission;
-		public String _c_scope;
-		public String _f_scope;
-		public String _name = "null";
 	}
 
-	public final Private_defContext private_def() throws RecognitionException, Exception {
+	public final Private_defContext private_def() throws RecognitionException {
 		Private_defContext _localctx = new Private_defContext(_ctx, getState());
 		enterRule(_localctx, 8, RULE_private_def);
 		try {
@@ -1079,7 +432,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Class_scope_defContext extends ParserRuleContext implements ScopeInformation {
+	public static class Class_scope_defContext extends ParserRuleContext {
 		public List<Attribute_defContext> attribute_def() {
 			return getRuleContexts(Attribute_defContext.class);
 		}
@@ -1098,10 +451,6 @@ public class FreedomLessLessParser extends Parser {
 		}
 		public Class_scope_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
-			_permission = ((ScopeInformation) parent).permission();
-			_c_scope = ((ScopeInformation) parent).c_scope();
-			_f_scope = ((ScopeInformation) parent).f_scope();
-			_name = ((ScopeInformation) parent).name();
 		}
 		@Override public int getRuleIndex() { return RULE_class_scope_def; }
 		@Override
@@ -1112,26 +461,9 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitClass_scope_def(this);
 		}
-
-		@Override
-		public String type() 		 { return "class"; 	   }
-		@Override
-		public String c_scope() 	 { return _c_scope;    }
-		@Override
-		public String f_scope() 	 { return _f_scope;    }
-		@Override
-		public String permission() { return _permission; }
-		@Override
-		public String name() { return _name; }
-
-		//! Attributes
-		public String _permission;
-		public String _c_scope;
-		public String _f_scope;
-		public String _name;
 	}
 
-	public final Class_scope_defContext class_scope_def() throws RecognitionException, Exception {
+	public final Class_scope_defContext class_scope_def() throws RecognitionException {
 		Class_scope_defContext _localctx = new Class_scope_defContext(_ctx, getState());
 		enterRule(_localctx, 10, RULE_class_scope_def);
 		int _la;
@@ -1184,7 +516,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Attribute_defContext extends ParserRuleContext implements ScopeInformation {
+	public static class Attribute_defContext extends ParserRuleContext {
 		public Type_defContext type_def() {
 			return getRuleContext(Type_defContext.class,0);
 		}
@@ -1224,10 +556,6 @@ public class FreedomLessLessParser extends Parser {
 		}
 		public Attribute_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
-			_permission = ((ScopeInformation) parent).permission();
-			_c_scope = ((ScopeInformation) parent).c_scope();
-			_f_scope = ((ScopeInformation) parent).f_scope();
-			_name = ((ScopeInformation) parent).name();
 		}
 		@Override public int getRuleIndex() { return RULE_attribute_def; }
 		@Override
@@ -1238,33 +566,12 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitAttribute_def(this);
 		}
-
-		//! Methods
-		@Override
-		public String type() 		 { return "variable"; }
-		@Override
-		public String c_scope() 	 { return _c_scope;    }
-		@Override
-		public String f_scope() 	 { return _f_scope;    }
-		@Override
-		public String permission() { return _permission; }
-		@Override
-		public String name() { return _name; }
-
-		//! Attributes
-		public String _permission;
-		public String _c_scope;
-		public String _f_scope;
-		public String _name;
 	}
 
-	public final Attribute_defContext attribute_def() throws RecognitionException, Exception {
+	public final Attribute_defContext attribute_def() throws RecognitionException {
 		Attribute_defContext _localctx = new Attribute_defContext(_ctx, getState());
 		enterRule(_localctx, 12, RULE_attribute_def);
 		int _la;
-
-		SymbolEntry entry;
-
 		try {
 			setState(174);
 			_errHandler.sync(this);
@@ -1276,23 +583,6 @@ public class FreedomLessLessParser extends Parser {
 				type_def();
 				setState(116);
 				match(ID);
-
-				//*********
-				
-				entry = new SymbolEntry();
-
-				entry.c_scope = _localctx.c_scope();
-				entry.f_scope = _localctx.f_scope();
-				entry.features.add(_localctx.type_def().name());
-				entry.permission = _localctx.permission();
-				entry.id = _localctx.ID(0).getSymbol().getText();
-				entry.type = _localctx.type();
-				entry.valid = true;
-
-				lookUpTable(entry);
-
-				//*********
-
 				setState(119);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
@@ -1315,23 +605,6 @@ public class FreedomLessLessParser extends Parser {
 					match(COMMA);
 					setState(122);
 					match(ID);
-
-					//*********
-				
-					entry = new SymbolEntry();
-
-					entry.c_scope = _localctx.c_scope();
-					entry.f_scope = _localctx.f_scope();
-					entry.features.add(_localctx.type_def().name());
-					entry.permission = _localctx.permission();
-					entry.id = _localctx.ID(1).getSymbol().getText();
-					entry.type = _localctx.type();
-					entry.valid = true;
-
-					lookUpTable(entry);
-
-					//*********
-
 					setState(125);
 					_errHandler.sync(this);
 					_la = _input.LA(1);
@@ -1366,23 +639,6 @@ public class FreedomLessLessParser extends Parser {
 				setState(136);
 				match(CLOSE_BRAK);
 				setState(139);
-
-				//*********
-				
-				entry = new SymbolEntry();
-
-				entry.c_scope = _localctx.c_scope();
-				entry.f_scope = _localctx.f_scope();
-				entry.features.add(_localctx.type_def().name() + "[" + _localctx.INT(0) + "]");
-				entry.permission = _localctx.permission();
-				entry.id = _localctx.ID(0).getSymbol().getText();
-				entry.type = _localctx.type();
-				entry.valid = true;
-
-				lookUpTable(entry);
-
-				//*********
-
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 				if (_la==ASSIGN) {
@@ -1411,23 +667,6 @@ public class FreedomLessLessParser extends Parser {
 					setState(145);
 					match(CLOSE_BRAK);
 					setState(148);
-
-					//*********
-				
-					entry = new SymbolEntry();
-
-					entry.c_scope = _localctx.c_scope();
-					entry.f_scope = _localctx.f_scope();
-					entry.features.add(_localctx.type_def().name() + "[" + _localctx.INT(1) + "]");
-					entry.permission = _localctx.permission();
-					entry.id = _localctx.ID(1).getSymbol().getText();
-					entry.type = _localctx.type();
-					entry.valid = true;
-
-					lookUpTable(entry);
-
-					//*********
-
 					_errHandler.sync(this);
 					_la = _input.LA(1);
 					if (_la==ASSIGN) {
@@ -1456,23 +695,6 @@ public class FreedomLessLessParser extends Parser {
 				match(MULT);
 				setState(157);
 				match(ID);
-
-				//*********
-				
-				entry = new SymbolEntry();
-
-				entry.c_scope = _localctx.c_scope();
-				entry.f_scope = _localctx.f_scope();
-				entry.features.add(_localctx.type_def().name() + " *");
-				entry.permission = _localctx.permission();
-				entry.id = _localctx.ID(0).getSymbol().getText();
-				entry.type = _localctx.type();
-				entry.valid = true;
-
-				lookUpTable(entry);
-
-				//*********
-
 				setState(160);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
@@ -1497,23 +719,6 @@ public class FreedomLessLessParser extends Parser {
 					match(MULT);
 					setState(164);
 					match(ID);
-
-					//*********
-				
-					entry = new SymbolEntry();
-
-					entry.c_scope = _localctx.c_scope();
-					entry.f_scope = _localctx.f_scope();
-					entry.features.add(_localctx.type_def().name() + " *");
-					entry.permission = _localctx.permission();
-					entry.id = _localctx.ID(1).getSymbol().getText();
-					entry.type = _localctx.type();
-					entry.valid = true;
-
-					lookUpTable(entry);
-
-					//*********
-
 					setState(167);
 					_errHandler.sync(this);
 					_la = _input.LA(1);
@@ -1547,7 +752,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Valued_expression_defContext extends ParserRuleContext implements ScopeInformation {
+	public static class Valued_expression_defContext extends ParserRuleContext {
 		public Value_defContext value_def() {
 			return getRuleContext(Value_defContext.class,0);
 		}
@@ -1577,10 +782,6 @@ public class FreedomLessLessParser extends Parser {
 		}
 		public Valued_expression_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
-			_permission = ((ScopeInformation) parent).permission();
-			_c_scope = ((ScopeInformation) parent).c_scope();
-			_f_scope = ((ScopeInformation) parent).f_scope();
-			_name = "null";
 		}
 		@Override public int getRuleIndex() { return RULE_valued_expression_def; }
 		@Override
@@ -1591,26 +792,9 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitValued_expression_def(this);
 		}
-
-		@Override
-		public String type() 		 { return "value"; 	   }
-		@Override
-		public String c_scope() 	 { return _c_scope;    }
-		@Override
-		public String f_scope() 	 { return _f_scope;    }
-		@Override
-		public String permission() { return _permission; }
-		@Override
-		public String name() { return _name; }
-
-		//! Attributes
-		public String _permission;
-		public String _c_scope;
-		public String _f_scope;
-		public String _name = "null";
 	}
 
-	public final Valued_expression_defContext valued_expression_def() throws RecognitionException, Exception {
+	public final Valued_expression_defContext valued_expression_def() throws RecognitionException {
 		Valued_expression_defContext _localctx = new Valued_expression_defContext(_ctx, getState());
 		enterRule(_localctx, 14, RULE_valued_expression_def);
 		int _la;
@@ -1621,7 +805,6 @@ public class FreedomLessLessParser extends Parser {
 			case 1:
 				enterOuterAlt(_localctx, 1);
 				{
-				_localctx._name = "value";
 				setState(176);
 				value_def();
 				setState(177);
@@ -1631,7 +814,6 @@ public class FreedomLessLessParser extends Parser {
 			case 2:
 				enterOuterAlt(_localctx, 2);
 				{
-				_localctx._name = "function call";
 				setState(179);
 				function_call_def();
 				setState(180);
@@ -1641,7 +823,6 @@ public class FreedomLessLessParser extends Parser {
 			case 3:
 				enterOuterAlt(_localctx, 3);
 				{
-				_localctx._name = "&*";
 				setState(182);
 				_la = _input.LA(1);
 				if ( !(_la==MULT || _la==REF) ) {
@@ -1665,27 +846,8 @@ public class FreedomLessLessParser extends Parser {
 			case 4:
 				enterOuterAlt(_localctx, 4);
 				{
-				_localctx._name = "variable";
 				setState(188);
 				match(ID);
-
-				//**************
-
-				SymbolEntry entry = new SymbolEntry();
-
-				entry.permission = _localctx.permission();
-				entry.c_scope = _localctx.c_scope();
-				entry.f_scope = _localctx.f_scope();
-				entry.features.add("null");
-//				entry.features.add("arithmetic");
-				entry.id = _localctx.ID().getSymbol().getText();
-				entry.type = "variable";
-				entry.valid = false;
-
-				lookUpTable(entry);
-
-				//**************
-
 				setState(198);
 				_errHandler.sync(this);
 				switch (_input.LA(1)) {
@@ -1775,7 +937,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class OperationContext extends ParserRuleContext implements ScopeInformation {
+	public static class OperationContext extends ParserRuleContext {
 		public List<Valued_expression_defContext> valued_expression_def() {
 			return getRuleContexts(Valued_expression_defContext.class);
 		}
@@ -1796,10 +958,6 @@ public class FreedomLessLessParser extends Parser {
 		}
 		public OperationContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
-			_permission = ((ScopeInformation) parent).permission();
-			_c_scope = ((ScopeInformation) parent).c_scope();
-			_f_scope = ((ScopeInformation) parent).f_scope();
-			_name = "operation";
 		}
 		@Override public int getRuleIndex() { return RULE_operation; }
 		@Override
@@ -1810,26 +968,9 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitOperation(this);
 		}
-
-		@Override
-		public String type() 		 { return "operation"; 	   }
-		@Override
-		public String c_scope() 	 { return _c_scope;    }
-		@Override
-		public String f_scope() 	 { return _f_scope;    }
-		@Override
-		public String permission() { return _permission; }
-		@Override
-		public String name() { return _name; }
-
-		//! Attributes
-		public String _permission;
-		public String _c_scope;
-		public String _f_scope;
-		public String _name;
 	}
 
-	public final OperationContext operation() throws RecognitionException, Exception {
+	public final OperationContext operation() throws RecognitionException {
 		OperationContext _localctx = new OperationContext(_ctx, getState());
 		enterRule(_localctx, 16, RULE_operation);
 		try {
@@ -1893,7 +1034,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Function_call_defContext extends ParserRuleContext implements ScopeInformation {
+	public static class Function_call_defContext extends ParserRuleContext {
 		public TerminalNode DELETE() { return getToken(FreedomLessLessParser.DELETE, 0); }
 		public List<TerminalNode> ID() { return getTokens(FreedomLessLessParser.ID); }
 		public TerminalNode ID(int i) {
@@ -1933,10 +1074,6 @@ public class FreedomLessLessParser extends Parser {
 		}
 		public Function_call_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
-			_permission = ((ScopeInformation) parent).permission();
-			_c_scope = ((ScopeInformation) parent).c_scope();
-			_f_scope = ((ScopeInformation) parent).f_scope();
-			_name = "function call";
 		}
 		@Override public int getRuleIndex() { return RULE_function_call_def; }
 		@Override
@@ -1947,39 +1084,12 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitFunction_call_def(this);
 		}
-
-		@Override
-		public String type() 		 { return "function call";  }
-		@Override
-		public String c_scope() 	 { return _c_scope;    }
-		@Override
-		public String f_scope() 	 { return _f_scope;    }
-		@Override
-		public String permission() { return _permission; }
-		@Override
-		public String name() { return _name; }
-
-		//! Attributes
-		public String _permission;
-		public String _c_scope;
-		public String _f_scope;
-		public String _name = "null";
 	}
 
-	public final Function_call_defContext function_call_def() throws RecognitionException, Exception {
+	public final Function_call_defContext function_call_def() throws RecognitionException {
 		Function_call_defContext _localctx = new Function_call_defContext(_ctx, getState());
 		enterRule(_localctx, 18, RULE_function_call_def);
 		int _la;
-
-		int id_offset = 0;
-		SymbolEntry entry = new SymbolEntry();
-
-		entry.permission = _localctx.permission();
-		entry.c_scope = _localctx.c_scope();
-		entry.f_scope = _localctx.f_scope();
-		entry.features.add("null");
-		entry.valid = false;
-
 		try {
 			setState(265);
 			_errHandler.sync(this);
@@ -1991,16 +1101,6 @@ public class FreedomLessLessParser extends Parser {
 				match(DELETE);
 				setState(215);
 				match(ID);
-
-				//**************
-				
-				entry.id = _localctx.ID(0).getSymbol().getText();;
-				entry.type = "variable";
-
-				lookUpTable(entry);
-
-				//**************
-
 				}
 				break;
 			case FREE:
@@ -2012,17 +1112,6 @@ public class FreedomLessLessParser extends Parser {
 				match(OPEN_PAR);
 				setState(218);
 				match(ID);
-
-
-				//**************
-				
-				entry.id = _localctx.ID(0).getSymbol().getText();
-				entry.type = "variable";
-
-				lookUpTable(entry);
-
-				//**************
-
 				setState(219);
 				match(CLOSE_PAR);
 				}
@@ -2034,27 +1123,6 @@ public class FreedomLessLessParser extends Parser {
 				match(NEW);
 				setState(221);
 				match(ID);
-
-				//**************
-				
-				entry.id = _localctx.ID(0).getSymbol().getText();
-				entry.type = "variable";
-
-				lookUpTable(entry);
-
-				//**************
-				
-				entry = new SymbolEntry();
-
-				entry.permission = _localctx.permission();
-				entry.c_scope = _localctx.c_scope();
-				entry.f_scope = _localctx.f_scope();
-				entry.valid = false;
-				
-				entry.id = _localctx.ID(1).getSymbol().getText();
-				entry.type = "function";
-				entry.features.add("null"); //! ainda nao sei qual retorno
-
 				setState(222);
 				match(OPEN_PAR);
 				setState(224);
@@ -2065,15 +1133,7 @@ public class FreedomLessLessParser extends Parser {
 					setState(223);
 					argument_def();
 					}
-
-					Argument_defContext arg = _localctx.argument_def(0);
-					for (Valued_expression_defContext c : arg.valued_expression_def())
-						entry.features.add(c.type()); //! só para deixar a lista com o tamanho correto
 				}
-
-				lookUpTable(entry);
-
-				//**************
 
 				setState(226);
 				match(CLOSE_PAR);
@@ -2088,11 +1148,6 @@ public class FreedomLessLessParser extends Parser {
 				match(OPEN_PAR);
 				setState(229);
 				valued_expression_def();
-
-				// int error;
-				// if (_localctx.valued_expression_def().type() != "numeric")
-				// 	error = 1;// throw "Error";
-
 				setState(230);
 				match(CLOSE_PAR);
 				}
@@ -2144,23 +1199,6 @@ public class FreedomLessLessParser extends Parser {
 					{
 					setState(243);
 					match(ID);
-
-					//**************
-					
-					SymbolEntry entry_aux = new SymbolEntry();
-
-					entry_aux.c_scope = _localctx.c_scope();
-					entry_aux.f_scope = _localctx.f_scope();
-					entry_aux.permission = _localctx.permission();
-					entry_aux.id = _localctx.ID(id_offset++).getSymbol().getText();;
-					entry_aux.features.add("null");
-					entry_aux.type = "variable";
-					entry_aux.valid = false;
-
-					lookUpTable(entry_aux);
-
-					//**************
-
 					setState(244);
 					_la = _input.LA(1);
 					if ( !(_la==T__0 || _la==ARROW) ) {
@@ -2176,16 +1214,6 @@ public class FreedomLessLessParser extends Parser {
 				}
 				setState(247);
 				match(ID);
-
-				//**************
-				
-				entry.id = _localctx.ID(id_offset++).getSymbol().getText();;
-				entry.type = "function";
-				entry.valid = false;
-				// entry.features.add("null");
-
-				//**************
-
 				setState(248);
 				match(OPEN_PAR);
 				setState(250);
@@ -2196,22 +1224,13 @@ public class FreedomLessLessParser extends Parser {
 					setState(249);
 					argument_def();
 					}
-
-					Argument_defContext arg = _localctx.argument_def(0);
-					for (Valued_expression_defContext c : arg.valued_expression_def())
-						entry.features.add(c.type()); //! mudar o type conforme o tipo das operações???
 				}
-
-				lookUpTable(entry);
-
-				//**************
 
 				setState(252);
 				match(CLOSE_PAR);
 				setState(262);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
-				// id_offset++;
 				while (_la==T__0 || _la==ARROW) {
 					{
 					{
@@ -2227,19 +1246,6 @@ public class FreedomLessLessParser extends Parser {
 					}
 					setState(254);
 					match(ID);
-
-					//**************
-				
-					SymbolEntry entry_aux = new SymbolEntry();
-
-					entry_aux.c_scope = _localctx.c_scope();
-					entry_aux.f_scope = _localctx.f_scope();
-					entry_aux.permission = _localctx.permission();
-					entry_aux.id = _localctx.ID(id_offset++).getSymbol().getText();
-					entry_aux.type = "function";
-					entry_aux.valid = false;
-					entry_aux.features.add("null");
-
 					setState(255);
 					match(OPEN_PAR);
 					setState(257);
@@ -2250,15 +1256,7 @@ public class FreedomLessLessParser extends Parser {
 						setState(256);
 						argument_def();
 						}
-
-						Argument_defContext arg = _localctx.argument_def(1);
-						for (Valued_expression_defContext c : arg.valued_expression_def())
-							entry_aux.features.add(c.type()); //! mudar o type conforme o tipo das operações???
 					}
-
-					lookUpTable(entry_aux);
-
-					//**************
 
 					setState(259);
 					match(CLOSE_PAR);
@@ -2285,7 +1283,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Argument_defContext extends ParserRuleContext implements ScopeInformation {
+	public static class Argument_defContext extends ParserRuleContext {
 		public List<Valued_expression_defContext> valued_expression_def() {
 			return getRuleContexts(Valued_expression_defContext.class);
 		}
@@ -2298,10 +1296,6 @@ public class FreedomLessLessParser extends Parser {
 		}
 		public Argument_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
-			_permission = ((ScopeInformation) parent).permission();
-			_c_scope = ((ScopeInformation) parent).c_scope();
-			_f_scope = ((ScopeInformation) parent).f_scope();
-			_name = "argument";
 		}
 		@Override public int getRuleIndex() { return RULE_argument_def; }
 		@Override
@@ -2312,26 +1306,9 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitArgument_def(this);
 		}
-
-		@Override
-		public String type() 		 { return "argument";  }
-		@Override
-		public String c_scope() 	 { return _c_scope;    }
-		@Override
-		public String f_scope() 	 { return _f_scope;    }
-		@Override
-		public String permission() { return _permission; }
-		@Override
-		public String name() { return _name; }
-
-		//! Attributes
-		public String _permission;
-		public String _c_scope;
-		public String _f_scope;
-		public String _name;
 	}
 
-	public final Argument_defContext argument_def() throws RecognitionException, Exception {
+	public final Argument_defContext argument_def() throws RecognitionException {
 		Argument_defContext _localctx = new Argument_defContext(_ctx, getState());
 		enterRule(_localctx, 20, RULE_argument_def);
 		int _la;
@@ -2369,7 +1346,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Function_defContext extends ParserRuleContext implements ScopeInformation {
+	public static class Function_defContext extends ParserRuleContext {
 		public TerminalNode VOID_T() { return getToken(FreedomLessLessParser.VOID_T, 0); }
 		public TerminalNode ID() { return getToken(FreedomLessLessParser.ID, 0); }
 		public TerminalNode OPEN_PAR() { return getToken(FreedomLessLessParser.OPEN_PAR, 0); }
@@ -2389,10 +1366,6 @@ public class FreedomLessLessParser extends Parser {
 		public TerminalNode CLOSE_BRAK() { return getToken(FreedomLessLessParser.CLOSE_BRAK, 0); }
 		public Function_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
-			_permission = ((ScopeInformation) parent).permission();
-			_c_scope = ((ScopeInformation) parent).c_scope();
-			_f_scope = ((ScopeInformation) parent).f_scope();
-			_name = "null";
 		}
 		@Override public int getRuleIndex() { return RULE_function_def; }
 		@Override
@@ -2403,46 +1376,12 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitFunction_def(this);
 		}
-
-		@Override
-		public String type() 		 { return "function";  }
-		@Override
-		public String c_scope() 	 { return _c_scope;    }
-		@Override
-		public String f_scope() 	 { return _f_scope;    }
-		@Override
-		public String permission() { return _permission; }
-		@Override
-		public String name() { return _name; }
-
-		//! Attributes
-		public String _permission;
-		public String _c_scope;
-		public String _f_scope;
-		public String _name;
 	}
 
-	private void getParamsTypes(SymbolEntry entry, Param_defContext p) {
-		//! My own name
-		entry.features.add(p.type_def().type());
-			
-		for (Param_defContext aux : p.param_def())
-			getParamsTypes(entry, aux);
-	}
-
-	public final Function_defContext function_def() throws RecognitionException, Exception {
+	public final Function_defContext function_def() throws RecognitionException {
 		Function_defContext _localctx = new Function_defContext(_ctx, getState());
 		enterRule(_localctx, 22, RULE_function_def);
 		int _la;
-
-		//! One valid function entry per call
-		SymbolEntry entry = new SymbolEntry();
-		entry.type = _localctx.type();
-		entry.permission = _localctx.permission();
-		entry.c_scope = _localctx.c_scope();
-		entry.f_scope = _localctx.f_scope();
-		entry.valid = true;
-
 		try {
 			setState(298);
 			_errHandler.sync(this);
@@ -2454,12 +1393,6 @@ public class FreedomLessLessParser extends Parser {
 				match(VOID_T);
 				setState(276);
 				match(ID);
-
-				//! Define ID on table
-				entry.id = _localctx._f_scope = _localctx._name = _localctx.ID().getSymbol().getText();
-				//! Return type
-				entry.features.add("void");
-
 				setState(277);
 				match(OPEN_PAR);
 				setState(279);
@@ -2470,13 +1403,7 @@ public class FreedomLessLessParser extends Parser {
 					setState(278);
 					param_def();
 					}
-
-					Param_defContext param = _localctx.param_def();
-					getParamsTypes(entry, param);
 				}
-
-				//! Insert
-				lookUpTable(entry);
 
 				setState(281);
 				match(CLOSE_PAR);
@@ -2493,10 +1420,6 @@ public class FreedomLessLessParser extends Parser {
 				{
 				setState(283);
 				type_def();
-
-				//! Return type
-				entry.features.add(_localctx.type_def().name());
-
 				setState(288);
 				_errHandler.sync(this);
 				switch (_input.LA(1)) {
@@ -2505,11 +1428,6 @@ public class FreedomLessLessParser extends Parser {
 					setState(284);
 					match(MULT);
 					}
-
-					//! Return type
-					entry.features.clear();
-					entry.features.add(_localctx.type_def().name() + " *");
-
 					break;
 				case OPEN_BRAK:
 					{
@@ -2520,11 +1438,6 @@ public class FreedomLessLessParser extends Parser {
 					setState(287);
 					match(CLOSE_BRAK);
 					}
-
-					//! Return type
-					entry.features.clear();
-					entry.features.add(_localctx.type_def().name() + "[" + _localctx.INT().getSymbol().getText() + "]");
-
 					break;
 				case ID:
 					break;
@@ -2533,10 +1446,6 @@ public class FreedomLessLessParser extends Parser {
 				}
 				setState(290);
 				match(ID);
-
-				//! Id
-				entry.id = _localctx._f_scope = _localctx._name = _localctx.ID().getSymbol().getText();
-
 				setState(291);
 				match(OPEN_PAR);
 				setState(293);
@@ -2547,13 +1456,7 @@ public class FreedomLessLessParser extends Parser {
 					setState(292);
 					param_def();
 					}
-
-					Param_defContext param = _localctx.param_def();
-					getParamsTypes(entry, param);
 				}
-
-				//! Verify
-				lookUpTable(entry);
 
 				setState(295);
 				match(CLOSE_PAR);
@@ -2564,8 +1467,6 @@ public class FreedomLessLessParser extends Parser {
 			default:
 				throw new NoViableAltException(this);
 			}
-
-			_localctx._f_scope = "null";
 		}
 		catch (RecognitionException re) {
 			_localctx.exception = re;
@@ -2578,7 +1479,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Param_defContext extends ParserRuleContext implements ScopeInformation {
+	public static class Param_defContext extends ParserRuleContext {
 		public Type_defContext type_def() {
 			return getRuleContext(Type_defContext.class,0);
 		}
@@ -2599,10 +1500,6 @@ public class FreedomLessLessParser extends Parser {
 		public TerminalNode CLOSE_BRAK() { return getToken(FreedomLessLessParser.CLOSE_BRAK, 0); }
 		public Param_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
-			_permission = ((ScopeInformation) parent).permission();
-			_c_scope = ((ScopeInformation) parent).c_scope();
-			_f_scope = ((ScopeInformation) parent).f_scope();
-			_name = "variable";
 		}
 		@Override public int getRuleIndex() { return RULE_param_def; }
 		@Override
@@ -2613,31 +1510,12 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitParam_def(this);
 		}
-
-		@Override
-		public String type() { return "variable"; }
-		@Override
-		public String c_scope() { return _c_scope; }
-		@Override
-		public String f_scope() { return _f_scope; }
-		@Override
-		public String permission() { return _permission; }
-		@Override
-		public String name() { return _name; }
-
-		public String _permission;
-		public String _c_scope;
-		public String _f_scope;
-		public String _name = "null";
 	}
 
-	public final Param_defContext param_def() throws RecognitionException, Exception {
+	public final Param_defContext param_def() throws RecognitionException {
 		Param_defContext _localctx = new Param_defContext(_ctx, getState());
 		enterRule(_localctx, 24, RULE_param_def);
 		int _la;
-
-		SymbolEntry entry;
-		
 		try {
 			int _alt;
 			setState(324);
@@ -2652,23 +1530,6 @@ public class FreedomLessLessParser extends Parser {
 				match(MULT);
 				setState(302);
 				match(ID);
-
-				//**************
-				
-				entry = new SymbolEntry();
-
-				entry.c_scope = _localctx.c_scope();
-				entry.f_scope = _localctx.f_scope();
-				entry.permission = _localctx.permission();
-				entry.features.add(_localctx.type_def().name() + " *");
-				entry.id = _localctx.ID().getSymbol().getText();
-				entry.type = _localctx.type();
-				entry.valid = true;
-
-				lookUpTable(entry);
-
-				//**************
-
 				setState(307);
 				_errHandler.sync(this);
 				_alt = getInterpreter().adaptivePredict(_input,34,_ctx);
@@ -2696,19 +1557,6 @@ public class FreedomLessLessParser extends Parser {
 				type_def();
 				setState(311);
 				match(ID);
-
-				//**************
-				
-				entry = new SymbolEntry();
-
-				entry.c_scope = _localctx.c_scope();
-				entry.f_scope = _localctx.f_scope();
-				entry.features.add(_localctx.type_def().name());
-				entry.permission = _localctx.permission();
-				entry.id = _localctx.ID().getSymbol().getText();;
-				entry.type = _localctx.type();
-				entry.valid = true;
-
 				setState(315);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
@@ -2721,15 +1569,7 @@ public class FreedomLessLessParser extends Parser {
 					setState(314);
 					match(CLOSE_BRAK);
 					}
-
-					String x = entry.features.get(0) + "[" + _localctx.INT().getSymbol().getText() + "]";
-					entry.features.remove(0);
-					entry.features.add(x);
 				}
-
-				lookUpTable(entry);
-
-				//*********** */
 
 				setState(321);
 				_errHandler.sync(this);
@@ -2764,7 +1604,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Block_defContext extends ParserRuleContext implements ScopeInformation {
+	public static class Block_defContext extends ParserRuleContext {
 		public TerminalNode OPEN_KEY() { return getToken(FreedomLessLessParser.OPEN_KEY, 0); }
 		public TerminalNode CLOSE_KEY() { return getToken(FreedomLessLessParser.CLOSE_KEY, 0); }
 		public List<Valueless_expression_defContext> valueless_expression_def() {
@@ -2785,10 +1625,6 @@ public class FreedomLessLessParser extends Parser {
 		}
 		public Block_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
-			_permission = ((ScopeInformation) parent).permission();
-			_c_scope = ((ScopeInformation) parent).c_scope();
-			_f_scope = ((ScopeInformation) parent).f_scope();
-			_name = "block";
 		}
 		@Override public int getRuleIndex() { return RULE_block_def; }
 		@Override
@@ -2799,27 +1635,9 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitBlock_def(this);
 		}
-
-		//! Methods
-		@Override
-		public String type() 		 { return "block"; 	   }
-		@Override
-		public String c_scope() 	 { return _c_scope;    }
-		@Override
-		public String f_scope() 	 { return _f_scope;    }
-		@Override
-		public String permission() { return _permission; }
-		@Override
-		public String name() { return _name; }
-
-		//! Attributes
-		public String _permission;
-		public String _c_scope;
-		public String _f_scope;
-		public String _name;
 	}
 
-	public final Block_defContext block_def() throws RecognitionException, Exception {
+	public final Block_defContext block_def() throws RecognitionException {
 		Block_defContext _localctx = new Block_defContext(_ctx, getState());
 		enterRule(_localctx, 26, RULE_block_def);
 		int _la;
@@ -2890,7 +1708,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Valueless_expression_defContext extends ParserRuleContext implements ScopeInformation {
+	public static class Valueless_expression_defContext extends ParserRuleContext {
 		public TerminalNode BREAK() { return getToken(FreedomLessLessParser.BREAK, 0); }
 		public TerminalNode CONTINUE() { return getToken(FreedomLessLessParser.CONTINUE, 0); }
 		public Attribute_defContext attribute_def() {
@@ -2916,10 +1734,6 @@ public class FreedomLessLessParser extends Parser {
 		}
 		public Valueless_expression_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
-			_permission = ((ScopeInformation) parent).permission();
-			_c_scope = ((ScopeInformation) parent).c_scope();
-			_f_scope = ((ScopeInformation) parent).f_scope();
-			_name = "valueless";
 		}
 		@Override public int getRuleIndex() { return RULE_valueless_expression_def; }
 		@Override
@@ -2930,31 +1744,11 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitValueless_expression_def(this);
 		}
-
-		@Override
-		public String type() 		 { return "valueless"; 	   }
-		@Override
-		public String c_scope() 	 { return _c_scope;    }
-		@Override
-		public String f_scope() 	 { return _f_scope;    }
-		@Override
-		public String permission() { return _permission; }
-		@Override
-		public String name() { return _name; }
-
-		//! Attributes
-		public String _permission;
-		public String _c_scope;
-		public String _f_scope;
-		public String _name = "null";
 	}
 
-	public final Valueless_expression_defContext valueless_expression_def() throws RecognitionException, Exception {
+	public final Valueless_expression_defContext valueless_expression_def() throws RecognitionException {
 		Valueless_expression_defContext _localctx = new Valueless_expression_defContext(_ctx, getState());
 		enterRule(_localctx, 28, RULE_valueless_expression_def);
-
-		SymbolEntry entry;
-
 		try {
 			setState(359);
 			_errHandler.sync(this);
@@ -3010,23 +1804,6 @@ public class FreedomLessLessParser extends Parser {
 					match(OPEN_PAR);
 					setState(346);
 					match(ID);
-
-					//**************
-				
-					entry = new SymbolEntry();
-
-					entry.c_scope = _localctx.c_scope();
-					entry.f_scope = _localctx.f_scope();
-					entry.features.add("null");
-					entry.permission = _localctx.permission();
-					entry.id = _localctx.ID().getSymbol().getText();;
-					entry.type = "variable";
-					entry.valid = false;
-
-					lookUpTable(entry);
-
-					//**************
-
 					setState(347);
 					match(CLOSE_PAR);
 					}
@@ -3035,23 +1812,6 @@ public class FreedomLessLessParser extends Parser {
 					{
 					setState(348);
 					match(ID);
-
-					//**************
-				
-					entry = new SymbolEntry();
-
-					entry.c_scope = _localctx.c_scope();
-					entry.f_scope = _localctx.f_scope();
-					entry.features.add("null");
-					entry.permission = _localctx.permission();
-					entry.id = _localctx.ID().getSymbol().getText();;
-					entry.type = "variable";
-					entry.valid = false;
-
-					lookUpTable(entry);
-
-					//**************
-
 					}
 					break;
 				default:
@@ -3116,7 +1876,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Struct_defContext extends ParserRuleContext implements ScopeInformation {
+	public static class Struct_defContext extends ParserRuleContext {
 		public If_defContext if_def() {
 			return getRuleContext(If_defContext.class,0);
 		}
@@ -3131,10 +1891,6 @@ public class FreedomLessLessParser extends Parser {
 		}
 		public Struct_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
-			_permission = ((ScopeInformation) parent).permission();
-			_c_scope = ((ScopeInformation) parent).c_scope();
-			_f_scope = ((ScopeInformation) parent).f_scope();
-			_name = "struct";
 		}
 		@Override public int getRuleIndex() { return RULE_struct_def; }
 		@Override
@@ -3145,27 +1901,9 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitStruct_def(this);
 		}
-
-		//! Methods
-		@Override
-		public String type() 		 { return "struct"; 	   }
-		@Override
-		public String c_scope() 	 { return _c_scope;    }
-		@Override
-		public String f_scope() 	 { return _f_scope;    }
-		@Override
-		public String permission() { return _permission; }
-		@Override
-		public String name() { return _name; }
-
-		//! Attributes
-		public String _permission;
-		public String _c_scope;
-		public String _f_scope;
-		public String _name = "null";
 	}
 
-	public final Struct_defContext struct_def() throws RecognitionException, Exception {
+	public final Struct_defContext struct_def() throws RecognitionException {
 		Struct_defContext _localctx = new Struct_defContext(_ctx, getState());
 		enterRule(_localctx, 30, RULE_struct_def);
 		try {
@@ -3215,7 +1953,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class If_defContext extends ParserRuleContext implements ScopeInformation {
+	public static class If_defContext extends ParserRuleContext {
 		public TerminalNode IF() { return getToken(FreedomLessLessParser.IF, 0); }
 		public TerminalNode OPEN_PAR() { return getToken(FreedomLessLessParser.OPEN_PAR, 0); }
 		public Valued_expression_defContext valued_expression_def() {
@@ -3231,10 +1969,6 @@ public class FreedomLessLessParser extends Parser {
 		public TerminalNode ELSE() { return getToken(FreedomLessLessParser.ELSE, 0); }
 		public If_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
-			_permission = ((ScopeInformation) parent).permission();
-			_c_scope = ((ScopeInformation) parent).c_scope();
-			_f_scope = ((ScopeInformation) parent).f_scope();
-			_name = "if";
 		}
 		@Override public int getRuleIndex() { return RULE_if_def; }
 		@Override
@@ -3245,27 +1979,9 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitIf_def(this);
 		}
-
-		//! Methods
-		@Override
-		public String type() 		 { return "if"; 	   }
-		@Override
-		public String c_scope() 	 { return _c_scope;    }
-		@Override
-		public String f_scope() 	 { return _f_scope;    }
-		@Override
-		public String permission() { return _permission; }
-		@Override
-		public String name() { return _name; }
-
-		//! Attributes
-		public String _permission;
-		public String _c_scope;
-		public String _f_scope;
-		public String _name = "null";
 	}
 
-	public final If_defContext if_def() throws RecognitionException, Exception {
+	public final If_defContext if_def() throws RecognitionException {
 		If_defContext _localctx = new If_defContext(_ctx, getState());
 		enterRule(_localctx, 32, RULE_if_def);
 		int _la;
@@ -3307,7 +2023,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class For_defContext extends ParserRuleContext implements ScopeInformation {
+	public static class For_defContext extends ParserRuleContext {
 		public TerminalNode FOR() { return getToken(FreedomLessLessParser.FOR, 0); }
 		public TerminalNode OPEN_PAR() { return getToken(FreedomLessLessParser.OPEN_PAR, 0); }
 		public List<Valued_attribute_defContext> valued_attribute_def() {
@@ -3336,10 +2052,6 @@ public class FreedomLessLessParser extends Parser {
 		}
 		public For_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
-			_permission = ((ScopeInformation) parent).permission();
-			_c_scope = ((ScopeInformation) parent).c_scope();
-			_f_scope = ((ScopeInformation) parent).f_scope();
-			_name = "for";
 		}
 		@Override public int getRuleIndex() { return RULE_for_def; }
 		@Override
@@ -3350,27 +2062,9 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitFor_def(this);
 		}
-
-		//! Methods
-		@Override
-		public String type() 		 { return "for"; 	   }
-		@Override
-		public String c_scope() 	 { return _c_scope;    }
-		@Override
-		public String f_scope() 	 { return _f_scope;    }
-		@Override
-		public String permission() { return _permission; }
-		@Override
-		public String name() { return _name; }
-
-		//! Attributes
-		public String _permission;
-		public String _c_scope;
-		public String _f_scope;
-		public String _name = "null";
 	}
 
-	public final For_defContext for_def() throws RecognitionException, Exception {
+	public final For_defContext for_def() throws RecognitionException {
 		For_defContext _localctx = new For_defContext(_ctx, getState());
 		enterRule(_localctx, 34, RULE_for_def);
 		int _la;
@@ -3440,7 +2134,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Valued_attribute_defContext extends ParserRuleContext implements ScopeInformation {
+	public static class Valued_attribute_defContext extends ParserRuleContext {
 		public Type_defContext type_def() {
 			return getRuleContext(Type_defContext.class,0);
 		}
@@ -3455,10 +2149,6 @@ public class FreedomLessLessParser extends Parser {
 		public TerminalNode CLOSE_BRAK() { return getToken(FreedomLessLessParser.CLOSE_BRAK, 0); }
 		public Valued_attribute_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
-			_permission = ((ScopeInformation) parent).permission();
-			_c_scope = ((ScopeInformation) parent).c_scope();
-			_f_scope = ((ScopeInformation) parent).f_scope();
-			_name = "valued";
 		}
 		@Override public int getRuleIndex() { return RULE_valued_attribute_def; }
 		@Override
@@ -3469,31 +2159,11 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitValued_attribute_def(this);
 		}
-
-		@Override
-		public String type() 		 { return "valued"; 	   }
-		@Override
-		public String c_scope() 	 { return _c_scope;    }
-		@Override
-		public String f_scope() 	 { return _f_scope;    }
-		@Override
-		public String permission() { return _permission; }
-		@Override
-		public String name() { return _name; }
-
-		//! Attributes
-		public String _permission;
-		public String _c_scope;
-		public String _f_scope;
-		public String _name = "null";
 	}
 
-	public final Valued_attribute_defContext valued_attribute_def() throws RecognitionException, Exception {
+	public final Valued_attribute_defContext valued_attribute_def() throws RecognitionException {
 		Valued_attribute_defContext _localctx = new Valued_attribute_defContext(_ctx, getState());
 		enterRule(_localctx, 36, RULE_valued_attribute_def);
-
-		SymbolEntry entry;
-
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
@@ -3508,53 +2178,18 @@ public class FreedomLessLessParser extends Parser {
 				match(MULT);
 				setState(402);
 				match(ID);
-
-				//**************
-				
-				entry = new SymbolEntry();
-
-				entry.c_scope = _localctx.c_scope();
-				entry.f_scope = _localctx.f_scope();
-				entry.features.add(_localctx.type_def().name());
-				entry.permission = _localctx.permission();
-				entry.id = _localctx.ID().getSymbol().getText();;
-				entry.type = "variable";
-				entry.valid = true;
-
-				lookUpTable(entry);
-
-				//**************
-
 				}
 				break;
 			case ID:
 				{
 				setState(403);
 				match(ID);
-
 				setState(404);
 				match(OPEN_BRAK);
 				setState(405);
 				match(INT);
 				setState(406);
 				match(CLOSE_BRAK);
-
-				//**************
-				
-				entry = new SymbolEntry();
-
-				entry.c_scope = _localctx.c_scope();
-				entry.f_scope = _localctx.f_scope();
-				entry.features.add(_localctx.type_def().name() + "[" + _localctx.INT().getSymbol().getText() + "]");
-				entry.permission = _localctx.permission();
-				entry.id = _localctx.ID().getSymbol().getText();;
-				entry.type = "variable";
-				entry.valid = true;
-
-				lookUpTable(entry);
-
-				//**************
-
 				}
 				break;
 			default:
@@ -3577,7 +2212,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class While_defContext extends ParserRuleContext implements ScopeInformation {
+	public static class While_defContext extends ParserRuleContext {
 		public TerminalNode WHILE() { return getToken(FreedomLessLessParser.WHILE, 0); }
 		public TerminalNode OPEN_PAR() { return getToken(FreedomLessLessParser.OPEN_PAR, 0); }
 		public Valued_expression_defContext valued_expression_def() {
@@ -3589,10 +2224,6 @@ public class FreedomLessLessParser extends Parser {
 		}
 		public While_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
-			_permission = ((ScopeInformation) parent).permission();
-			_c_scope = ((ScopeInformation) parent).c_scope();
-			_f_scope = ((ScopeInformation) parent).f_scope();
-			_name = "while";
 		}
 		@Override public int getRuleIndex() { return RULE_while_def; }
 		@Override
@@ -3603,27 +2234,9 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitWhile_def(this);
 		}
-
-		//! Methods
-		@Override
-		public String type() 		 { return "while"; 	   }
-		@Override
-		public String c_scope() 	 { return _c_scope;    }
-		@Override
-		public String f_scope() 	 { return _f_scope;    }
-		@Override
-		public String permission() { return _permission; }
-		@Override
-		public String name() { return _name; }
-
-		//! Attributes
-		public String _permission;
-		public String _c_scope;
-		public String _f_scope;
-		public String _name = "null";
 	}
 
-	public final While_defContext while_def() throws RecognitionException, Exception {
+	public final While_defContext while_def() throws RecognitionException {
 		While_defContext _localctx = new While_defContext(_ctx, getState());
 		enterRule(_localctx, 38, RULE_while_def);
 		try {
@@ -3652,7 +2265,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Switch_defContext extends ParserRuleContext implements ScopeInformation {
+	public static class Switch_defContext extends ParserRuleContext {
 		public TerminalNode SWITCH() { return getToken(FreedomLessLessParser.SWITCH, 0); }
 		public TerminalNode OPEN_PAR() { return getToken(FreedomLessLessParser.OPEN_PAR, 0); }
 		public Valued_expression_defContext valued_expression_def() {
@@ -3672,10 +2285,6 @@ public class FreedomLessLessParser extends Parser {
 		}
 		public Switch_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
-			_permission = ((ScopeInformation) parent).permission();
-			_c_scope = ((ScopeInformation) parent).c_scope();
-			_f_scope = ((ScopeInformation) parent).f_scope();
-			_name = "switch";
 		}
 		@Override public int getRuleIndex() { return RULE_switch_def; }
 		@Override
@@ -3686,26 +2295,9 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitSwitch_def(this);
 		}
-
-		@Override
-		public String type() 		 { return "switch"; 	   }
-		@Override
-		public String c_scope() 	 { return _c_scope;    }
-		@Override
-		public String f_scope() 	 { return _f_scope;    }
-		@Override
-		public String permission() { return _permission; }
-		@Override
-		public String name() { return _name; }
-
-		//! Attributes
-		public String _permission;
-		public String _c_scope;
-		public String _f_scope;
-		public String _name = "null";
 	}
 
-	public final Switch_defContext switch_def() throws RecognitionException, Exception {
+	public final Switch_defContext switch_def() throws RecognitionException {
 		Switch_defContext _localctx = new Switch_defContext(_ctx, getState());
 		enterRule(_localctx, 40, RULE_switch_def);
 		int _la;
@@ -3753,7 +2345,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Switch_case_defContext extends ParserRuleContext implements ScopeInformation {
+	public static class Switch_case_defContext extends ParserRuleContext {
 		public TerminalNode CASE() { return getToken(FreedomLessLessParser.CASE, 0); }
 		public Value_defContext value_def() {
 			return getRuleContext(Value_defContext.class,0);
@@ -3778,10 +2370,6 @@ public class FreedomLessLessParser extends Parser {
 		}
 		public Switch_case_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
-			_permission = ((ScopeInformation) parent).permission();
-			_c_scope = ((ScopeInformation) parent).c_scope();
-			_f_scope = ((ScopeInformation) parent).f_scope();
-			_name = "switch case";
 		}
 		@Override public int getRuleIndex() { return RULE_switch_case_def; }
 		@Override
@@ -3792,26 +2380,9 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitSwitch_case_def(this);
 		}
-
-		@Override
-		public String type() 		 { return "switch case"; 	   }
-		@Override
-		public String c_scope() 	 { return _c_scope;    }
-		@Override
-		public String f_scope() 	 { return _f_scope;    }
-		@Override
-		public String permission() { return _permission; }
-		@Override
-		public String name() { return _name; }
-
-		//! Attributes
-		public String _permission;
-		public String _c_scope;
-		public String _f_scope;
-		public String _name = "null";
 	}
 
-	public final Switch_case_defContext switch_case_def() throws RecognitionException, Exception {
+	public final Switch_case_defContext switch_case_def() throws RecognitionException {
 		Switch_case_defContext _localctx = new Switch_case_defContext(_ctx, getState());
 		enterRule(_localctx, 42, RULE_switch_case_def);
 		try {
@@ -3894,7 +2465,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Switch_default_defContext extends ParserRuleContext implements ScopeInformation {
+	public static class Switch_default_defContext extends ParserRuleContext {
 		public TerminalNode DEFAULT() { return getToken(FreedomLessLessParser.DEFAULT, 0); }
 		public TerminalNode TWOPOINTS() { return getToken(FreedomLessLessParser.TWOPOINTS, 0); }
 		public TerminalNode BREAK() { return getToken(FreedomLessLessParser.BREAK, 0); }
@@ -3916,10 +2487,6 @@ public class FreedomLessLessParser extends Parser {
 		}
 		public Switch_default_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
-			_permission = ((ScopeInformation) parent).permission();
-			_c_scope = ((ScopeInformation) parent).c_scope();
-			_f_scope = ((ScopeInformation) parent).f_scope();
-			_name = "switch default";
 		}
 		@Override public int getRuleIndex() { return RULE_switch_default_def; }
 		@Override
@@ -3930,27 +2497,9 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitSwitch_default_def(this);
 		}
-
-		//! Methods
-		@Override
-		public String type() 		 { return "switch default"; 	   }
-		@Override
-		public String c_scope() 	 { return _c_scope;    }
-		@Override
-		public String f_scope() 	 { return _f_scope;    }
-		@Override
-		public String permission() { return _permission; }
-		@Override
-		public String name() { return _name; }
-
-		//! Attributes
-		public String _permission;
-		public String _c_scope;
-		public String _f_scope;
-		public String _name = "null";
 	}
 
-	public final Switch_default_defContext switch_default_def() throws RecognitionException, Exception {
+	public final Switch_default_defContext switch_default_def() throws RecognitionException {
 		Switch_default_defContext _localctx = new Switch_default_defContext(_ctx, getState());
 		enterRule(_localctx, 44, RULE_switch_default_def);
 		try {
@@ -4027,7 +2576,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Main_defContext extends ParserRuleContext implements ScopeInformation {
+	public static class Main_defContext extends ParserRuleContext {
 		public TerminalNode VOID_T() { return getToken(FreedomLessLessParser.VOID_T, 0); }
 		public TerminalNode MAIN() { return getToken(FreedomLessLessParser.MAIN, 0); }
 		public TerminalNode OPEN_PAR() { return getToken(FreedomLessLessParser.OPEN_PAR, 0); }
@@ -4048,10 +2597,6 @@ public class FreedomLessLessParser extends Parser {
 		}
 		public Main_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
-			_permission = ((ScopeInformation) parent).permission();
-			_c_scope = ((ScopeInformation) parent).c_scope();
-			_f_scope = ((ScopeInformation) parent).f_scope();
-			_name = "main";
 		}
 		@Override public int getRuleIndex() { return RULE_main_def; }
 		@Override
@@ -4062,32 +2607,11 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitMain_def(this);
 		}
-
-		//! Methods
-		@Override
-		public String type() 		 { return "main"; 	   }
-		@Override
-		public String c_scope() 	 { return _c_scope;    }
-		@Override
-		public String f_scope() 	 { return _f_scope;    }
-		@Override
-		public String permission() { return _permission; }
-		@Override
-		public String name() { return _name; }
-
-		//! Attributes
-		public String _permission;
-		public String _c_scope;
-		public String _f_scope;
-		public String _name = "null";
 	}
 
-	public final Main_defContext main_def() throws RecognitionException, Exception {
+	public final Main_defContext main_def() throws RecognitionException {
 		Main_defContext _localctx = new Main_defContext(_ctx, getState());
 		enterRule(_localctx, 46, RULE_main_def);
-
-		SymbolEntry entry;
-
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
@@ -4101,23 +2625,6 @@ public class FreedomLessLessParser extends Parser {
 			match(INT_T);
 			setState(464);
 			match(ID);
-
-			//**************
-				
-			entry = new SymbolEntry();
-
-			entry.c_scope = "null";
-			entry.f_scope = "main";
-			entry.features.add("int");
-			entry.permission = _localctx.permission();
-			entry.id = _localctx.ID(0).getSymbol().getText();;
-			entry.type = "variable";
-			entry.valid = true;
-
-			lookUpTable(entry);
-			
-			//**************
-
 			setState(465);
 			match(COMMA);
 			setState(466);
@@ -4128,28 +2635,9 @@ public class FreedomLessLessParser extends Parser {
 			match(MULT);
 			setState(469);
 			match(ID);
-
-			//**************
-				
-			entry = new SymbolEntry();
-
-			entry.c_scope = "null";
-			entry.f_scope = "main";
-			entry.features.add("char **");
-			entry.permission = _localctx.permission();
-			entry.id = _localctx.ID(1).getSymbol().getText();;
-			entry.type = "variable";
-			entry.valid = true;
-
-			lookUpTable(entry);
-			
-			//**************
-			
 			setState(470);
 			match(CLOSE_PAR);
 			setState(471);
-
-			_localctx._f_scope = "main";
 			block_def();
 			}
 		}
@@ -4161,11 +2649,10 @@ public class FreedomLessLessParser extends Parser {
 		finally {
 			exitRule();
 		}
-		_localctx._f_scope = "null";
 		return _localctx;
 	}
 
-	public static class Type_defContext extends ParserRuleContext implements ScopeInformation {
+	public static class Type_defContext extends ParserRuleContext {
 		public TerminalNode INT_T() { return getToken(FreedomLessLessParser.INT_T, 0); }
 		public TerminalNode DOUBLE_T() { return getToken(FreedomLessLessParser.DOUBLE_T, 0); }
 		public TerminalNode CHAR_T() { return getToken(FreedomLessLessParser.CHAR_T, 0); }
@@ -4174,10 +2661,6 @@ public class FreedomLessLessParser extends Parser {
 		public TerminalNode ID() { return getToken(FreedomLessLessParser.ID, 0); }
 		public Type_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
-			_permission = ((ScopeInformation) parent).permission();
-			_c_scope = ((ScopeInformation) parent).permission();
-			_f_scope = ((ScopeInformation) parent).permission();
-			_name = ((ScopeInformation) parent).name();
 		}
 		@Override public int getRuleIndex() { return RULE_type_def; }
 		@Override
@@ -4188,28 +2671,9 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitType_def(this);
 		}
-
-		//! Methods
-		@Override
-		public String type() 		 { return _type; 	   }
-		@Override
-		public String c_scope() 	 { return _c_scope;    }
-		@Override
-		public String f_scope() 	 { return _f_scope;    }
-		@Override
-		public String permission() { return _permission; }
-		@Override
-		public String name() { return _name; }
-
-		//! Attributes
-		public String _permission;
-		public String _c_scope;
-		public String _f_scope;
-		public String _type = "type";
-		public String _name = "null";
 	}
 
-	public final Type_defContext type_def() throws RecognitionException, Exception {
+	public final Type_defContext type_def() throws RecognitionException {
 		Type_defContext _localctx = new Type_defContext(_ctx, getState());
 		enterRule(_localctx, 48, RULE_type_def);
 		try {
@@ -4221,9 +2685,6 @@ public class FreedomLessLessParser extends Parser {
 				{
 				setState(473);
 				match(INT_T);
-
-				//! Define type
-				_localctx._name = "int";
 				}
 				break;
 			case DOUBLE_T:
@@ -4231,9 +2692,6 @@ public class FreedomLessLessParser extends Parser {
 				{
 				setState(474);
 				match(DOUBLE_T);
-
-				//! Define type
-				_localctx._name = "double";
 				}
 				break;
 			case CHAR_T:
@@ -4241,9 +2699,6 @@ public class FreedomLessLessParser extends Parser {
 				{
 				setState(475);
 				match(CHAR_T);
-
-				//! Define type
-				_localctx._name = "char";
 				}
 				break;
 			case BOOL_T:
@@ -4251,9 +2706,6 @@ public class FreedomLessLessParser extends Parser {
 				{
 				setState(476);
 				match(BOOL_T);
-
-				//! Define type
-				_localctx._name = "bool";
 				}
 				break;
 			case CLASS:
@@ -4263,22 +2715,6 @@ public class FreedomLessLessParser extends Parser {
 				match(CLASS);
 				setState(478);
 				match(ID);
-
-				//! VERIFY TYPE ID
-
-				//! Define type
-				_localctx._name = "class" + _localctx.ID().getSymbol().getText();
-
-				SymbolEntry entry = new SymbolEntry();
-
-				entry.c_scope = "null";
-				entry.f_scope = "null";
-				entry.permission = "public";
-				entry.features.add(_localctx._name);
-				entry.id = _localctx.ID().getSymbol().getText();;
-				entry.type = "class";
-				entry.valid = true;
-				
 				}
 				break;
 			default:
@@ -4296,7 +2732,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Value_defContext extends ParserRuleContext implements ScopeInformation {
+	public static class Value_defContext extends ParserRuleContext {
 		public TerminalNode INT() { return getToken(FreedomLessLessParser.INT, 0); }
 		public TerminalNode CHAR() { return getToken(FreedomLessLessParser.CHAR, 0); }
 		public TerminalNode STRING() { return getToken(FreedomLessLessParser.STRING, 0); }
@@ -4306,10 +2742,6 @@ public class FreedomLessLessParser extends Parser {
 		public TerminalNode NULL() { return getToken(FreedomLessLessParser.NULL, 0); }
 		public Value_defContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
-			_permission = ((ScopeInformation) parent).permission();
-			_c_scope = ((ScopeInformation) parent).permission();
-			_f_scope = ((ScopeInformation) parent).permission();
-			_name = "value";
 		}
 		@Override public int getRuleIndex() { return RULE_value_def; }
 		@Override
@@ -4320,28 +2752,9 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitValue_def(this);
 		}
-
-		@Override
-		public String type() 		 { return "value"; 	   }
-		@Override
-		public String c_scope() 	 { return _c_scope;    }
-		@Override
-		public String f_scope() 	 { return _f_scope;    }
-		@Override
-		public String permission() { return _permission; }
-		@Override
-		public String name() { return _name; }
-
-		//! Attributes
-		public String _permission;
-		public String _c_scope;
-		public String _f_scope;
-		public String _type;
-		public String _value;
-		public String _name = "null";
 	}
 
-	public final Value_defContext value_def() throws RecognitionException, Exception {
+	public final Value_defContext value_def() throws RecognitionException {
 		Value_defContext _localctx = new Value_defContext(_ctx, getState());
 		enterRule(_localctx, 50, RULE_value_def);
 		int _la;
@@ -4371,7 +2784,7 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Logical_opContext extends ParserRuleContext implements ScopeInformation {
+	public static class Logical_opContext extends ParserRuleContext {
 		public TerminalNode LESS() { return getToken(FreedomLessLessParser.LESS, 0); }
 		public TerminalNode BIGGER() { return getToken(FreedomLessLessParser.BIGGER, 0); }
 		public TerminalNode LESS_EQ() { return getToken(FreedomLessLessParser.LESS_EQ, 0); }
@@ -4382,10 +2795,6 @@ public class FreedomLessLessParser extends Parser {
 		public TerminalNode OR() { return getToken(FreedomLessLessParser.OR, 0); }
 		public Logical_opContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
-			_permission = ((ScopeInformation) parent).permission();
-			_c_scope = ((ScopeInformation) parent).permission();
-			_f_scope = ((ScopeInformation) parent).permission();
-			_name = "logical";
 		}
 		@Override public int getRuleIndex() { return RULE_logical_op; }
 		@Override
@@ -4396,27 +2805,9 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitLogical_op(this);
 		}
-
-		//! Methods
-		@Override
-		public String type() 		 { return "logical op"; 	   }
-		@Override
-		public String c_scope() 	 { return _c_scope;    }
-		@Override
-		public String f_scope() 	 { return _f_scope;    }
-		@Override
-		public String permission() { return _permission; }
-		@Override
-		public String name() { return _name; }
-
-		//! Attributes
-		public String _permission;
-		public String _c_scope;
-		public String _f_scope;
-		public String _name = "null";
 	}
 
-	public final Logical_opContext logical_op() throws RecognitionException, Exception {
+	public final Logical_opContext logical_op() throws RecognitionException {
 		Logical_opContext _localctx = new Logical_opContext(_ctx, getState());
 		enterRule(_localctx, 52, RULE_logical_op);
 		int _la;
@@ -4446,17 +2837,13 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Arithmetic_opContext extends ParserRuleContext implements ScopeInformation {
+	public static class Arithmetic_opContext extends ParserRuleContext {
 		public TerminalNode PLUS() { return getToken(FreedomLessLessParser.PLUS, 0); }
 		public TerminalNode MINUS() { return getToken(FreedomLessLessParser.MINUS, 0); }
 		public TerminalNode MULT() { return getToken(FreedomLessLessParser.MULT, 0); }
 		public TerminalNode DIV() { return getToken(FreedomLessLessParser.DIV, 0); }
 		public Arithmetic_opContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
-			_permission = ((ScopeInformation) parent).permission();
-			_c_scope = ((ScopeInformation) parent).permission();
-			_f_scope = ((ScopeInformation) parent).permission();
-			_name = "arithmetic";
 		}
 		@Override public int getRuleIndex() { return RULE_arithmetic_op; }
 		@Override
@@ -4467,27 +2854,9 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitArithmetic_op(this);
 		}
-
-		//! Methods
-		@Override
-		public String type() 		 { return "arithmetic op"; 	   }
-		@Override
-		public String c_scope() 	 { return _c_scope;    }
-		@Override
-		public String f_scope() 	 { return _f_scope;    }
-		@Override
-		public String permission() { return _permission; }
-		@Override
-		public String name() { return _name; }
-
-		//! Attributes
-		public String _permission;
-		public String _c_scope;
-		public String _f_scope;
-		public String _name = "null";
 	}
 
-	public final Arithmetic_opContext arithmetic_op() throws RecognitionException, Exception {
+	public final Arithmetic_opContext arithmetic_op() throws RecognitionException {
 		Arithmetic_opContext _localctx = new Arithmetic_opContext(_ctx, getState());
 		enterRule(_localctx, 54, RULE_arithmetic_op);
 		int _la;
@@ -4517,17 +2886,13 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Auto_assign_opContext extends ParserRuleContext implements ScopeInformation {
+	public static class Auto_assign_opContext extends ParserRuleContext {
 		public TerminalNode AUTOPLUS() { return getToken(FreedomLessLessParser.AUTOPLUS, 0); }
 		public TerminalNode AUTOMINUS() { return getToken(FreedomLessLessParser.AUTOMINUS, 0); }
 		public TerminalNode AUTOMULT() { return getToken(FreedomLessLessParser.AUTOMULT, 0); }
 		public TerminalNode AUTODIV() { return getToken(FreedomLessLessParser.AUTODIV, 0); }
 		public Auto_assign_opContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
-			_permission = ((ScopeInformation) parent).permission();
-			_c_scope = ((ScopeInformation) parent).permission();
-			_f_scope = ((ScopeInformation) parent).permission();
-			_name = "auto assing";
 		}
 		@Override public int getRuleIndex() { return RULE_auto_assign_op; }
 		@Override
@@ -4538,27 +2903,9 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitAuto_assign_op(this);
 		}
-
-		//! Methods
-		@Override
-		public String type() 		 { return "auto assign"; 	   }
-		@Override
-		public String c_scope() 	 { return _c_scope;    }
-		@Override
-		public String f_scope() 	 { return _f_scope;    }
-		@Override
-		public String permission() { return _permission; }
-		@Override
-		public String name() { return _name; }
-
-		//! Attributes
-		public String _permission;
-		public String _c_scope;
-		public String _f_scope;
-		public String _name = "null";
 	}
 
-	public final Auto_assign_opContext auto_assign_op() throws RecognitionException, Exception {
+	public final Auto_assign_opContext auto_assign_op() throws RecognitionException {
 		Auto_assign_opContext _localctx = new Auto_assign_opContext(_ctx, getState());
 		enterRule(_localctx, 56, RULE_auto_assign_op);
 		int _la;
@@ -4588,15 +2935,11 @@ public class FreedomLessLessParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Auto_increm_opContext extends ParserRuleContext implements ScopeInformation {
+	public static class Auto_increm_opContext extends ParserRuleContext {
 		public TerminalNode INCREM() { return getToken(FreedomLessLessParser.INCREM, 0); }
 		public TerminalNode DECREM() { return getToken(FreedomLessLessParser.DECREM, 0); }
 		public Auto_increm_opContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
-			_permission = ((ScopeInformation) parent).permission();
-			_c_scope = ((ScopeInformation) parent).permission();
-			_f_scope = ((ScopeInformation) parent).permission();
-			_name = "auto increm";
 		}
 		@Override public int getRuleIndex() { return RULE_auto_increm_op; }
 		@Override
@@ -4607,27 +2950,9 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitAuto_increm_op(this);
 		}
-
-		//! Methods
-		@Override
-		public String type() 		 { return "auto increm"; 	   }
-		@Override
-		public String c_scope() 	 { return _c_scope;    }
-		@Override
-		public String f_scope() 	 { return _f_scope;    }
-		@Override
-		public String permission() { return _permission; }
-		@Override
-		public String name() { return _name; }
-
-		//! Attributes
-		public String _permission;
-		public String _c_scope;
-		public String _f_scope;
-		public String _name = "null";
 	}
 
-	public final Auto_increm_opContext auto_increm_op() throws RecognitionException, Exception {
+	public final Auto_increm_opContext auto_increm_op() throws RecognitionException {
 		Auto_increm_opContext _localctx = new Auto_increm_opContext(_ctx, getState());
 		enterRule(_localctx, 58, RULE_auto_increm_op);
 		int _la;

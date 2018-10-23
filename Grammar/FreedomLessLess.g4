@@ -2,7 +2,7 @@
 grammar FreedomLessLess;
 
 program_def:
-	 attribute_def* function_def* class_def* main_def ;
+	 (attribute_def SEMICOLON)* function_def* class_def* main_def ;
 
 class_def:
 	CLASS ID OPEN_KEY class_members_def CLOSE_KEY ;

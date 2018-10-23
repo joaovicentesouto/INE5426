@@ -1,0 +1,17 @@
+##################################################
+########## 5 Semantic Errors Identified ##########
+##################################################
+
+Message (1): Variável notDeclared está sendo usada antes de ser declarada!
+
+Message (2): Variável globalVariable está sendo usada antes de ser declarada!
+
+Message (3): Variável firstVariable está sendo usada antes de ser declarada!
+
+Message (4): global já foi declarado globalmente como variable!
+
+Message (5): 
+As seguintes variáveis não foram definidas (ou definidas no lugar errado):
+ - notDeclared tipo: variable
+ - globalVariable tipo: variable
+ - firstVariable tipo: variable

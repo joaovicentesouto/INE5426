@@ -1,0 +1,16 @@
+int global = notDeclared + 10;
+
+double definedFunction(double conflictBetweenNames) {
+	return conflictBetweenNames * 2;
+}
+
+int FunctionName () {
+	return globalVariable + definedFunction(firstVariable);
+}
+
+class NotDeclared {
+	private:
+		double global;
+}
+
+void main (int argc, char **argv) {}
