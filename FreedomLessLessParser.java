@@ -43,6 +43,7 @@ interface ScopeInformation {
 public class FreedomLessLessParser extends Parser {
 
 	public static ArrayList<SymbolEntry> _symbolTable = new ArrayList<SymbolEntry>();
+	public static ArrayList<String> _errorList = new ArrayList<String>();
 
 	public void lookUpTable(SymbolEntry entry) throws Exception
 	{
@@ -68,21 +69,21 @@ public class FreedomLessLessParser extends Parser {
 
 			if (temp.type.equals("class")) {
 				if (entry.type.equals("class"))
-					throw new Exception(temp.id + " já foi declarado.");
+					_errorList.add(temp.id + " já foi declarado.");
 				
 				if (entry.type.equals("variable"))
-					throw new Exception(temp.id + " já foi declarado como uma classe.");
+					_errorList.add(temp.id + " já foi declarado como uma classe.");
 
 				if (entry.type.equals("function")) {
 					if (entry.c_scope.equals(temp.id)) {
 						for (SymbolEntry e : _symbolTable)
 							if (e.type.equals("function") && e.id.equals(temp.id))
-								throw new Exception(temp.id + " já usado ou construtor já declarado.");
+								_errorList.add(temp.id + " já usado ou construtor já declarado.");
 					
 						continue;
 					}
 					
-					throw new Exception(temp.id + " é uma classe só pode ser usada como construtor.");
+					_errorList.add(temp.id + " é uma classe só pode ser usada como construtor.");
 				}
 			}
 
@@ -96,10 +97,10 @@ public class FreedomLessLessParser extends Parser {
 					//System.out.println("33.3");
 					//! Another definition
 					if (temp.valid || temp.type.equals("variable") && (!temp.c_scope.equals("null") || !temp.f_scope.equals("null")))
-						throw new Exception(temp.id + " já foi declarado localmente como " + temp.type);
+						_errorList.add(temp.id + " já foi declarado localmente como " + temp.type);
 
 					if (!temp.c_scope.equals("null") && !temp.f_scope.equals("null") && temp.type.equals("function"))
-						throw new Exception(temp.id + " já foi declarado localmente como " + temp.type);
+						_errorList.add(temp.id + " já foi declarado localmente como " + temp.type);
 					
 					if (entry.features.size() != temp.features.size()) {
 						String msg = temp.features.get(0) + "(";
@@ -110,7 +111,7 @@ public class FreedomLessLessParser extends Parser {
 						if (x < temp.features.size())
 							msg += temp.features.get(x);
 
-						throw new Exception(entry.id + " está sendo usado de forma diferente.");
+						_errorList.add(entry.id + " está sendo usado de forma diferente.");
 					}
 
 					_symbolTable.remove(i);
@@ -125,10 +126,10 @@ public class FreedomLessLessParser extends Parser {
 					{
 						//! temp is a global definition OR same scope definition (temp class id maybe)
 						if (temp.c_scope.equals("null") && temp.f_scope.equals("null"))
-							throw new Exception(temp.id + " já foi declarado globalmente como " + temp.type);
+							_errorList.add(temp.id + " já foi declarado globalmente como " + temp.type + "!");
 						
 						if (temp.c_scope.equals("null") && temp.f_scope.equals(entry.f_scope))
-							throw new Exception(temp.id + " já foi usado/declarado no mesmo escopo!");
+							_errorList.add(temp.id + " já foi usado/declarado no mesmo escopo!");
 					}
 					else
 					{
@@ -141,7 +142,7 @@ public class FreedomLessLessParser extends Parser {
 							if (x < temp.features.size())
 								msg += temp.features.get(x);
 
-							throw new Exception(entry.id + " está sendo usado de forma diferente.");
+							_errorList.add(entry.id + " está sendo usado de forma diferente.");
 						}
 					}
 
@@ -155,17 +156,17 @@ public class FreedomLessLessParser extends Parser {
 					{
 						//! All
 						if (temp.c_scope.equals("null") && temp.f_scope.equals("null"))
-							throw new Exception(temp.id + " já foi declarado globalmente como " + temp.type);
+							_errorList.add(temp.id + " já foi declarado globalmente como " + temp.type + "!");
 						
 						//! Variable
 						if (temp.c_scope.equals(entry.c_scope))
-							throw new Exception(temp.id + " já foi declarado no mesmo escopo!");
+							_errorList.add(temp.id + " já foi declarado no mesmo escopo!");
 					}
 					else
 					{
 						//! Not exists
 						if (temp.c_scope.equals("null") && temp.f_scope.equals("null"))
-							throw new Exception(temp.id + " não pode ser usado globalmente!");
+							_errorList.add(temp.id + " não pode ser usado globalmente!");
 						
 						//! Match outside a function
 						if (temp.c_scope.equals(entry.c_scope) && entry.features.size() == temp.features.size()) {
@@ -183,7 +184,7 @@ public class FreedomLessLessParser extends Parser {
 							if (x < temp.features.size())
 								msg += temp.features.get(x);
 
-							throw new Exception(entry.id + " está sendo usado de forma diferente.");
+							_errorList.add(entry.id + " está sendo usado de forma diferente.");
 						}
 					}
 					
@@ -196,16 +197,16 @@ public class FreedomLessLessParser extends Parser {
 					if (temp.valid)
 					{
 						if (temp.c_scope.equals("null") && temp.f_scope.equals("null"))
-							throw new Exception(temp.id + " já foi declarado globalmente como " + temp.type);
+							_errorList.add(temp.id + " já foi declarado globalmente como " + temp.type + "!");
 						
 						if (temp.c_scope.equals(entry.c_scope) && temp.f_scope.equals("null"))
-							throw new Exception(temp.id + " já foi declarado no escopo da classe " + temp.c_scope);
+							_errorList.add(temp.id + " já foi declarado no escopo da classe " + temp.c_scope + "!");
 						
 						if (temp.c_scope.equals(entry.c_scope) && temp.f_scope.equals(entry.f_scope))
-							throw new Exception(temp.id + " já foi declarado no mesmo escopo!");
+							_errorList.add(temp.id + " já foi declarado no mesmo escopo!");
 					}
 					else if (temp.c_scope.equals(entry.c_scope) && temp.f_scope.equals(entry.f_scope))
-						throw new Exception(temp.id + " foi usado antes de ser declarado no escopo da funcão " + temp.f_scope);
+						_errorList.add(temp.id + " foi usado antes de ser declarado no escopo da funcão " + temp.f_scope + "!");
 					
 					continue;
 				}
@@ -226,20 +227,20 @@ public class FreedomLessLessParser extends Parser {
 						
 						//! Define inside a function -> not exist global
 						if (temp.c_scope.equals("null") && !temp.f_scope.equals("null"))
-							throw new Exception(temp.id + " não pode ser utilizado globalmente!");
+							_errorList.add(temp.id + " não pode ser utilizado globalmente!");
 
 						//! Define inside a class -> not exist global
 						if (!temp.c_scope.equals("null") && temp.f_scope.equals("null"))
-							throw new Exception(temp.id + " não pode ser utilizado globalmente!");
+							_errorList.add(temp.id + " não pode ser utilizado globalmente!");
 						
 						//! Define inside a function class -> not exist global
 						if (!temp.c_scope.equals("null") && !temp.f_scope.equals("null"))
-							throw new Exception(temp.id + " não pode ser utilizado globalmente!");
+							_errorList.add(temp.id + " não pode ser utilizado globalmente!");
 					}
 					else
 					{
 						if (temp.c_scope.equals("null") && temp.f_scope.equals("null"))
-							throw new Exception("Não deveria acontecer!");
+							_errorList.add("Não deveria acontecer!");
 						
 						if (temp.c_scope.equals("null") && !temp.f_scope.equals("null"))
 							continue;
@@ -251,7 +252,7 @@ public class FreedomLessLessParser extends Parser {
 							continue;
 					}
 					
-					throw new Exception(temp.id + " já devia ter sido declarado!");
+					_errorList.add(temp.id + " já devia ter sido declarado!");
 				}
 				
 				//! Inside Global Function Definition (ENTRY is VARIABLE)
@@ -270,7 +271,7 @@ public class FreedomLessLessParser extends Parser {
 								if (x < temp.features.size())
 									msg += temp.features.get(x);
 
-								throw new Exception(temp.id + " é uma função com a seguinte assinatura: " + msg + ")");
+								_errorList.add(temp.id + " é uma função com a seguinte assinatura: " + msg + ")");
 							}
 
 							return;
@@ -293,7 +294,7 @@ public class FreedomLessLessParser extends Parser {
 					else
 					{
 						if (temp.c_scope.equals("null") && temp.f_scope.equals("null"))
-							throw new Exception("Não deveria acontecer!");
+							_errorList.add("Não deveria acontecer!");
 						
 						//! Another like me
 						if (temp.c_scope.equals("null") && temp.f_scope.equals(entry.f_scope)) {
@@ -308,7 +309,7 @@ public class FreedomLessLessParser extends Parser {
 							if (x < temp.features.size())
 								msg += temp.features.get(x);
 
-							throw new Exception(entry.id + " está sendo usado de forma diferente.");
+							_errorList.add(entry.id + " está sendo usado de forma diferente.");
 						}
 						
 //						if (!temp.c_scope.equals("null") && temp.f_scope.equals("null"))
@@ -339,7 +340,7 @@ public class FreedomLessLessParser extends Parser {
 							if (x < temp.features.size())
 								msg += temp.features.get(x);
 
-							throw new Exception(entry.id + " está sendo usado de forma diferente.");
+							_errorList.add(entry.id + " está sendo usado de forma diferente.");
 						}
 						
 //						if (temp.c_scope.equals("null") && temp.f_scope.equals(entry.f_scope))
@@ -358,17 +359,17 @@ public class FreedomLessLessParser extends Parser {
 							if (x < temp.features.size())
 								msg += temp.features.get(x);
 
-							throw new Exception(entry.id + " está sendo usado de forma diferente.");
+							_errorList.add(entry.id + " está sendo usado de forma diferente.");
 						}
 						
 						if (temp.c_scope.equals(entry.c_scope) && !temp.f_scope.equals("null"))
-							throw new Exception(temp.id + " conflito com outra variável da funcão " + temp.f_scope);
+							_errorList.add(temp.id + " conflito com outra variável da funcão " + temp.f_scope);
 					}
 					else
 					{
 						//! Not exists
 						if (temp.c_scope.equals("null") && temp.f_scope.equals("null"))
-							throw new Exception(temp.id + " não pode ser usado globalmente!");
+							_errorList.add(temp.id + " não pode ser usado globalmente!");
 						
 //						if (temp.c_scope.equals("null") && temp.f_scope.equals(entry.f_scope))
 //							continue;
@@ -386,11 +387,11 @@ public class FreedomLessLessParser extends Parser {
 							if (x < temp.features.size())
 								msg += temp.features.get(x);
 
-							throw new Exception(entry.id + " está sendo usado de forma diferente.");
+							_errorList.add(entry.id + " está sendo usado de forma diferente.");
 						}
 						
 //						if (temp.c_scope.equals(entry.c_scope) && !temp.f_scope.equals("null"))
-//							throw new Exception(temp.id + " conflito com outra variável na funcão " + temp.f_scope);
+//							_errorList.add(temp.id + " conflito com outra variável na funcão " + temp.f_scope);
 					}
 					
 					continue;
@@ -414,7 +415,7 @@ public class FreedomLessLessParser extends Parser {
 							if (x < temp.features.size())
 								msg += temp.features.get(x);
 
-							throw new Exception(entry.id + " está sendo usado de forma diferente.");
+							_errorList.add(entry.id + " está sendo usado de forma diferente.");
 						}
 						
 //						//! Another scope
@@ -434,7 +435,7 @@ public class FreedomLessLessParser extends Parser {
 							if (x < temp.features.size())
 								msg += temp.features.get(x);
 
-							throw new Exception(entry.id + " está sendo usado de forma diferente.");
+							_errorList.add(entry.id + " está sendo usado de forma diferente.");
 						}
 						
 						//! Found
@@ -450,14 +451,14 @@ public class FreedomLessLessParser extends Parser {
 							if (x < temp.features.size())
 								msg += temp.features.get(x);
 
-							throw new Exception(entry.id + " está sendo usado de forma diferente.");
+							_errorList.add(entry.id + " está sendo usado de forma diferente.");
 						}
 					}
 					else
 					{
 						//! Not exists
 						if (temp.c_scope.equals("null") && temp.f_scope.equals("null"))
-							throw new Exception(temp.id + " não pode ser usado globalmente!");
+							_errorList.add(temp.id + " não pode ser usado globalmente!");
 						
 //						if (temp.c_scope.equals("null") && temp.f_scope.equals(entry.f_scope))
 //							continue;
@@ -474,7 +475,7 @@ public class FreedomLessLessParser extends Parser {
 							if (x < temp.features.size())
 								msg += temp.features.get(x);
 
-							throw new Exception(entry.id + " está sendo usado de forma diferente.");
+							_errorList.add(entry.id + " está sendo usado de forma diferente.");
 						}
 
 						//! Another like me
@@ -490,7 +491,7 @@ public class FreedomLessLessParser extends Parser {
 							if (x < temp.features.size())
 								msg += temp.features.get(x);
 
-							throw new Exception(entry.id + " está sendo usado de forma diferente.");
+							_errorList.add(entry.id + " está sendo usado de forma diferente.");
 						}
 					}
 					
@@ -505,10 +506,10 @@ public class FreedomLessLessParser extends Parser {
 		//! Usado Antes de declarado
 		{
 			if (!entry.valid && entry.type.equals("variable") && entry.c_scope.equals("null") && entry.f_scope.equals("null"))
-				throw new Exception("Variável " + entry.id + " está sendo usada antes de ser declarada!");
+				_errorList.add("Variável " + entry.id + " está sendo usada antes de ser declarada!");
 		
 			if (!entry.valid && entry.type.equals("variable") && entry.c_scope.equals("null") && !entry.f_scope.equals("null"))
-				throw new Exception("Variável " + entry.id + " está sendo usada antes de ser declarada!");
+				_errorList.add("Variável " + entry.id + " está sendo usada antes de ser declarada!");
 		}
 		
 		//! Not found/match
@@ -526,7 +527,7 @@ public class FreedomLessLessParser extends Parser {
 			}
 
 		if (error)
-			throw new Exception("\nAs seguintes variáveis não foram definidas (ou definidas no lugar errado):\n" + msg);
+			_errorList.add("\nAs seguintes variáveis não foram definidas (ou definidas no lugar errado):\n" + msg);
 	}
 
 	static { RuntimeMetaData.checkVersion("4.7.1", RuntimeMetaData.VERSION); }
@@ -769,6 +770,21 @@ public class FreedomLessLessParser extends Parser {
 			exitRule();
 			finalCheck();
 		}
+
+		String temp;
+		
+		if (_errorList.size() > 0) {
+			System.out.println("\n##################################################");
+			System.out.println("########## " + _errorList.size() + " Semantic Errors Identified ##########");
+			System.out.println("##################################################\n");
+		}
+
+		for (int i = 0; i < _errorList.size(); i++)
+		{
+			temp = _errorList.get(i);
+			System.out.println("Message (" + (i+1) + "): " + _errorList.get(i) + "\n");
+		}
+
 		return _localctx;
 	}
 
