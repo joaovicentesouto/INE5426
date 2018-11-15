@@ -1,0 +1,1 @@
+define double @definedFunction()define i32 @FunctionName()define bool @wrongArgumentsAmount()define void @notConflictBetweenNames()define void @A()

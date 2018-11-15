@@ -10,6 +10,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.lang.Exception;
 
+import java.io.FileWriter;
+import java.io.File;
+import java.io.IOException;
+
 class SymbolEntry
 {
 	public String type; //! func, attr, class
@@ -44,6 +48,8 @@ public class FreedomLessLessParser extends Parser {
 
 	public static ArrayList<SymbolEntry> _symbolTable = new ArrayList<SymbolEntry>();
 	public static ArrayList<String> _errorList = new ArrayList<String>();
+	public static String _code = "";
+	public boolean _compileError = false;
 
 	public void lookUpTable(SymbolEntry entry) throws Exception
 	{
@@ -526,8 +532,24 @@ public class FreedomLessLessParser extends Parser {
 				error = true;
 			}
 
-		if (error)
+		if (error) {
 			_errorList.add("\nAs seguintes variáveis não foram definidas (ou definidas no lugar errado):\n" + msg);
+			_compileError = true;
+		}
+
+		if (_compileError)
+			System.exit(1);
+
+		FileWriter file;
+		try {
+			file = new FileWriter(new File("file.ll"));
+			file.write(_code);
+			file.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+}
 	}
 
 	static { RuntimeMetaData.checkVersion("4.7.1", RuntimeMetaData.VERSION); }
@@ -2476,8 +2498,12 @@ public class FreedomLessLessParser extends Parser {
 				//! Return type
 				entry.features.add("void");
 
+				_code += "define void @" + entry.id;
+
+
 				setState(277);
 				match(OPEN_PAR);
+				_code += "(";
 				setState(279);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
@@ -2496,6 +2522,7 @@ public class FreedomLessLessParser extends Parser {
 
 				setState(281);
 				match(CLOSE_PAR);
+				_code += ")";
 				setState(282);
 				block_def();
 				}
@@ -2553,8 +2580,29 @@ public class FreedomLessLessParser extends Parser {
 				//! Id
 				entry.id = _localctx._f_scope = _localctx._name = _localctx.ID().getSymbol().getText();
 
+				switch(entry.features.get(0)){
+					case "int":
+						_code += "define i32 @";
+						break;
+					case "double":
+						_code += "define double @";
+						break;
+					case "char":
+						_code += "define char @";
+						break;
+					case "bool":
+						_code += "define bool @";
+						break;
+					default:
+						break;
+				}				
+				_code += entry.id;
+
 				setState(291);
 				match(OPEN_PAR);
+				
+				_code += "(";
+			
 				setState(293);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
@@ -2573,6 +2621,7 @@ public class FreedomLessLessParser extends Parser {
 
 				setState(295);
 				match(CLOSE_PAR);
+				_code += ")";
 				setState(296);
 				block_def();
 				}
