@@ -680,6 +680,11 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitProgram_def(this);
 		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof FreedomLessLessVisitor ) return ((FreedomLessLessVisitor<? extends T>)visitor).visitProgram_def(this);
+			else return visitor.visitChildren(this);
+		}
 
 		//! Our session
 		//! Methods
@@ -811,7 +816,11 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitClass_def(this);
 		}
-		
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof FreedomLessLessVisitor ) return ((FreedomLessLessVisitor<? extends T>)visitor).visitClass_def(this);
+			else return visitor.visitChildren(this);
+		}
 		//! Our session
 		//! Methods
 		@Override
@@ -902,6 +911,11 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitClass_members_def(this);
 		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof FreedomLessLessVisitor ) return ((FreedomLessLessVisitor<? extends T>)visitor).visitClass_members_def(this);
+			else return visitor.visitChildren(this);
+		}
 
 		@Override
 		public String type() 		 { return "class"; 	   }
@@ -989,6 +1003,11 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitPublic_def(this);
 		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof FreedomLessLessVisitor ) return ((FreedomLessLessVisitor<? extends T>)visitor).visitPublic_def(this);
+			else return visitor.visitChildren(this);
+		}
 
 		//! Methods
 		@Override
@@ -1052,6 +1071,11 @@ public class FreedomLessLessParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitPrivate_def(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof FreedomLessLessVisitor ) return ((FreedomLessLessVisitor<? extends T>)visitor).visitPrivate_def(this);
+			else return visitor.visitChildren(this);
 		}
 
 		@Override
@@ -1127,6 +1151,11 @@ public class FreedomLessLessParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitClass_scope_def(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof FreedomLessLessVisitor ) return ((FreedomLessLessVisitor<? extends T>)visitor).visitClass_scope_def(this);
+			else return visitor.visitChildren(this);
 		}
 
 		@Override
@@ -1253,6 +1282,11 @@ public class FreedomLessLessParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitAttribute_def(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof FreedomLessLessVisitor ) return ((FreedomLessLessVisitor<? extends T>)visitor).visitAttribute_def(this);
+			else return visitor.visitChildren(this);
 		}
 
 		//! Methods
@@ -1607,6 +1641,11 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitValued_expression_def(this);
 		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof FreedomLessLessVisitor ) return ((FreedomLessLessVisitor<? extends T>)visitor).visitValued_expression_def(this);
+			else return visitor.visitChildren(this);
+		}
 
 		@Override
 		public String type() 		 { return "value"; 	   }
@@ -1826,6 +1865,11 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitOperation(this);
 		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof FreedomLessLessVisitor ) return ((FreedomLessLessVisitor<? extends T>)visitor).visitOperation(this);
+			else return visitor.visitChildren(this);
+		}
 
 		@Override
 		public String type() 		 { return "operation"; 	   }
@@ -1962,6 +2006,11 @@ public class FreedomLessLessParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitFunction_call_def(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof FreedomLessLessVisitor ) return ((FreedomLessLessVisitor<? extends T>)visitor).visitFunction_call_def(this);
+			else return visitor.visitChildren(this);
 		}
 
 		@Override
@@ -2328,6 +2377,11 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitArgument_def(this);
 		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof FreedomLessLessVisitor ) return ((FreedomLessLessVisitor<? extends T>)visitor).visitArgument_def(this);
+			else return visitor.visitChildren(this);
+		}
 
 		@Override
 		public String type() 		 { return "argument";  }
@@ -2418,6 +2472,11 @@ public class FreedomLessLessParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitFunction_def(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof FreedomLessLessVisitor ) return ((FreedomLessLessVisitor<? extends T>)visitor).visitFunction_def(this);
+			else return visitor.visitChildren(this);
 		}
 
 		@Override
@@ -2629,6 +2688,11 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitParam_def(this);
 		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof FreedomLessLessVisitor ) return ((FreedomLessLessVisitor<? extends T>)visitor).visitParam_def(this);
+			else return visitor.visitChildren(this);
+		}
 
 		@Override
 		public String type() { return "variable"; }
@@ -2815,6 +2879,11 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitBlock_def(this);
 		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof FreedomLessLessVisitor ) return ((FreedomLessLessVisitor<? extends T>)visitor).visitBlock_def(this);
+			else return visitor.visitChildren(this);
+		}
 
 		//! Methods
 		@Override
@@ -2945,6 +3014,11 @@ public class FreedomLessLessParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitValueless_expression_def(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof FreedomLessLessVisitor ) return ((FreedomLessLessVisitor<? extends T>)visitor).visitValueless_expression_def(this);
+			else return visitor.visitChildren(this);
 		}
 
 		@Override
@@ -3161,6 +3235,11 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitStruct_def(this);
 		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof FreedomLessLessVisitor ) return ((FreedomLessLessVisitor<? extends T>)visitor).visitStruct_def(this);
+			else return visitor.visitChildren(this);
+		}
 
 		//! Methods
 		@Override
@@ -3260,6 +3339,11 @@ public class FreedomLessLessParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitIf_def(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof FreedomLessLessVisitor ) return ((FreedomLessLessVisitor<? extends T>)visitor).visitIf_def(this);
+			else return visitor.visitChildren(this);
 		}
 
 		//! Methods
@@ -3365,6 +3449,11 @@ public class FreedomLessLessParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitFor_def(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof FreedomLessLessVisitor ) return ((FreedomLessLessVisitor<? extends T>)visitor).visitFor_def(this);
+			else return visitor.visitChildren(this);
 		}
 
 		//! Methods
@@ -3484,6 +3573,11 @@ public class FreedomLessLessParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitValued_attribute_def(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof FreedomLessLessVisitor ) return ((FreedomLessLessVisitor<? extends T>)visitor).visitValued_attribute_def(this);
+			else return visitor.visitChildren(this);
 		}
 
 		@Override
@@ -3619,6 +3713,11 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitWhile_def(this);
 		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof FreedomLessLessVisitor ) return ((FreedomLessLessVisitor<? extends T>)visitor).visitWhile_def(this);
+			else return visitor.visitChildren(this);
+		}
 
 		//! Methods
 		@Override
@@ -3701,6 +3800,11 @@ public class FreedomLessLessParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitSwitch_def(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof FreedomLessLessVisitor ) return ((FreedomLessLessVisitor<? extends T>)visitor).visitSwitch_def(this);
+			else return visitor.visitChildren(this);
 		}
 
 		@Override
@@ -3807,6 +3911,11 @@ public class FreedomLessLessParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitSwitch_case_def(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof FreedomLessLessVisitor ) return ((FreedomLessLessVisitor<? extends T>)visitor).visitSwitch_case_def(this);
+			else return visitor.visitChildren(this);
 		}
 
 		@Override
@@ -3946,6 +4055,11 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitSwitch_default_def(this);
 		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof FreedomLessLessVisitor ) return ((FreedomLessLessVisitor<? extends T>)visitor).visitSwitch_default_def(this);
+			else return visitor.visitChildren(this);
+		}
 
 		//! Methods
 		@Override
@@ -4078,6 +4192,11 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitMain_def(this);
 		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof FreedomLessLessVisitor ) return ((FreedomLessLessVisitor<? extends T>)visitor).visitMain_def(this);
+			else return visitor.visitChildren(this);
+		}
 
 		//! Methods
 		@Override
@@ -4203,6 +4322,11 @@ public class FreedomLessLessParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitType_def(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof FreedomLessLessVisitor ) return ((FreedomLessLessVisitor<? extends T>)visitor).visitType_def(this);
+			else return visitor.visitChildren(this);
 		}
 
 		//! Methods
@@ -4336,6 +4460,11 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitValue_def(this);
 		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof FreedomLessLessVisitor ) return ((FreedomLessLessVisitor<? extends T>)visitor).visitValue_def(this);
+			else return visitor.visitChildren(this);
+		}
 
 		@Override
 		public String type() 		 { return "value"; 	   }
@@ -4412,6 +4541,11 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitLogical_op(this);
 		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof FreedomLessLessVisitor ) return ((FreedomLessLessVisitor<? extends T>)visitor).visitLogical_op(this);
+			else return visitor.visitChildren(this);
+		}
 
 		//! Methods
 		@Override
@@ -4482,6 +4616,11 @@ public class FreedomLessLessParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitArithmetic_op(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof FreedomLessLessVisitor ) return ((FreedomLessLessVisitor<? extends T>)visitor).visitArithmetic_op(this);
+			else return visitor.visitChildren(this);
 		}
 
 		//! Methods
@@ -4554,6 +4693,11 @@ public class FreedomLessLessParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitAuto_assign_op(this);
 		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof FreedomLessLessVisitor ) return ((FreedomLessLessVisitor<? extends T>)visitor).visitAuto_assign_op(this);
+			else return visitor.visitChildren(this);
+		}
 
 		//! Methods
 		@Override
@@ -4622,6 +4766,11 @@ public class FreedomLessLessParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof FreedomLessLessListener ) ((FreedomLessLessListener)listener).exitAuto_increm_op(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof FreedomLessLessVisitor ) return ((FreedomLessLessVisitor<? extends T>)visitor).visitAuto_increm_op(this);
+			else return visitor.visitChildren(this);
 		}
 
 		//! Methods
