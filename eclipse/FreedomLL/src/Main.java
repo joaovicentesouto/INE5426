@@ -73,7 +73,7 @@ public class Main {
 		// System.out.println(tree.toStringTree(parser)); // print tree as text
 		
 		
-		treeGui(parser, tree);
+//		treeGui(parser, tree);
 
 		/* Semantic analysis */
 //		ParseTreeWalker walker = new ParseTreeWalker();
