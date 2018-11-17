@@ -1,5 +1,8 @@
 // Generated from FreedomLessLess.g4 by ANTLR 4.7.1
+import java.util.ArrayList;
+
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
+import java.util.ArrayList;
 
 /**
  * This class provides an empty implementation of {@link FreedomLessLessVisitor},
@@ -10,11 +13,11 @@ import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
  * operations with no System.out.println(ctx.getClass().getName()); return type.
  */
 public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String> implements FreedomLessLessVisitor<String> {
-
+		
 	@Override public String visitProgram_def(FreedomLessLessParser.Program_defContext ctx) { System.out.println(ctx.getClass().getName()); return visitChildren(ctx); }
 
 	@Override public String visitClass_def(FreedomLessLessParser.Class_defContext ctx) { System.out.println(ctx.getClass().getName()); return visitChildren(ctx); }
-
+ 
 	@Override public String visitClass_members_def(FreedomLessLessParser.Class_members_defContext ctx) { System.out.println(ctx.getClass().getName()); return visitChildren(ctx); }
 
 	@Override public String visitPublic_def(FreedomLessLessParser.Public_defContext ctx) { System.out.println(ctx.getClass().getName()); return visitChildren(ctx); }
@@ -39,7 +42,35 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 
 	@Override public String visitArgument_def(FreedomLessLessParser.Argument_defContext ctx) { System.out.println(ctx.getClass().getName()); return visitChildren(ctx); }
 
-	@Override public String visitFunction_def(FreedomLessLessParser.Function_defContext ctx) { System.out.println(ctx.getClass().getName()); return visitChildren(ctx); }
+	@Override public String visitFunction_def(FreedomLessLessParser.Function_defContext ctx) { 
+		String r = "define";
+		for (SymbolEntry s : FreedomLessLessParser._symbolTable) {
+			if(s.id.equals(ctx.name())) {
+				switch(s.features.get(0)){
+				case "void":
+					r += "void @" + ctx.name() + "(" + visitChildren(ctx) + ") {" + visitChildren(ctx) + "}";
+					break;
+				case "int":
+					r += "i32 @" + ctx.name() + "(" + visitChildren(ctx) + ") {" + visitChildren(ctx) + "}";
+					break;
+				case "double":
+					r += "i64 @" + ctx.name() + "(" + visitChildren(ctx) + ") {" + visitChildren(ctx) + "}";
+					break;
+				case "char":
+					r += "char? @" + ctx.name() + "(" + visitChildren(ctx) + ") {" + visitChildren(ctx) + "}" ;
+					break;
+				case "bool":
+					r += "bool? @" + ctx.name() + "(" + visitChildren(ctx) + ") {" + visitChildren(ctx) + "}" ;
+					break;
+				default:
+					return "";
+					
+				}
+			}
+		}
+		System.out.println(ctx.getClass().getName()); 
+		return r; 
+	}
 
 	@Override public String visitParam_def(FreedomLessLessParser.Param_defContext ctx) { System.out.println(ctx.getClass().getName()); return visitChildren(ctx); }
 
