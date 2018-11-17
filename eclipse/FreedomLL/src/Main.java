@@ -78,9 +78,10 @@ public class Main {
 //		walker.walk(semanticListener, tree);
 //		return semanticListener.getSymbolTable();
 			
-		FreedomLessLessCodeVisitor<String> visitor = new FreedomLessLessCodeVisitor<String>();
+		FreedomLessLessCodeVisitor visitor = new FreedomLessLessCodeVisitor();
 		
-		tree.accept(visitor);
+		String x = tree.accept(visitor);
+		System.out.println(x);
 
 	}
 	
