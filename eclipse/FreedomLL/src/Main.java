@@ -77,6 +77,10 @@ public class Main {
 //		AMZSemanticListener semanticListener = new AMZSemanticListener(filepath);
 //		walker.walk(semanticListener, tree);
 //		return semanticListener.getSymbolTable();
+			
+		FreedomLessLessCodeVisitor<String> visitor = new FreedomLessLessCodeVisitor<String>();
+		
+		tree.accept(visitor);
 
 	}
 	
