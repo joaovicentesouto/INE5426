@@ -1,7 +1,10 @@
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.Arrays;
 
 import javax.swing.JFrame;
@@ -20,7 +23,7 @@ public class Main {
 		// TODO Auto-generated method stub
 		System.out.println("Hello");
 		
-		String filepath = "./example.ll";
+		String filepath = "./example.fll";
 
 		InputStream is;
 		try {
@@ -68,9 +71,9 @@ public class Main {
 		
 		
 		// System.out.println(tree.toStringTree(parser)); // print tree as text
-//		if (Arrays.asList(args).contains("-gui")) {
-			treeGui(parser, tree);
-//		}
+		
+		
+		treeGui(parser, tree);
 
 		/* Semantic analysis */
 //		ParseTreeWalker walker = new ParseTreeWalker();
@@ -82,6 +85,15 @@ public class Main {
 		
 		String x = tree.accept(visitor);
 		System.out.println(x);
+		
+		try {
+			PrintWriter out = new PrintWriter("code.ll");
+			out.write(x);
+			out.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 	}
 	

@@ -25,7 +25,13 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 
 	@Override public String visitAttribute_def(FreedomLessLessParser.Attribute_defContext ctx) { System.out.println(ctx.getClass().getName()); return visitChildren(ctx); }
 
-	@Override public String visitValued_expression_def(FreedomLessLessParser.Valued_expression_defContext ctx) { System.out.println(ctx.getClass().getName()); return visitChildren(ctx); }
+	@Override public String visitValued_expression_def(FreedomLessLessParser.Valued_expression_defContext ctx) {
+		System.out.println(ctx.getClass().getName());
+		
+		
+		
+		return visitChildren(ctx);
+	}
 
 	@Override public String visitOperation(FreedomLessLessParser.OperationContext ctx) { System.out.println(ctx.getClass().getName()); return visitChildren(ctx); }
 
@@ -37,9 +43,26 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 
 	@Override public String visitParam_def(FreedomLessLessParser.Param_defContext ctx) { System.out.println(ctx.getClass().getName()); return visitChildren(ctx); }
 
-	@Override public String visitBlock_def(FreedomLessLessParser.Block_defContext ctx) { System.out.println(ctx.getClass().getName()); return visitChildren(ctx); }
+	@Override public String visitBlock_def(FreedomLessLessParser.Block_defContext ctx) {
+		System.out.println(ctx.getClass().getName());
+		
+		String ret = visitChildren(ctx);
+		
+		return ret;
+	}
 
-	@Override public String visitValueless_expression_def(FreedomLessLessParser.Valueless_expression_defContext ctx) { System.out.println(ctx.getClass().getName()); return visitChildren(ctx); }
+	@Override public String visitValueless_expression_def(FreedomLessLessParser.Valueless_expression_defContext ctx) {
+		System.out.println(ctx.getClass().getName());
+		
+		String code = "";
+		
+		if (ctx.RETURN() != null) {
+			code = "ret ";
+			code += visitChildren(ctx);
+		}
+		
+		return "";
+	}
 
 	@Override public String visitStruct_def(FreedomLessLessParser.Struct_defContext ctx) { System.out.println(ctx.getClass().getName()); return visitChildren(ctx); }
 
@@ -59,7 +82,8 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 
 	@Override public String visitMain_def(FreedomLessLessParser.Main_defContext ctx) {
 		System.out.println(ctx.getClass().getName());
-		String main = "define i32 @main() {\n";
+		
+		String main = "define i32 @main() {\n\t";
 		
 		String ret = visitChildren(ctx);
 		
