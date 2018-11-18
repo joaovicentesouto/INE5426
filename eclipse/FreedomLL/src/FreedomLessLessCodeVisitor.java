@@ -19,11 +19,12 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 	
 	//! Mapa dos tipos
 	private Map<String, String> _types = new HashMap<>();
+	private Map<String, Boolean> _is_register = new HashMap<>();
 	
 	//! Para criação de novas variáveis temporarias sem precisar se preocupar se já existem
 	private int _tmp_number = 0;
 	private int _label_number = 0;
-	private String _current_tmp = "";
+	private String _current_var = "";
 	private String _current_type = "";
 	private String _valued_def_type = "";
 
@@ -56,9 +57,11 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		
 		//! Reserva espaço na pilha
 		for (int i = 0; i < ctx.ID().size(); i++) {
-			vars.add("%" + ctx.ID(i).getText());
-			_types.put("%" + ctx.ID(i).getText(), type);
-			code += "%" + ctx.ID(i).getText() + " = alloca " + type + "\n";
+			String id = "%" + ctx.ID(i).getText();
+			vars.add(id);
+			_types.put(id, type);
+			_is_register.put(id, false);
+			code += id + " = alloca " + type + "\n";
 		}
 		
 		//! Constrói o valor dos atributos
@@ -68,7 +71,7 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 			if (ctx.valued_expression_def(i) != null) {
 				construct_tmps += ctx.valued_expression_def(i).accept(this);
 				
-				code += construct_tmps + "store " + _types.get(vars.get(i)) + " " + _current_tmp + ", " + _types.get(vars.get(i)) + "* " + vars.get(i);
+				code += construct_tmps + "store " + _types.get(vars.get(i)) + " " + _current_var + ", " + _types.get(vars.get(i)) + "* " + vars.get(i);
 			}
 		}
 		
@@ -92,16 +95,31 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		
 		//! ID (((ASSIGN | auto_assign_op) valued_expression_def) | auto_increm_op | OPEN_BRAK INT CLOSE_BRAK )? operation ;
 		else if (ctx.ID() != null) {
-			var = "%tmp" + _tmp_number++;
-			code = var + " = load ";
+			
 			String id = "%" + ctx.ID().getText();
+			boolean local = _is_register.containsKey(id) && _is_register.get(id);
 			
-			code += _types.get(id) + ", " + _types.get(id) + "* " + id;
+			if (!local) {
+				var = "%tmp" + _tmp_number++;
+				_is_register.put(var, true);
+					
+				code = var + " = load ";
+				
+					
+				code += _types.get(id) + ", " + _types.get(id) + "* " + id;
+				_types.put(var, _types.get(id));
+					
+				code += "\n";
+			}
+			else
+				var = id;
+			
 			_types.put(var, _types.get(id));
-			
-			code += "\n";
-			
-//			System.out.println(code);
+			_current_var = var;
+		}
+		
+		else if (ctx.function_call_def() != null) {
+			code += ctx.function_call_def().accept(this);
 		}
 		
 		String ret = "";
@@ -110,22 +128,27 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 			ret = ctx.operation().accept(this);
 		}
 		
-		if (ctx.valued_expression_def() != null) {
+		if (ctx.valued_expression_def() != null && ctx.ID() != null) {
 			ret = ctx.valued_expression_def().accept(this);
 			
+			
 			String id = "%" + ctx.ID().getText();
-			ret += "store " + _types.get(id) + " " + _current_tmp + ", " + _types.get(id) + "* " + id + "\n";
+			boolean local = _is_register.containsKey(id) && _is_register.get(id);
+			
+			if (!local)
+				ret += "store " + _types.get(id) + " " + _current_var + ", " + _types.get(id) + "* " + id + "\n";
 		}
 		
 		if (ret.equals("")) {
-			_current_tmp = var;
+			_current_var = var;
 			return code;
 		}
 		
-		_current_tmp = "%tmp" + _tmp_number++;
-		_types.put(_current_tmp, _current_type);
+		_current_var = "%tmp" + _tmp_number++;
+		_types.put(_current_var, _current_type);
+		_is_register.put(_current_var, true);
 		
-		ret = ret.replaceAll("_LHS_", _current_tmp);
+		ret = ret.replaceAll("_LHS_", _current_var);
 		ret = ret.replaceAll("_VAR1_", var);
 		
 		return code + ret;
@@ -139,30 +162,16 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 			String rhs = ctx.valued_expression_def(0).accept(this);
 			
 //			_current_type = "i1";
-			op = rhs + op.replaceAll("_VAR2_", _current_tmp);
+			op = rhs + op.replaceAll("_VAR2_", _current_var);
 			return op;
-		}
-		
-		System.out.println("ars = " + ctx.arithmetic_op().size());
-		for (int i = 0; i < ctx.arithmetic_op().size(); i++) {
-			System.out.println(i + " = " + ctx.arithmetic_op(i));
-		}
-		
-		System.out.println("logs = " + ctx.logical_op().size());
-		for (int i = 0; i < ctx.logical_op().size(); i++) {
-			System.out.println(i + " = " + ctx.logical_op(i));
 		}
 		
 		if (ctx.arithmetic_op(0) != null) {
 			String op = ctx.arithmetic_op(0).accept(this);
 			String rhs = ctx.valued_expression_def(0).accept(this);
 			
-			
-			
-			_current_type = _types.get(_current_tmp);
-			op = rhs + op.replaceAll("_VAR2_", _current_tmp);
-			
-			
+			_current_type = _types.get(_current_var);
+			op = rhs + op.replaceAll("_VAR2_", _current_var);
 			
 			return op;
 		}
@@ -170,13 +179,84 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		return "";
 	}
 
-	@Override public String visitFunction_call_def(FreedomLessLessParser.Function_call_defContext ctx) { System.out.println(ctx.getClass().getName() + " - "  + ctx.getText()); return visitChildren(ctx); }
+	@Override public String visitFunction_call_def(FreedomLessLessParser.Function_call_defContext ctx) {
+		System.out.println(ctx.getClass().getName() + " - "  + ctx.getText());
+		
+		String code = "";
+		
+		if (ctx.ID(0) != null) {
+			String id = "@" + ctx.ID(0).getText();
+			
+			code += "call " + _types.get(id) + " " + id + "(";
+			
+			String args = ctx.argument_def(0).accept(this);
+			
+			code += args + ")";
+		}
+		
+		System.out.println("** " + code);
+		
+		return code;
+	}
 
-	@Override public String visitArgument_def(FreedomLessLessParser.Argument_defContext ctx) { System.out.println(ctx.getClass().getName() + " - "  + ctx.getText()); return visitChildren(ctx); }
+	@Override public String visitArgument_def(FreedomLessLessParser.Argument_defContext ctx) {
+		System.out.println(ctx.getClass().getName() + " - "  + ctx.getText());
+		
+		
+		
+		return visitChildren(ctx);
+	}
 
-	@Override public String visitFunction_def(FreedomLessLessParser.Function_defContext ctx) { System.out.println(ctx.getClass().getName() + " - "  + ctx.getText()); return visitChildren(ctx); }
+	@Override public String visitFunction_def(FreedomLessLessParser.Function_defContext ctx) {
+		System.out.println(ctx.getClass().getName() + " - "  + ctx.getText());
+		
+		String type;
+		if (ctx.VOID_T() != null)
+			type = ctx.type_def().accept(this);
+		else
+			type = ctx.type_def().accept(this);
+		
+		String name = "@" + ctx.ID().getText();
+		
+		String param = "";
+		if (ctx.param_def() != null)
+			param = ctx.param_def().accept(this);
+		
+		String block = ctx.block_def().accept(this);
+		
+		System.out.println("t=" + type);
+		System.out.println("n=" + name);
+		System.out.println("p=" + param);
+		System.out.println("b=" + block);
+		
+		//! Code
+		
+		_types.put(name, type);
+		
+		String code = "\ndefine " + type + " " + name + "(" + param + ") {\n";
+		code += "entry:\n";
+		code += block;
+		code += "}\n\n";
+		
+		return code;
+	}
 
-	@Override public String visitParam_def(FreedomLessLessParser.Param_defContext ctx) { System.out.println(ctx.getClass().getName() + " - "  + ctx.getText()); return visitChildren(ctx); }
+	@Override public String visitParam_def(FreedomLessLessParser.Param_defContext ctx) {
+		System.out.println(ctx.getClass().getName() + " - "  + ctx.getText());
+		
+		String type = ctx.type_def().accept(this);
+		String name = "%" + ctx.ID().getText();
+		
+		_types.put(name, type);
+		_is_register.put(name, true);
+		
+		String code = type + " " + name;
+		
+		if (ctx.param_def(0) != null)
+			code += ", " + ctx.param_def(0).accept(this);
+		
+		return code;
+	}
 
 	@Override public String visitBlock_def(FreedomLessLessParser.Block_defContext ctx) {
 		System.out.println(ctx.getClass().getName() + " - "  + ctx.getText());
@@ -193,7 +273,7 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		
 		//! RETURN valued_expression_def |
 		if (ctx.RETURN() != null)
-			code = ctx.valued_expression_def().accept(this) + "ret " + _types.get(_current_tmp) + " " + _current_tmp;
+			code = ctx.valued_expression_def().accept(this) + "ret " + _types.get(_current_var) + " " + _current_var;
 		
 		//! attribute_def |
 		else if (ctx.attribute_def() != null) {
@@ -206,7 +286,7 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 			
 			code = ctx.valued_expression_def().accept(this);
 			
-			code += "store " + _types.get(id) + " " + _current_tmp + ", " + _types.get(id) + "* " + id;
+			code += "store " + _types.get(id) + " " + _current_var + ", " + _types.get(id) + "* " + id;
 		}
 		
 		return code + "\n";
@@ -228,11 +308,12 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		//! IF LOGIC
 		
 		String cond = "%tmp" + _tmp_number++;
+		_types.put(cond, "i1");
 		String labelFalse = "label" + _label_number++;
 		String labelTrue = "label" + _label_number++;
 		String labelAfter = "label" + _label_number++;
 		
-		code += cond + " = icmp eq " + _types.get(_current_tmp) + " " + _current_tmp + ", 0\n"; //! equal zero?
+		code += cond + " = icmp eq " + _types.get(_current_var) + " " + _current_var + ", 0\n"; //! equal zero?
 		code += "br i1 " + cond + ", label %" + labelFalse + ", label %" + labelTrue + "\n";
 		
 		//! True
@@ -270,7 +351,8 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 
 		//! Define for(...; ISSO; ...)
 		String condition = ctx.valued_expression_def(0).accept(this);
-		String tmp_cond = _current_tmp;
+		String tmp_cond = _current_var;
+		_types.put(tmp_cond, "i1");
 		
 		//! CODE
 
@@ -320,7 +402,7 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		String construct_tmps = "";
 			
 		construct_tmps += ctx.valued_expression_def().accept(this);
-		code += construct_tmps + "store " + _types.get(id) + " " + _current_tmp + ", " + _types.get(id) + "* " + id;
+		code += construct_tmps + "store " + _types.get(id) + " " + _current_var + ", " + _types.get(id) + "* " + id;
 		
 		return code + "\n";
 	}
@@ -337,6 +419,7 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		System.out.println(ctx.getClass().getName() + " - "  + ctx.getText());
 		
 		String main = "define i32 @main() {\n";
+		main += "entry:\n";
 		
 		String ret = ctx.block_def().accept(this);
 		
@@ -426,6 +509,7 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 
 		if (ctx.AND() != null) {
 			String tmp = "%tmp" + _tmp_number++;
+			//! ver tipos se nao _TYPE_
 			code = tmp + " = and " + _current_type + " _VAR1_, _VAR2_\n";
 			code += "_LHS_ = " + "icmp ne i1 " + tmp + ", 0\n";
 			
@@ -469,6 +553,7 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 			code += "div ";
 		}
 		
+		_current_type = _types.get(_current_var);
 		return code + _current_type + " _VAR1_, _VAR2_\n";
 	}
 
