@@ -5,5 +5,9 @@ void main(int argc, char ** argv) {
 		x = x + 1;
 	}
 	
+	for (int *j = 5; j > 0; j = j - 1) {
+		x = x - 1;
+	}
+	
     return x;
 }

@@ -138,7 +138,7 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 			String op = ctx.logical_op(0).accept(this);
 			String rhs = ctx.valued_expression_def(0).accept(this);
 			
-			_current_type = "i1";
+//			_current_type = "i1";
 			op = rhs + op.replaceAll("_VAR2_", _current_tmp);
 			return op;
 		}
@@ -212,7 +212,10 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		return code + "\n";
 	}
 
-	@Override public String visitStruct_def(FreedomLessLessParser.Struct_defContext ctx) { System.out.println(ctx.getClass().getName() + " - "  + ctx.getText()); return visitChildren(ctx); }
+	@Override public String visitStruct_def(FreedomLessLessParser.Struct_defContext ctx) {
+		System.out.println(ctx.getClass().getName() + " - "  + ctx.getText());
+		return visitChildren(ctx);
+	}
 
 	@Override public String visitIf_def(FreedomLessLessParser.If_defContext ctx) {
 		System.out.println(ctx.getClass().getName() + " - "  + ctx.getText());
