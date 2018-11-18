@@ -68,7 +68,7 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 			if (ctx.valued_expression_def(i) != null) {
 				construct_tmps += ctx.valued_expression_def(i).accept(this);
 				
-				code += construct_tmps + "store " + _types.get(vars.get(i)) + " " + _current_tmp + ", " + _types.get(vars.get(i)) + "* " + vars.get(i) + "\n";
+				code += construct_tmps + "store " + _types.get(vars.get(i)) + " " + _current_tmp + ", " + _types.get(vars.get(i)) + "* " + vars.get(i);
 			}
 		}
 		
@@ -217,6 +217,7 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		} else {
 			
 		}
+		code += "br label %" + labelAfter + "\n";
 		
 		//! Jump para depois dos ifs
 		code += labelAfter + ":\n";
