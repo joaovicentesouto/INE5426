@@ -75,23 +75,57 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		System.out.println(ctx.getClass().getName() + " - "  + ctx.getText());
 		
 		String var = "";
+		String code = "";
 		
-		//! tem as outras coisas
+		
+		//! value_def operation |
 		if (ctx.value_def() != null) {
 			var = ctx.value_def().accept(this);
+			_types.put(var, _valued_def_type);
 			
-			if (_current_type.equals(_valued_def_type))
+			if (!_current_type.equals(_valued_def_type))
 				System.err.println("Valued_expression_def: incompatible types");
+		}
+		
+		//! ID (((ASSIGN | auto_assign_op) valued_expression_def) | auto_increm_op | OPEN_BRAK INT CLOSE_BRAK )? operation ;
+		else if (ctx.ID() != null) {
+			var = "%tmp" + _tmp_number++;
+			code = var + " = load ";
+			String id = "%" + ctx.ID().getText();
+			
+			//! Int
+			if (_types.get(id).equals("i32*")) {
+				code += "i32, i32* " + id;
+				_types.put(var, "i32");
+			}
+			//! double
+			else if (_types.get("%" + ctx.ID().getText()).equals("double*")) {
+				code += "double, double* " + id;
+				_types.put(var, "double");
+			}
+			//! char
+			else if (_types.get("%" + ctx.ID().getText()).equals("i8*")) {
+				code += "i8, i8* " + id;
+				_types.put(var, "i8");
+			}
+			//! bool
+			else if (_types.get("%" + ctx.ID().getText()).equals("i1*")) {
+				code += "i1, i1* " + id;
+				_types.put(var, "i1");
+			}
+			
+			code += "\n";
 		}
  
 		String ret_op = ctx.operation().accept(this);
 		
 		if (ret_op.equals("")) {
 			_current_tmp = var;
-			return "";
+			return code;
 		}
 		
 		_current_tmp = "%tmp" + _tmp_number++;
+		_types.put(_current_tmp, _types.get(var));
 		
 		ret_op = ret_op.replaceAll("_LHS_", _current_tmp);
 		ret_op = ret_op.replaceAll("_VAR1_", var);
@@ -144,7 +178,7 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		String code = "";
 		
 		if (ctx.RETURN() != null)
-			code = ctx.valued_expression_def().accept(this) + "ret " + _current_type + " " + _current_tmp;
+			code = ctx.valued_expression_def().accept(this) + "ret " + _types.get(_current_tmp) + " " + _current_tmp;
 		
 		if (ctx.attribute_def() != null) {
 			code = ctx.attribute_def().accept(this);
