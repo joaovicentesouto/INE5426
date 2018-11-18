@@ -1,6 +1,9 @@
 // Generated from FreedomLessLess.g4 by ANTLR 4.7.1
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 
@@ -38,27 +41,39 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		
 		String type = ctx.type_def().accept(this);
 		_current_type = type;
-		String defs = "";
 		
+		String code = "";
+		
+		Vector<String> vars = new Vector(ctx.ID().size());
+		
+		
+		//! Reserva espaço na pilha
 		for (int i = 0; i < ctx.ID().size(); i++) {
-			String intern = "%" + ctx.ID(i).getText() + " = " + type + " ";
+			vars.add("%" + ctx.ID(i).getText());
+			_types.put("%" + ctx.ID(i).getText(), type + "*");
+			code += "%" + ctx.ID(i).getText() + " = alloca " + type + "\n";
+		}
+		
+		//! Constrói o valor dos atributos
+		for (int i = 0; i < ctx.ID().size(); i++) {
+			String construct_tmps = "";
 			
 			if (ctx.valued_expression_def(0) != null) {
-				intern = ctx.valued_expression_def(i).accept(this) + intern + _current_tmp +  "\n";
+				construct_tmps += ctx.valued_expression_def(i).accept(this);;
 			} else {
-				intern += "0\n";
+				construct_tmps += "0\n";
 			}
 			
-			defs += intern;
+			code += construct_tmps + "store " + type + " " + _current_tmp + ", " + _types.get(vars.get(i)) + " " + vars.get(i) + "\n";
 		}
 		
 		_current_type = "";
 		
-		System.out.println("\n\n" + defs);
+		System.out.println("\n\n" + code);
 		
-		_code += defs;
+		_code += code;
 		
-		return defs;
+		return code;
 	}
 
 	private String _current_tmp = "";
