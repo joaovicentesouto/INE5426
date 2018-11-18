@@ -1,7 +1,12 @@
-int g = 42;
-
 void main(int argc, char ** argv) {
 	int x = 2 * 10, y = 2;
 	x = x - 2;
-    return g;
+	
+	if (x < 0) {
+		return 111;
+	} else {
+		return 900;
+	}
+	
+    return 0;
 }

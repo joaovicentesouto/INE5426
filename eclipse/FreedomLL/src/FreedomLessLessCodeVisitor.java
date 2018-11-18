@@ -22,6 +22,7 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 	
 	//! Para criação de novas variáveis temporarias sem precisar se preocupar se já existem
 	private int _tmp_number = 0;
+	private int _label_number = 0;
 	private String _current_tmp = "";
 	private String _current_type = "";
 	private String _valued_def_type = "";
@@ -43,6 +44,11 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		
 		String type = ctx.type_def().accept(this);
 		_current_type = type;
+		
+		//! Global
+		if (ctx._f_scope.equals("null")) {
+//			return;
+		}
 		
 		String code = "";
 		
@@ -105,7 +111,7 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		}
 		
 		_current_tmp = "%tmp" + _tmp_number++;
-		_types.put(_current_tmp, _types.get(var));
+		_types.put(_current_tmp, _current_type);
 		
 		ret_op = ret_op.replaceAll("_LHS_", _current_tmp);
 		ret_op = ret_op.replaceAll("_VAR1_", var);
@@ -120,15 +126,16 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 			String op = ctx.logical_op(0).accept(this);
 			String rhs = ctx.valued_expression_def(0).accept(this);
 			
-			
-			
+			_current_type = "i1";
+			op = rhs + op.replaceAll("_VAR2_", _current_tmp);
+			return op;
 		}
 		
 		if (ctx.arithmetic_op(0) != null) {
 			String op = ctx.arithmetic_op(0).accept(this);
 			String rhs = ctx.valued_expression_def(0).accept(this);
 			
-
+			_current_type = _types.get(_current_tmp);
 			op = rhs + op.replaceAll("_VAR2_", _current_tmp);
 			return op;
 		}
@@ -172,15 +179,51 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 			
 			code = ctx.valued_expression_def().accept(this);
 			
-			code += "store " + _types.get(id) + " " + _current_tmp + ", " + _types.get(id) + "* " + id + "\n";
+			code += "store " + _types.get(id) + " " + _current_tmp + ", " + _types.get(id) + "* " + id;
 		}
 		
-		return code;
+		return code + "\n";
 	}
 
 	@Override public String visitStruct_def(FreedomLessLessParser.Struct_defContext ctx) { System.out.println(ctx.getClass().getName() + " - "  + ctx.getText()); return visitChildren(ctx); }
 
-	@Override public String visitIf_def(FreedomLessLessParser.If_defContext ctx) { System.out.println(ctx.getClass().getName() + " - "  + ctx.getText()); return visitChildren(ctx); }
+	@Override public String visitIf_def(FreedomLessLessParser.If_defContext ctx) {
+		System.out.println(ctx.getClass().getName() + " - "  + ctx.getText());
+		
+		String code = "";
+		
+		//! Expression logic
+		code += ctx.valued_expression_def().accept(this);
+		
+		//! IF LOGIC
+		
+		String cond = "%tmp" + _tmp_number++;
+		String labelFalse = "label" + _label_number++;
+		String labelTrue = "label" + _label_number++;
+		String labelAfter = "label" + _label_number++;
+		
+		code += cond + " = icmp eq " + _types.get(_current_tmp) + " " + _current_tmp + ", 0\n"; //! equal zero?
+		code += "br i1 " + cond + ", label %" + labelFalse + ", label %" + labelTrue + "\n";
+		
+		//! True
+		code += labelTrue + ":\n";
+		code += ctx.block_def(0).accept(this);
+		code += "br label %" + labelAfter + "\n";
+		
+		//! False
+		code += labelFalse + ":\n";
+		if (ctx.block_def(1) != null) {
+			code += ctx.block_def(1).accept(this);
+		} else {
+			
+		}
+		
+		//! Jump para depois dos ifs
+		code += labelAfter + ":\n";
+		
+		
+		return code;
+	}
 
 	@Override public String visitFor_def(FreedomLessLessParser.For_defContext ctx) { System.out.println(ctx.getClass().getName() + " - "  + ctx.getText()); return visitChildren(ctx); }
 
@@ -270,39 +313,37 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 	@Override public String visitLogical_op(FreedomLessLessParser.Logical_opContext ctx) {
 		System.out.println(ctx.getClass().getName() + " - "  + ctx.getText());
 		
-		if (ctx.LESS() != null) {
-			
-		}
+		String code = "_LHS_ = ";
 		
-		if (ctx.BIGGER() != null) {
-			
-		}
+		if (ctx.LESS() != null)
+			code += "icmp slt ";
+	
+		if (ctx.BIGGER() != null)
+			code += "icmp sgt ";
 		
-		if (ctx.LESS_EQ() != null) {
-			
-		}
+		if (ctx.LESS_EQ() != null)
+			code += "icmp sle ";
 
-		if (ctx.BIGGER_EQ() != null) {
-			
-		}
+		if (ctx.BIGGER_EQ() != null)
+			code += "icmp sge ";
 
-		if (ctx.EQUALS() != null) {
-			
-		}
+		if (ctx.EQUALS() != null)
+			code += "icmp eq ";
 
-		if (ctx.NOT_EQUALS() != null) {
-			
-		}
+		if (ctx.NOT_EQUALS() != null)
+			code += "icmp ne ";
 
 		if (ctx.AND() != null) {
-			
+			//! Fazer AND e depois EQ 0
+			code += "and ";
 		}
 
 		if (ctx.OR() != null) {
-			
+			//! Fazer OR e depois EQ 0
+			code += "or ";
 		}
-
-		return "";
+		
+		return code + _current_type + " _VAR1_, _VAR2_\n";
 	}
 	
 	@Override public String visitArithmetic_op(FreedomLessLessParser.Arithmetic_opContext ctx) {
@@ -314,22 +355,22 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 			code += "f";
 		
 		if (ctx.PLUS() != null)
-			return code + "add " + _current_type + " _VAR1_, _VAR2_\n";
+			code += "add ";
 
 		if (ctx.MINUS() != null)
-			return code + "sub " + _current_type + " _VAR1_, _VAR2_\n";
+			code += "sub ";
 
 		if (ctx.MULT() != null)
-			return code + "mul " + _current_type + " _VAR1_, _VAR2_\n";
+			code += "mul ";
 
 		if (ctx.DIV() != null) {
 			if (_current_type.equals("i32"))
 				code += "s";
 
-			return code + "div " + _current_type + " _VAR1_, _VAR2_\n";
+			code += "div ";
 		}
 		
-		return "";
+		return code + _current_type + " _VAR1_, _VAR2_\n";
 	}
 
 	@Override public String visitAuto_assign_op(FreedomLessLessParser.Auto_assign_opContext ctx) {
