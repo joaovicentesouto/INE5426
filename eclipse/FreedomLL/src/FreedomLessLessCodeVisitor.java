@@ -51,7 +51,7 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		//! Reserva espaço na pilha
 		for (int i = 0; i < ctx.ID().size(); i++) {
 			vars.add("%" + ctx.ID(i).getText());
-			_types.put("%" + ctx.ID(i).getText(), type + "*");
+			_types.put("%" + ctx.ID(i).getText(), type);
 			code += "%" + ctx.ID(i).getText() + " = alloca " + type + "\n";
 		}
 		
@@ -62,7 +62,7 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 			if (ctx.valued_expression_def(i) != null) {
 				construct_tmps += ctx.valued_expression_def(i).accept(this);
 				
-				code += construct_tmps + "store " + type + " " + _current_tmp + ", " + _types.get(vars.get(i)) + " " + vars.get(i) + "\n";
+				code += construct_tmps + "store " + _types.get(vars.get(i)) + " " + _current_tmp + ", " + _types.get(vars.get(i)) + "* " + vars.get(i) + "\n";
 			}
 		}
 		
@@ -91,26 +91,8 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 			code = var + " = load ";
 			String id = "%" + ctx.ID().getText();
 			
-			//! Int
-			if (_types.get(id).equals("i32*")) {
-				code += "i32, i32* " + id;
-				_types.put(var, "i32");
-			}
-			//! double
-			else if (_types.get("%" + ctx.ID().getText()).equals("double*")) {
-				code += "double, double* " + id;
-				_types.put(var, "double");
-			}
-			//! char
-			else if (_types.get("%" + ctx.ID().getText()).equals("i8*")) {
-				code += "i8, i8* " + id;
-				_types.put(var, "i8");
-			}
-			//! bool
-			else if (_types.get("%" + ctx.ID().getText()).equals("i1*")) {
-				code += "i1, i1* " + id;
-				_types.put(var, "i1");
-			}
+			code += _types.get(id) + ", " + _types.get(id) + "* " + id;
+			_types.put(var, _types.get(id));
 			
 			code += "\n";
 		}
@@ -175,11 +157,22 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		
 		String code = "";
 		
+		//! RETURN valued_expression_def |
 		if (ctx.RETURN() != null)
 			code = ctx.valued_expression_def().accept(this) + "ret " + _types.get(_current_tmp) + " " + _current_tmp;
 		
-		if (ctx.attribute_def() != null) {
+		//! attribute_def |
+		else if (ctx.attribute_def() != null) {
 			code = ctx.attribute_def().accept(this);
+		}
+		
+		//! ID ((ASSIGN | ainda nao auto_assign_op) valued_expression_def | ainda nao auto_increm_op) ;
+		else if (ctx.ID() != null) {
+			String id = "%" + ctx.ID().getText();
+			
+			code = ctx.valued_expression_def().accept(this);
+			
+			code += "store " + _types.get(id) + " " + _current_tmp + ", " + _types.get(id) + "* " + id + "\n";
 		}
 		
 		return code;
@@ -331,7 +324,7 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 
 		if (ctx.DIV() != null) {
 			if (_current_type.equals("i32"))
-				code = "s";
+				code += "s";
 
 			return code + "div " + _current_type + " _VAR1_, _VAR2_\n";
 		}
