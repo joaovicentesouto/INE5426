@@ -1,7 +1,5 @@
 // Generated from FreedomLessLess.g4 by ANTLR 4.7.1
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
@@ -17,12 +15,16 @@ import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
  */
 public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String> implements FreedomLessLessVisitor<String> {
 	
-	public String _code = "";
+//	public String _code = "";
 	
+	//! Mapa dos tipos
 	private Map<String, String> _types = new HashMap<>();
 	
 	//! Para criação de novas variáveis temporarias sem precisar se preocupar se já existem
 	private int _tmp_number = 0;
+	private String _current_tmp = "";
+	private String _current_type = "";
+	private String _valued_def_type = "";
 
 	@Override public String visitProgram_def(FreedomLessLessParser.Program_defContext ctx) { System.out.println(ctx.getClass().getName() + " - "  + ctx.getText()); return visitChildren(ctx); }
 
@@ -64,12 +66,8 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 			}
 		}
 		
-		_current_type = "";
-		
 		return code;
 	}
-
-	private String _current_tmp = "";
 	
 	@Override public String visitValued_expression_def(FreedomLessLessParser.Valued_expression_defContext ctx) {
 		System.out.println(ctx.getClass().getName() + " - "  + ctx.getText());
@@ -130,7 +128,7 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		ret_op = ret_op.replaceAll("_LHS_", _current_tmp);
 		ret_op = ret_op.replaceAll("_VAR1_", var);
 		
-		return ret_op;
+		return code + ret_op;
 	}
 
 	@Override public String visitOperation(FreedomLessLessParser.OperationContext ctx) {
@@ -149,7 +147,7 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 			String rhs = ctx.valued_expression_def(0).accept(this);
 			
 
-			op = op.replaceAll("_VAR2_", _current_tmp);
+			op = rhs + op.replaceAll("_VAR2_", _current_tmp);
 			return op;
 		}
 		
@@ -239,8 +237,6 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		return "";
 	}
 	
-	private String _valued_def_type = "";
-
 	@Override public String visitValue_def(FreedomLessLessParser.Value_defContext ctx) {
 		System.out.println(ctx.getClass().getName() + " - "  + ctx.getText());
 		
@@ -316,8 +312,6 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		return "";
 	}
 	
-	private String _current_type = "";
-
 	@Override public String visitArithmetic_op(FreedomLessLessParser.Arithmetic_opContext ctx) {
 		System.out.println(ctx.getClass().getName() + " - "  + ctx.getText());
 		
@@ -327,19 +321,19 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 			code += "f";
 		
 		if (ctx.PLUS() != null)
-			return code + "add " +  _current_type + " _VAR1_, _VAR2_\n";
+			return code + "add " + _current_type + " _VAR1_, _VAR2_\n";
 
 		if (ctx.MINUS() != null)
-			return code + "sub " +  _current_type + " _VAR1_, _VAR2_\n";
+			return code + "sub " + _current_type + " _VAR1_, _VAR2_\n";
 
 		if (ctx.MULT() != null)
-			return code + "mul " +  _current_type + " _VAR1_, _VAR2_\n";
+			return code + "mul " + _current_type + " _VAR1_, _VAR2_\n";
 
 		if (ctx.DIV() != null) {
 			if (_current_type.equals("i32"))
 				code = "s";
 
-			return code + "div " +  _current_type + " _VAR1_, _VAR2_\n";
+			return code + "div " + _current_type + " _VAR1_, _VAR2_\n";
 		}
 		
 		return "";
