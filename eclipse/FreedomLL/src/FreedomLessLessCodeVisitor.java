@@ -81,14 +81,13 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		String var = "";
 		String code = "";
 		
-		
 		//! value_def operation |
 		if (ctx.value_def() != null) {
 			var = ctx.value_def().accept(this);
 			_types.put(var, _valued_def_type);
 			
 			if (!_current_type.equals(_valued_def_type))
-				System.err.println("Valued_expression_def: incompatible types");
+				System.err.println("Valued_expression_def: incompatible types curr=" + _current_type + " val=" + _valued_def_type);
 		}
 		
 		//! ID (((ASSIGN | auto_assign_op) valued_expression_def) | auto_increm_op | OPEN_BRAK INT CLOSE_BRAK )? operation ;
@@ -101,11 +100,24 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 			_types.put(var, _types.get(id));
 			
 			code += "\n";
+			
+//			System.out.println(code);
 		}
- 
-		String ret_op = ctx.operation().accept(this);
 		
-		if (ret_op.equals("")) {
+		String ret = "";
+		
+		if (ctx.operation() != null) {
+			ret = ctx.operation().accept(this);
+		}
+		
+		if (ctx.valued_expression_def() != null) {
+			ret = ctx.valued_expression_def().accept(this);
+			
+			String id = "%" + ctx.ID().getText();
+			ret += "store " + _types.get(id) + " " + _current_tmp + ", " + _types.get(id) + "* " + id + "\n";
+		}
+		
+		if (ret.equals("")) {
 			_current_tmp = var;
 			return code;
 		}
@@ -113,10 +125,10 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		_current_tmp = "%tmp" + _tmp_number++;
 		_types.put(_current_tmp, _current_type);
 		
-		ret_op = ret_op.replaceAll("_LHS_", _current_tmp);
-		ret_op = ret_op.replaceAll("_VAR1_", var);
+		ret = ret.replaceAll("_LHS_", _current_tmp);
+		ret = ret.replaceAll("_VAR1_", var);
 		
-		return code + ret_op;
+		return code + ret;
 	}
 
 	@Override public String visitOperation(FreedomLessLessParser.OperationContext ctx) {
@@ -131,12 +143,27 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 			return op;
 		}
 		
+		System.out.println("ars = " + ctx.arithmetic_op().size());
+		for (int i = 0; i < ctx.arithmetic_op().size(); i++) {
+			System.out.println(i + " = " + ctx.arithmetic_op(i));
+		}
+		
+		System.out.println("logs = " + ctx.logical_op().size());
+		for (int i = 0; i < ctx.logical_op().size(); i++) {
+			System.out.println(i + " = " + ctx.logical_op(i));
+		}
+		
 		if (ctx.arithmetic_op(0) != null) {
 			String op = ctx.arithmetic_op(0).accept(this);
 			String rhs = ctx.valued_expression_def(0).accept(this);
 			
+			
+			
 			_current_type = _types.get(_current_tmp);
 			op = rhs + op.replaceAll("_VAR2_", _current_tmp);
+			
+			
+			
 			return op;
 		}
 		
@@ -226,13 +253,73 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		return code;
 	}
 
-	@Override public String visitFor_def(FreedomLessLessParser.For_defContext ctx) { System.out.println(ctx.getClass().getName() + " - "  + ctx.getText()); return visitChildren(ctx); }
+	@Override public String visitFor_def(FreedomLessLessParser.For_defContext ctx) {
+		System.out.println(ctx.getClass().getName() + " - "  + ctx.getText());
+		
+		//! Block
+		String block = ctx.block_def().accept(this);
+		
+		//! Define for(ISSO; ...; ...)
+		String def = ctx.valued_attribute_def(0).accept(this);
+		
+		//! Define for(...; ...; ISSO)
+		String inc = ctx.valued_expression_def(1).accept(this);
+
+		//! Define for(...; ISSO; ...)
+		String condition = ctx.valued_expression_def(0).accept(this);
+		String tmp_cond = _current_tmp;
+		
+		//! CODE
+
+		//! Header
+		String code = def;
+		
+		String labelCond = "label" + _label_number++;
+		String labelLoop = "label" + _label_number++;
+		String labelEndLoop = "label" + _label_number++;
+		
+		code += "br label %" + labelCond + "\n";
+		code += "ret i32 0\n"; //! apenas para criar a separação do codigo e assim podendo usar label
+		
+		//! Body
+		code += labelCond + ":\n";
+		//! Check condition
+		code += condition;
+		code += "br i1 " + tmp_cond + ", label %" + labelLoop + ", label %" + labelEndLoop + "\n";
+		code += "ret i32 0\n"; //! apenas para criar a separação do codigo e assim podendo usar label
+		
+		code += labelLoop + ":\n";
+		code += block;
+		code += inc;
+		
+		code += "br label %" + labelCond + "\n";
+		code += "ret i32 0\n"; //! apenas para criar a separação do codigo e assim podendo usar label
+		
+		code += labelEndLoop + ":\n";
+		
+		return code;
+	}
 
 	@Override public String visitValued_attribute_def(FreedomLessLessParser.Valued_attribute_defContext ctx) {
 		System.out.println(ctx.getClass().getName() + " - "  + ctx.getText());
 		
+		String type = ctx.type_def().accept(this);
+		_current_type = type;
 		
-		return visitChildren(ctx);
+		String code = "";
+		
+		//! Reserva espaço na pilha
+		String id = "%" + ctx.ID().getText();
+		_types.put(id, type);
+		code += id + " = alloca " + type + "\n";
+		
+		//! Constrói o valor dos atributos
+		String construct_tmps = "";
+			
+		construct_tmps += ctx.valued_expression_def().accept(this);
+		code += construct_tmps + "store " + _types.get(id) + " " + _current_tmp + ", " + _types.get(id) + "* " + id;
+		
+		return code + "\n";
 	}
 
 	@Override public String visitWhile_def(FreedomLessLessParser.While_defContext ctx) { System.out.println(ctx.getClass().getName() + " - "  + ctx.getText()); return visitChildren(ctx); }
@@ -250,7 +337,7 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		
 		String ret = ctx.block_def().accept(this);
 		
-		return main + ret + "\n}";
+		return main + ret + "}";
 	}
 
 	@Override public String visitType_def(FreedomLessLessParser.Type_defContext ctx) {
@@ -335,13 +422,21 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 			code += "icmp ne ";
 
 		if (ctx.AND() != null) {
-			//! Fazer AND e depois EQ 0
-			code += "and ";
+			String tmp = "%tmp" + _tmp_number++;
+			code = tmp + " = and " + _current_type + " _VAR1_, _VAR2_\n";
+			code += "_LHS_ = " + "icmp ne i1 " + tmp + ", 0\n";
+			
+//			_current_type = "i1";
+			return code;
 		}
 
 		if (ctx.OR() != null) {
-			//! Fazer OR e depois EQ 0
-			code += "or ";
+			String tmp = "%tmp" + _tmp_number++;
+			code = tmp + " = or " + _current_type + " _VAR1_, _VAR2_\n";
+			code += "_LHS_ = " + "icmp ne i1 " + tmp + ", 0\n";
+			
+//			_current_type = "i1";
+			return code;
 		}
 		
 		return code + _current_type + " _VAR1_, _VAR2_\n";
