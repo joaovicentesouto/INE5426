@@ -44,8 +44,7 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		
 		String code = "";
 		
-		Vector<String> vars = new Vector(ctx.ID().size());
-		
+		Vector<String> vars = new Vector<String>(ctx.ID().size());
 		
 		//! Reserva espaço na pilha
 		for (int i = 0; i < ctx.ID().size(); i++) {
@@ -58,20 +57,14 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		for (int i = 0; i < ctx.ID().size(); i++) {
 			String construct_tmps = "";
 			
-			if (ctx.valued_expression_def(0) != null) {
-				construct_tmps += ctx.valued_expression_def(i).accept(this);;
-			} else {
-				construct_tmps += "0\n";
+			if (ctx.valued_expression_def(i) != null) {
+				construct_tmps += ctx.valued_expression_def(i).accept(this);
+				
+				code += construct_tmps + "store " + type + " " + _current_tmp + ", " + _types.get(vars.get(i)) + " " + vars.get(i) + "\n";
 			}
-			
-			code += construct_tmps + "store " + type + " " + _current_tmp + ", " + _types.get(vars.get(i)) + " " + vars.get(i) + "\n";
 		}
 		
 		_current_type = "";
-		
-		System.out.println("\n\n" + code);
-		
-		_code += code;
 		
 		return code;
 	}
@@ -86,7 +79,9 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		//! tem as outras coisas
 		if (ctx.value_def() != null) {
 			var = ctx.value_def().accept(this);
-			_current_type = _valued_def_type;
+			
+			if (_current_type.equals(_valued_def_type))
+				System.err.println("Valued_expression_def: incompatible types");
 		}
  
 		String ret_op = ctx.operation().accept(this);
@@ -221,7 +216,7 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		}
 		
 		if (ctx.INTEGER() != null) {
-			_valued_def_type = "+- i32";
+			_valued_def_type = "i32";
 			return ctx.INTEGER().getText();
 		}
 		
