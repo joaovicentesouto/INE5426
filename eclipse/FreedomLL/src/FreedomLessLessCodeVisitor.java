@@ -1,4 +1,7 @@
 // Generated from FreedomLessLess.g4 by ANTLR 4.7.1
+import java.util.HashMap;
+import java.util.Map;
+
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 
 /**
@@ -12,6 +15,11 @@ import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String> implements FreedomLessLessVisitor<String> {
 	
 	public String _code = "";
+	
+	private Map<String, String> _types = new HashMap<>();
+	
+	//! Para criação de novas variáveis temporarias sem precisar se preocupar se já existem
+	private int _tmp_number = 0;
 
 	@Override public String visitProgram_def(FreedomLessLessParser.Program_defContext ctx) { System.out.println(ctx.getClass().getName() + " - "  + ctx.getText()); return visitChildren(ctx); }
 
@@ -29,27 +37,32 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		System.out.println(ctx.getClass().getName() + " - "  + ctx.getText());
 		
 		String type = ctx.type_def().accept(this);
+		_current_type = type;
 		String defs = "";
 		
 		for (int i = 0; i < ctx.ID().size(); i++) {
-			defs += "%" + ctx.ID(i).getText() + " = " + type + " ";
+			String intern = "%" + ctx.ID(i).getText() + " = " + type + " ";
 			
 			if (ctx.valued_expression_def(0) != null) {
-				defs += ctx.valued_expression_def(i).accept(this) + "\n";
+				intern = ctx.valued_expression_def(i).accept(this) + intern + _current_tmp +  "\n";
 			} else {
-				defs += "0\n";
+				intern += "0\n";
 			}
+			
+			defs += intern;
 		}
+		
+		_current_type = "";
 		
 		System.out.println("\n\n" + defs);
 		
 		_code += defs;
 		
-		return "";
+		return defs;
 	}
-	
-	private int temp_number = 0;
 
+	private String _current_tmp = "";
+	
 	@Override public String visitValued_expression_def(FreedomLessLessParser.Valued_expression_defContext ctx) {
 		System.out.println(ctx.getClass().getName() + " - "  + ctx.getText());
 		
@@ -58,41 +71,42 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		//! tem as outras coisas
 		if (ctx.value_def() != null) {
 			var = ctx.value_def().accept(this);
+			_current_type = _valued_def_type;
 		}
  
 		String ret_op = ctx.operation().accept(this);
 		
-		if (ret_op.equals(""))
-			return var;
+		if (ret_op.equals("")) {
+			_current_tmp = var;
+			return "";
+		}
 		
-		return ret_op.replaceAll("__REPLACE__", var);
+		_current_tmp = "%tmp" + _tmp_number++;
+		
+		ret_op = ret_op.replaceAll("_LHS_", _current_tmp);
+		ret_op = ret_op.replaceAll("_VAR1_", var);
+		
+		return ret_op;
 	}
 
 	@Override public String visitOperation(FreedomLessLessParser.OperationContext ctx) {
 		System.out.println(ctx.getClass().getName() + " - "  + ctx.getText());
 		
 		if (ctx.logical_op(0) != null) {
-			String var = ctx.valued_expression_def(0).accept(this);
+			String op = ctx.logical_op(0).accept(this);
+			String rhs = ctx.valued_expression_def(0).accept(this);
 			
-			if (ctx.logical_op(0).LESS() != null)
-				return "";
+			
 			
 		}
 		
 		if (ctx.arithmetic_op(0) != null) {
-			String var = ctx.valued_expression_def(0).accept(this);
+			String op = ctx.arithmetic_op(0).accept(this);
+			String rhs = ctx.valued_expression_def(0).accept(this);
 			
-			if (ctx.arithmetic_op(0).PLUS() != null)
-				return "add __REPLACE__, " + ;
-			
-			if (ctx.arithmetic_op(0).MINUS() != null)
-				return "add __REPLACE__, " + ;
-			
-			if (ctx.arithmetic_op(0).MULT() != null)
-				return "mult __REPLACE__, " + ;
-			
-			if (ctx.arithmetic_op(0).DIV() != null)
-				return "div __REPLACE__, " + ;
+
+			op = op.replaceAll("_VAR2_", _current_tmp);
+			return op;
 		}
 		
 		return "";
@@ -109,9 +123,9 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 	@Override public String visitBlock_def(FreedomLessLessParser.Block_defContext ctx) {
 		System.out.println(ctx.getClass().getName() + " - "  + ctx.getText());
 		
-		String ret = visitChildren(ctx);
+		String code = visitChildren(ctx);
 		
-		return ret;
+		return code;
 	}
 
 	@Override public String visitValueless_expression_def(FreedomLessLessParser.Valueless_expression_defContext ctx) {
@@ -119,13 +133,11 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		
 		String code = "";
 		
-		if (ctx.RETURN() != null) {
-			code = "ret ";
-			code += visitChildren(ctx);
-		}
+		if (ctx.RETURN() != null)
+			code = ctx.valued_expression_def().accept(this) + "ret " + _current_type + " " + _current_tmp;
 		
 		if (ctx.attribute_def() != null) {
-			code += visitChildren(ctx);
+			code = ctx.attribute_def().accept(this);
 		}
 		
 		return code;
@@ -155,9 +167,9 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 	@Override public String visitMain_def(FreedomLessLessParser.Main_defContext ctx) {
 		System.out.println(ctx.getClass().getName() + " - "  + ctx.getText());
 		
-		String main = "define i32 @main() {\n\t";
+		String main = "define i32 @main() {\n";
 		
-		String ret = visitChildren(ctx);
+		String ret = ctx.block_def().accept(this);
 		
 		return main + ret + "\n}";
 	}
@@ -182,26 +194,148 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		
 		return "";
 	}
+	
+	private String _valued_def_type = "";
 
 	@Override public String visitValue_def(FreedomLessLessParser.Value_defContext ctx) {
 		System.out.println(ctx.getClass().getName() + " - "  + ctx.getText());
 		
 		if (ctx.INT() != null) {
-			return "int " + ctx.INT().getText();
+			_valued_def_type = "i32";
+			return ctx.INT().getText();
 		}
 		
 		if (ctx.INTEGER() != null) {
-			return "integer " + ctx.INTEGER().getText();
+			_valued_def_type = "+- i32";
+			return ctx.INTEGER().getText();
 		}
 		
-		return "test";
+		if (ctx.FLOATING() != null) {
+			_valued_def_type = "double";
+			return ctx.FLOATING().getText();
+		}
+		
+		if (ctx.BOOLEAN() != null) {
+			_valued_def_type = "i1";
+			
+			if (ctx.FLOATING().getText().equals("true"))
+				return "1";
+			else
+				return "0";
+		}
+		
+		if (ctx.CHAR() != null) {
+			_valued_def_type = "i8";
+			
+			return ctx.CHAR().getText();
+		}
+		
+		_valued_def_type = "";
+		return "";
 	}
 
-	@Override public String visitLogical_op(FreedomLessLessParser.Logical_opContext ctx) { System.out.println(ctx.getClass().getName() + " - "  + ctx.getText()); return visitChildren(ctx); }
+	@Override public String visitLogical_op(FreedomLessLessParser.Logical_opContext ctx) {
+		System.out.println(ctx.getClass().getName() + " - "  + ctx.getText());
+		
+		if (ctx.LESS() != null) {
+			
+		}
+		
+		if (ctx.BIGGER() != null) {
+			
+		}
+		
+		if (ctx.LESS_EQ() != null) {
+			
+		}
 
-	@Override public String visitArithmetic_op(FreedomLessLessParser.Arithmetic_opContext ctx) { System.out.println(ctx.getClass().getName() + " - "  + ctx.getText()); return visitChildren(ctx); }
+		if (ctx.BIGGER_EQ() != null) {
+			
+		}
 
-	@Override public String visitAuto_assign_op(FreedomLessLessParser.Auto_assign_opContext ctx) { System.out.println(ctx.getClass().getName() + " - "  + ctx.getText()); return visitChildren(ctx); }
+		if (ctx.EQUALS() != null) {
+			
+		}
 
-	@Override public String visitAuto_increm_op(FreedomLessLessParser.Auto_increm_opContext ctx) { System.out.println(ctx.getClass().getName() + " - "  + ctx.getText()); return visitChildren(ctx); }
+		if (ctx.NOT_EQUALS() != null) {
+			
+		}
+
+		if (ctx.AND() != null) {
+			
+		}
+
+		if (ctx.OR() != null) {
+			
+		}
+
+		return "";
+	}
+	
+	private String _current_type = "";
+
+	@Override public String visitArithmetic_op(FreedomLessLessParser.Arithmetic_opContext ctx) {
+		System.out.println(ctx.getClass().getName() + " - "  + ctx.getText());
+		
+		String code = "_LHS_ = ";
+		
+		if (_current_type.equals("double"))
+			code += "f";
+		
+		if (ctx.PLUS() != null)
+			return code + "add " +  _current_type + " _VAR1_, _VAR2_\n";
+
+		if (ctx.MINUS() != null)
+			return code + "sub " +  _current_type + " _VAR1_, _VAR2_\n";
+
+		if (ctx.MULT() != null)
+			return code + "mul " +  _current_type + " _VAR1_, _VAR2_\n";
+
+		if (ctx.DIV() != null) {
+			if (_current_type.equals("i32"))
+				code = "s";
+
+			return code + "div " +  _current_type + " _VAR1_, _VAR2_\n";
+		}
+		
+		return "";
+	}
+
+	@Override public String visitAuto_assign_op(FreedomLessLessParser.Auto_assign_opContext ctx) {
+		System.out.println(ctx.getClass().getName() + " - "  + ctx.getText());
+		
+		if (ctx.AUTOPLUS() != null) {
+			
+		}
+
+		if (ctx.AUTOMINUS() != null) {
+			
+		}
+
+		if (ctx.AUTOMULT() != null) {
+			
+		}
+
+		if (ctx.AUTODIV() != null) {
+			
+		}
+		
+		return "";
+	}
+
+	@Override public String visitAuto_increm_op(FreedomLessLessParser.Auto_increm_opContext ctx) {
+		System.out.println(ctx.getClass().getName() + " - "  + ctx.getText());
+		return visitChildren(ctx);
+	}
+	
+	@Override
+	protected String aggregateResult(String aggregate, String nextResult) {
+		if (aggregate == null) {
+			return nextResult;
+		}
+		if (nextResult == null) {
+			return aggregate;
+		}
+		return "" + aggregate + nextResult;
+	}
 }
