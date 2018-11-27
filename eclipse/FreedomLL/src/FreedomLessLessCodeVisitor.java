@@ -27,6 +27,7 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 	private String _current_var = "";
 	private String _current_type = "";
 	private String _valued_def_type = "";
+	private String _return_auxiliar = "";
 
 	@Override public String visitProgram_def(FreedomLessLessParser.Program_defContext ctx) { System.out.println(ctx.getClass().getName() + " - "  + ctx.getText()); return visitChildren(ctx); }
 
@@ -120,6 +121,7 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		
 		else if (ctx.function_call_def() != null) {
 			code += ctx.function_call_def().accept(this);
+			var = _current_var;
 		}
 		
 		String ret = "";
@@ -185,26 +187,36 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		String code = "";
 		
 		if (ctx.ID(0) != null) {
-			String id = "@" + ctx.ID(0).getText();
-			
-			code += "call " + _types.get(id) + " " + id + "(";
-			
 			String args = ctx.argument_def(0).accept(this);
+			code += _return_auxiliar;
+			_return_auxiliar = "";
 			
-			code += args + ")";
+			String id = "@" + ctx.ID(0).getText();
+			_current_var = "%tmp" + _tmp_number++;
+			_types.put(_current_var, _current_type);
+			
+			code += _current_var + " = call " + _types.get(id) + " " + id + "(";
+			code += args + ")\n";
 		}
-		
-		System.out.println("** " + code);
-		
+
 		return code;
 	}
 
 	@Override public String visitArgument_def(FreedomLessLessParser.Argument_defContext ctx) {
 		System.out.println(ctx.getClass().getName() + " - "  + ctx.getText());
 		
+		String args = "";
+		int size = ctx.valued_expression_def().size();
 		
+		for (int i = 0; i < size - 1; i++) {
+			_return_auxiliar += ctx.valued_expression_def(i).accept(this);
+			args += _current_type + " " + _current_var + ", ";
+		}
 		
-		return visitChildren(ctx);
+		_return_auxiliar += ctx.valued_expression_def(size-1).accept(this);
+		args += _current_type + " " + _current_var;
+		
+		return args;
 	}
 
 	@Override public String visitFunction_def(FreedomLessLessParser.Function_defContext ctx) {

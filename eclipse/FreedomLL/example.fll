@@ -1,11 +1,11 @@
-int func(int a) {
-	return a + 2;
+int func(int a, int b) {
+	return a * b;
 }
 
 void main(int argc, char ** argv) {
-	int x = 42;
+	int x = 2;
 	
-	x = func(x);
+	x = func(x, 3);
 	
     return x;
 }
