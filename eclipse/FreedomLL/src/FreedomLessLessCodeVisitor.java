@@ -28,6 +28,11 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 	private String _current_type = "";
 	private String _valued_def_type = "";
 	private String _return_auxiliar = "";
+	
+	//! SWITCH
+	private String _switch_tmp = "";
+	private String _switch_comp = "";
+	private String _switch_final_label = "";
 
 	@Override public String visitProgram_def(FreedomLessLessParser.Program_defContext ctx) { System.out.println(ctx.getClass().getName() + " - "  + ctx.getText()); return visitChildren(ctx); }
 
@@ -90,8 +95,8 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 			var = ctx.value_def().accept(this);
 			_types.put(var, _valued_def_type);
 			
-			if (!_current_type.equals(_valued_def_type))
-				System.err.println("Valued_expression_def: incompatible types curr=" + _current_type + " val=" + _valued_def_type);
+//			if (!_current_type.equals(_valued_def_type))
+//				System.err.println("Valued_expression_def: incompatible types curr=" + _current_type + " val=" + _valued_def_type);
 		}
 		
 		//! ID (((ASSIGN | auto_assign_op) valued_expression_def) | auto_increm_op | OPEN_BRAK INT CLOSE_BRAK )? operation ;
@@ -152,6 +157,7 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		
 		ret = ret.replaceAll("_LHS_", _current_var);
 		ret = ret.replaceAll("_VAR1_", var);
+		ret = ret.replaceAll("_TYPE_", _types.get(var));
 		
 		return code + ret;
 	}
@@ -163,7 +169,7 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 			String op = ctx.logical_op(0).accept(this);
 			String rhs = ctx.valued_expression_def(0).accept(this);
 			
-//			_current_type = "i1";
+			_current_type = "i1";
 			op = rhs + op.replaceAll("_VAR2_", _current_var);
 			return op;
 		}
@@ -421,11 +427,79 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 
 	@Override public String visitWhile_def(FreedomLessLessParser.While_defContext ctx) { System.out.println(ctx.getClass().getName() + " - "  + ctx.getText()); return visitChildren(ctx); }
 
-	@Override public String visitSwitch_def(FreedomLessLessParser.Switch_defContext ctx) { System.out.println(ctx.getClass().getName() + " - "  + ctx.getText()); return visitChildren(ctx); }
+	@Override public String visitSwitch_def(FreedomLessLessParser.Switch_defContext ctx) {
+		System.out.println(ctx.getClass().getName() + " - "  + ctx.getText());
+		
+		_switch_tmp = "";
+		_switch_final_label = "label" + _label_number++;
+		String code = visitChildren(ctx); 
+		
+		_switch_tmp = "";
+		
+		code += "br label %" + _switch_final_label + "\n";
+		code += "ret i32 0\n"; //! apenas para criar a separação do codigo e assim podendo usar label
+		code += _switch_final_label + ":\n";
+		
+		
+		return code;
+	}
 
-	@Override public String visitSwitch_case_def(FreedomLessLessParser.Switch_case_defContext ctx) { System.out.println(ctx.getClass().getName() + " - "  + ctx.getText()); return visitChildren(ctx); }
+	@Override public String visitSwitch_case_def(FreedomLessLessParser.Switch_case_defContext ctx) {
+		System.out.println(ctx.getClass().getName() + " - "  + ctx.getText());
+		
+		boolean first_case = _switch_tmp.equals("");
+		
+		if (first_case)
+			_switch_tmp = _current_var;
+		
+		//! Compare
+		String cond = "%tmp" + _tmp_number++;
+		_types.put(cond, "i1");
+		
+		String labelCase = "label" + _label_number++;
+		String labelTrue = "label" + _label_number++;
+		String labelNext = "label" + _label_number;
+		
+		String switch_tmp_aux = _switch_tmp;
+		
+		String code_child = visitChildren(ctx);
+		
+		_switch_tmp = switch_tmp_aux;
+		
+		String code = "";
+		
+		if (!first_case)
+			code += labelCase + ":\n";
+		
+		code += cond + " = icmp eq " + _types.get(_switch_tmp) + " " + _switch_tmp + ", " + _switch_comp + "\n";
+		
+		code += "br i1 " + cond + ", label %" + labelTrue + ", label %" + labelNext + "\n";
+		code += "ret i32 0\n"; //! apenas para criar a separação do codigo e assim podendo usar label
+		
+		code += labelTrue + ":\n";
+		code += code_child;
+		code += "br label %" + _switch_final_label + "\n";
+		code += "ret i32 0\n"; //! apenas para criar a separação do codigo e assim podendo usar label
+		
+		return code;
+	}
 
-	@Override public String visitSwitch_default_def(FreedomLessLessParser.Switch_default_defContext ctx) { System.out.println(ctx.getClass().getName() + " - "  + ctx.getText()); return visitChildren(ctx); }
+	@Override public String visitSwitch_default_def(FreedomLessLessParser.Switch_default_defContext ctx) {
+		System.out.println(ctx.getClass().getName() + " - "  + ctx.getText());
+		
+		_switch_tmp = "";
+		
+		String code_child = visitChildren(ctx);
+
+		String labelDefault = "label" + _label_number++;
+		
+		String code = labelDefault + ":\n";
+		code += code_child;
+		code += "br label %" + _switch_final_label + "\n";
+		code += "ret i32 0\n"; //! apenas para criar a separação do codigo e assim podendo usar label
+		
+		return code;
+	}
 
 	@Override public String visitMain_def(FreedomLessLessParser.Main_defContext ctx) {
 		System.out.println(ctx.getClass().getName() + " - "  + ctx.getText());
@@ -454,7 +528,7 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 			return "i1";
 
 		if (ctx.CLASS() != null)
-			return ""; //! Not implementvou m
+			return ""; //! Not implemented
 		
 		return "";
 	}
@@ -462,37 +536,62 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 	@Override public String visitValue_def(FreedomLessLessParser.Value_defContext ctx) {
 		System.out.println(ctx.getClass().getName() + " - "  + ctx.getText());
 		
+		_valued_def_type = "";
+		
 		if (ctx.INT() != null) {
 			_valued_def_type = "i32";
-			return ctx.INT().getText();
+			
+			if (_switch_tmp.equals(""))
+				return ctx.INT().getText();
+			
+			_switch_comp = ctx.INT().getText();
 		}
 		
 		if (ctx.INTEGER() != null) {
 			_valued_def_type = "i32";
-			return ctx.INTEGER().getText();
+			
+			if (_switch_tmp.equals(""))
+				return ctx.INTEGER().getText();
+			
+			_switch_comp = ctx.INTEGER().getText();
 		}
 		
 		if (ctx.FLOATING() != null) {
 			_valued_def_type = "double";
-			return ctx.FLOATING().getText();
+			
+			if (_switch_tmp.equals(""))
+				return ctx.FLOATING().getText();
+			
+			_switch_comp = ctx.FLOATING().getText();
 		}
 		
 		if (ctx.BOOLEAN() != null) {
 			_valued_def_type = "i1";
 			
-			if (ctx.FLOATING().getText().equals("true"))
-				return "1";
-			else
-				return "0";
+			if (ctx.FLOATING().getText().equals("true")) {
+				if (_switch_tmp.equals(""))
+					return "1";
+
+				_switch_comp = "1";
+				
+			} else {
+				if (_switch_tmp.equals(""))
+					return "0";
+
+				_switch_comp = "0";
+			}
 		}
 		
 		if (ctx.CHAR() != null) {
 			_valued_def_type = "i8";
 			
-			return ctx.CHAR().getText();
+			if (_switch_tmp.equals(""))
+				return ctx.CHAR().getText();
+			
+			_switch_comp = ctx.CHAR().getText();
 		}
 		
-		_valued_def_type = "";
+		_switch_tmp = "";
 		return "";
 	}
 
@@ -521,8 +620,8 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 
 		if (ctx.AND() != null) {
 			String tmp = "%tmp" + _tmp_number++;
-			//! ver tipos se nao _TYPE_
-			code = tmp + " = and " + _current_type + " _VAR1_, _VAR2_\n";
+			_types.put(tmp, _current_type);
+			code = tmp + " = and " + " _TYPE_ _VAR1_, _VAR2_\n";
 			code += "_LHS_ = " + "icmp ne i1 " + tmp + ", 0\n";
 			
 //			_current_type = "i1";
@@ -531,14 +630,15 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 
 		if (ctx.OR() != null) {
 			String tmp = "%tmp" + _tmp_number++;
-			code = tmp + " = or " + _current_type + " _VAR1_, _VAR2_\n";
+			_types.put(tmp, _current_type);
+			code = tmp + " = or " + " _TYPE_ _VAR1_, _VAR2_\n";
 			code += "_LHS_ = " + "icmp ne i1 " + tmp + ", 0\n";
 			
-//			_current_type = "i1";
 			return code;
 		}
 		
-		return code + _current_type + " _VAR1_, _VAR2_\n";
+//		_current_type = "i1";
+		return code + "_TYPE_ _VAR1_, _VAR2_\n";
 	}
 	
 	@Override public String visitArithmetic_op(FreedomLessLessParser.Arithmetic_opContext ctx) {
@@ -566,7 +666,7 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		}
 		
 		_current_type = _types.get(_current_var);
-		return code + _current_type + " _VAR1_, _VAR2_\n";
+		return code + "_TYPE_ _VAR1_, _VAR2_\n";
 	}
 
 	@Override public String visitAuto_assign_op(FreedomLessLessParser.Auto_assign_opContext ctx) {
