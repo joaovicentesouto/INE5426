@@ -1,15 +1,11 @@
 void main(int argc, char ** argv)
 {
-	int i = 1;
-	int j = 100;
+	int i = 0;
 
-	while(i < 101 && j > 0 && i != j)
+	while(i < 100)
 	{
 		i = i + 1;
-		j = j - 1;
 	}
-    
-	int l = i + j;
 
-    return l;
+    return i;
 }

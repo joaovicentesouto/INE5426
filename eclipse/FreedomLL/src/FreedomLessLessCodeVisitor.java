@@ -179,6 +179,7 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 			
 			_types.put(var, _types.get(id));
 			_current_var = var;
+			_current_type = _types.get(id);
 		}
 		
 		else if (ctx.function_call_def() != null) {
@@ -223,14 +224,38 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 	public String visitOperation(FreedomLessLessParser.OperationContext ctx)
 	{
 		System.out.println(ctx.getClass().getName() + " - "  + ctx.getText());
-		
-		if (ctx.logical_op(0) != null) {
+
+		String code = "";
+		String actual_var = _current_var;
+		String actual_type = _current_type;
+
+		if (ctx.logical_op(0) != null)
+		{
 			String op = ctx.logical_op(0).accept(this);
-			String rhs = ctx.valued_expression_def(0).accept(this);
-			
-			_current_type = "i1";
-			op = rhs + op.replaceAll("_VAR2_", _current_var);
-			return op;
+
+			if (op.contains("and"))
+			{
+				// String ritghtCaseLabel = "label" + _label_number++;
+				// String wrongCaseLabel = "label" + _label_number++;
+				// _current_var = "%tmp" + _tmp_number++;
+				// code += _current_var + " = icmp eq " + actual_type + " " + actual_var + ", 0\n" +
+				// 		"br i1 " + _current_var + ", label %" + ritghtCaseLabel + ", label %" + wrongCaseLabel + "\n" +
+				// 		ritghtCaseLabel + ":\n"
+
+
+			} else if (op.contains("or")){
+
+
+			} else {
+				String rhs = ctx.valued_expression_def(0).accept(this);
+				
+				op = op.replaceAll("_TYPE_", actual_type);
+				op = op.replaceAll("_VAR1_", actual_var);
+				op = op.replaceAll("_VAR2_", _current_var);
+
+				return rhs + op;
+			}
+
 		}
 		
 		if (ctx.arithmetic_op(0) != null) {
@@ -239,11 +264,11 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 			
 			_current_type = _types.get(_current_var);
 			op = rhs + op.replaceAll("_VAR2_", _current_var);
-			
+
 			return op;
 		}
 		
-		return "";
+		return code;
 	}
 
 	@Override
@@ -293,11 +318,7 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 	{
 		System.out.println(ctx.getClass().getName() + " - "  + ctx.getText());
 		
-		String type;
-		if (ctx.VOID_T() != null)
-			type = ctx.type_def().accept(this);
-		else
-			type = ctx.type_def().accept(this);
+		String type = ctx.type_def().accept(this);
 		
 		String name = "@" + ctx.ID().getText();
 		
@@ -406,7 +427,7 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		String labelTrue = "label" + _label_number++;
 		String labelAfter = "label" + _label_number++;
 		
-		code += cond + " = icmp eq " + _types.get(_current_var) + " " + _current_var + ", 0\n"; //! equal zero?
+		code += cond + " = icmp eq i1 " + _current_var + ", 0\n"; //! equal zero?
 		code += "br i1 " + cond + ", label %" + labelFalse + ", label %" + labelTrue + "\n";
 		
 		//! True
@@ -649,7 +670,7 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 			return "i1";
 
 		if (ctx.CLASS() != null)
-			return "i32*"; //! Not implemented
+			return ""; //! Not implemented
 		
 		return "";
 	}
