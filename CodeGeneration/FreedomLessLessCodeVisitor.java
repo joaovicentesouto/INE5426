@@ -15,8 +15,6 @@ import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
  */
 public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String> implements FreedomLessLessVisitor<String> {
 	
-//	public String _code = "";
-	
 	//! Mapa dos tipos
 	private Map<String, String> _types = new HashMap<>();
 	private Map<String, Boolean> _is_register = new HashMap<>();
@@ -147,9 +145,7 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		if (ctx.value_def() != null) {
 			var = ctx.value_def().accept(this);
 			_types.put(var, _valued_def_type);
-			
-//			if (!_current_type.equals(_valued_def_type))
-//				System.err.println("Valued_expression_def: incompatible types curr=" + _current_type + " val=" + _valued_def_type);
+			_current_type = _valued_def_type;
 		}
 		
 		//! ID (((ASSIGN | auto_assign_op) valued_expression_def) | auto_increm_op | OPEN_BRAK INT CLOSE_BRAK )? operation ;
@@ -235,13 +231,6 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 
 			if (op.contains("and"))
 			{
-				// String ritghtCaseLabel = "label" + _label_number++;
-				// String wrongCaseLabel = "label" + _label_number++;
-				// _current_var = "%tmp" + _tmp_number++;
-				// code += _current_var + " = icmp eq " + actual_type + " " + actual_var + ", 0\n" +
-				// 		"br i1 " + _current_var + ", label %" + ritghtCaseLabel + ", label %" + wrongCaseLabel + "\n" +
-				// 		ritghtCaseLabel + ":\n\n"
-
 
 			} else if (op.contains("or")){
 
@@ -329,7 +318,7 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		if (name.equals("@print")) {
 			_types.put(name, "void");
 			return "@.pstr = private unnamed_addr constant [4 x i8] c\"%u\\0A\\00\"\n" +
-					"declare i32 @printf(i8*, ...) #1\n" +
+					"declare i32 @printf(i8*, ...)\n" +
 					"define void @print(i32 %i) {\n" +
 				    "  call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @.pstr, i32 0, i32 0), i32 %i)\n" +
 				    "  ret void\n" +
@@ -476,11 +465,11 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 	{
 		System.out.println(ctx.getClass().getName() + " - "  + ctx.getText());
 		
-		//! Block
-		String block = ctx.block_def().accept(this);
-		
 		//! Define for(ISSO; ...; ...)
 		String def = ctx.valued_attribute_def(0).accept(this);
+		
+		//! Block
+		String block = ctx.block_def().accept(this);
 		
 		//! Define for(...; ...; ISSO)
 		String inc = ctx.valued_expression_def(1).accept(this);
@@ -534,6 +523,7 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		//! Reserva espaço na pilha
 		String id = "%" + ctx.ID().getText();
 		_types.put(id, type);
+		_is_register.put(id, false);
 		code += id + " = alloca " + type + "\n";
 		
 		//! Constrói o valor dos atributos
