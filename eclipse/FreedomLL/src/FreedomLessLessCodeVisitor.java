@@ -240,7 +240,7 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 				// _current_var = "%tmp" + _tmp_number++;
 				// code += _current_var + " = icmp eq " + actual_type + " " + actual_var + ", 0\n" +
 				// 		"br i1 " + _current_var + ", label %" + ritghtCaseLabel + ", label %" + wrongCaseLabel + "\n" +
-				// 		ritghtCaseLabel + ":\n"
+				// 		ritghtCaseLabel + ":\n\n"
 
 
 			} else if (op.contains("or")){
@@ -284,11 +284,17 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 			_return_auxiliar = "";
 			
 			String id = "@" + ctx.ID(0).getText();
-			_current_var = "%tmp" + _tmp_number++;
-			_types.put(_current_var, _current_type);
 			
-			code += _current_var + " = call " + _types.get(id) + " " + id + "(";
-			code += args + ")\n";
+			if (_types.get(id).equals("void")) {
+				code += "call void " + id + "(";
+				code += args + ")\n";
+			} else {
+				_current_var = "%tmp" + _tmp_number++;
+				_types.put(_current_var, _current_type);
+				
+				code += _current_var + " = call " + _types.get(id) + " " + id + "(";
+				code += args + ")\n";
+			}
 		}
 
 		return code;
@@ -318,9 +324,19 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 	{
 		System.out.println(ctx.getClass().getName() + " - "  + ctx.getText());
 		
-		String type = ctx.type_def().accept(this);
-		
 		String name = "@" + ctx.ID().getText();
+		
+		if (name.equals("@print")) {
+			_types.put(name, "void");
+			return "@.pstr = private unnamed_addr constant [4 x i8] c\"%u\\0A\\00\"\n" +
+					"declare i32 @printf(i8*, ...) #1\n" +
+					"define void @print(i32 %i) {\n" +
+				    "  call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @.pstr, i32 0, i32 0), i32 %i)\n" +
+				    "  ret void\n" +
+					"}\n";
+		}
+		
+		String type = ctx.type_def().accept(this);
 		
 		String param = "";
 		if (ctx.param_def() != null)
@@ -399,6 +415,10 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 			code += "store " + _types.get(id) + " " + _current_var + ", " + _types.get(id) + "* " + id;
 		}
 		
+		else if (ctx.function_call_def() != null) {
+			code += ctx.function_call_def().accept(this);
+		}
+		
 		return code + "\n";
 	}
 
@@ -431,12 +451,12 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		code += "br i1 " + cond + ", label %" + labelFalse + ", label %" + labelTrue + "\n";
 		
 		//! True
-		code += labelTrue + ":\n";
+		code += labelTrue + ":\n\n";
 		code += ctx.block_def(0).accept(this);
 		code += "br label %" + labelAfter + "\n";
 		
 		//! False
-		code += labelFalse + ":\n";
+		code += labelFalse + ":\n\n";
 		if (ctx.block_def(1) != null) {
 			code += ctx.block_def(1).accept(this);
 		} else {
@@ -445,7 +465,7 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		code += "br label %" + labelAfter + "\n";
 		
 		//! Jump para depois dos ifs
-		code += labelAfter + ":\n";
+		code += labelAfter + ":\n\n";
 		
 		
 		return code;
@@ -483,20 +503,20 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		code += "ret i32 0\n"; //! apenas para criar a separação do codigo e assim podendo usar label
 		
 		//! Body
-		code += labelCond + ":\n";
+		code += labelCond + ":\n\n";
 		//! Check condition
 		code += condition;
 		code += "br i1 " + tmp_cond + ", label %" + labelLoop + ", label %" + labelEndLoop + "\n";
 		code += "ret i32 0\n"; //! apenas para criar a separação do codigo e assim podendo usar label
 		
-		code += labelLoop + ":\n";
+		code += labelLoop + ":\n\n";
 		code += block;
 		code += inc;
 		
 		code += "br label %" + labelCond + "\n";
 		code += "ret i32 0\n"; //! apenas para criar a separação do codigo e assim podendo usar label
 		
-		code += labelEndLoop + ":\n";
+		code += labelEndLoop + ":\n\n";
 		
 		return code;
 	}
@@ -572,7 +592,7 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		
 		code += "br label %" + _switch_final_label + "\n";
 		code += "ret i32 0\n"; //! apenas para criar a separação do codigo e assim podendo usar label
-		code += _switch_final_label + ":\n";
+		code += _switch_final_label + ":\n\n";
 		
 		
 		return code;
@@ -605,14 +625,14 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 		String code = "";
 		
 		if (!first_case)
-			code += labelCase + ":\n";
+			code += labelCase + ":\n\n";
 		
 		code += cond + " = icmp eq " + _types.get(_switch_tmp) + " " + _switch_tmp + ", " + _switch_comp + "\n";
 		
 		code += "br i1 " + cond + ", label %" + labelTrue + ", label %" + labelNext + "\n";
 		code += "ret i32 0\n"; //! apenas para criar a separação do codigo e assim podendo usar label
 		
-		code += labelTrue + ":\n";
+		code += labelTrue + ":\n\n";
 		code += code_child;
 		code += "br label %" + _switch_final_label + "\n";
 		code += "ret i32 0\n"; //! apenas para criar a separação do codigo e assim podendo usar label
@@ -631,7 +651,7 @@ public class FreedomLessLessCodeVisitor extends AbstractParseTreeVisitor<String>
 
 		String labelDefault = "label" + _label_number++;
 		
-		String code = labelDefault + ":\n";
+		String code = labelDefault + ":\n\n";
 		code += code_child;
 		code += "br label %" + _switch_final_label + "\n";
 		code += "ret i32 0\n"; //! apenas para criar a separação do codigo e assim podendo usar label
