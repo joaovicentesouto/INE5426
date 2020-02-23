@@ -1,0 +1,18 @@
+
+
+int print(int a) { }
+
+void main(int argc, char ** argv)
+{
+	int x = 10 * 3;
+	
+	if (x == 30) {
+		x = x / 3;
+	} else {
+		x = x / 2;
+	} 
+	
+	print(x);
+	
+	return 0;
+}

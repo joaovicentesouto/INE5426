@@ -1,0 +1,28 @@
+int firstVariable = 3;
+int globalVariable = firstVariable + 1;
+
+double definedFunction(double x) {
+	return x * 2;
+}
+
+int FunctionName () {
+	return globalVariable + definedFunction(firstVariable);
+}
+
+bool wrongArgumentsAmount(int x, int y) {
+	return y + definedFunction(x);
+}
+
+void notConflictBetweenNames() { int nothing; }
+
+class A {
+	public:
+		void A() {
+			x = 2;
+		}
+
+	private:
+		int x;
+}
+
+void main (int argc, char **argv) {}
